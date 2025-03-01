@@ -1,0 +1,23 @@
+* Make it clearer that signing up for newsletter makes you a member.
+** Donation is not necessary for membership
+** Join for _free_
+
+* Move joining text to donations because that's really about money
+
+* Add check boxes to join for event planning, program volunteer, fundraising, bake sale baker!
+
+* $10 - friend
+* $25 - best friend
+* $50 - sponsor 
+* $100 - patron
+* $250 - champion
+* Other amount
+
+* Contact Form:
+** Choose a subject: General inquiry, volunteer, programming/events
+
+* Event should get an individual page
+** Location, description
+* Event Series
+* Mission statement & bylaws
+* Store: friends T-shirt

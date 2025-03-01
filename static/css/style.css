@@ -1,0 +1,166 @@
+:root {
+    --ff-color-blue: #004d99;
+    --ff-width-min: 300px;
+    --ff-width-max: 700px;
+}
+
+/* Page Layout */
+html {
+    height: 100%;
+}
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+header {
+    width: 100%;
+}
+nav {
+    border-bottom: 1px solid var(--ff-color-blue);
+}
+
+.container-body {
+    padding: 0 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+article {
+    flex-grow: 1;
+    min-width: var(--ff-width-min);
+    max-width: var(--ff-width-max);
+    margin-top: 1.5rem;
+}
+p {
+    margin: 1rem 0;
+}
+footer {
+    padding: 1rem;
+    text-align: right;
+}
+
+.contained {
+    min-width: var(--ff-width-min);
+    max-width: var(--ff-width-max);
+    margin: 0 auto;
+    display: inherit;
+    padding: 0 1rem;
+}
+/* Typography */
+body {
+    font-family: "Open Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 18px;
+    line-height: 1.6rem;
+}
+h1, h2, h3 {
+    font-family: "Cormorant", serif;
+    font-weight: 500;
+}
+
+h1 {
+    font-size: 2rem;
+}
+h2 {
+    font-size: 1.75rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--ff-color-blue);
+}
+h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+label {
+    margin-bottom: 0.5rem;
+}
+
+/* Navigation */
+.header-title {
+    background: var(--ff-color-blue);
+    font-style: italic;
+    font-weight: 600;
+    color: white;
+    padding: 1rem 0;
+    line-height: 2rem;
+}
+.nav-list {
+    background: white;
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-size: 1.125rem;
+    line-height: 2.5rem;
+}
+.nav-button {
+    color: var(--ff-color-blue);
+    font-weight: bold;
+    text-decoration: none;
+}
+.nav-link {
+    text-decoration: none;
+    color: black;
+}
+/* Body */
+.button {
+    background: var(--ff-color-blue);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 1rem 0;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 2rem;
+}
+
+/* Footer */
+.footer-copyright, .footer-location {
+    font-size: 0.8rem;
+    line-height: 1rem;
+    display: block;
+}
+
+/* Home Page */
+.home-hero {
+    font-style: italic;
+    font-size: 2.25rem;
+    color: var(--ff-color-blue);
+    margin-bottom: 1rem;
+    line-height: 2.25rem;
+}
+.events-list {
+    line-height: 2rem;
+}
+.event-date {
+    display: block;
+    line-height: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+.event-title {
+    font-weight: bold;
+}
+.signup-section, .donate-section {
+    background: #eee;
+    border: 1px #ccc solid;
+    padding: 1rem;
+    margin: 2rem 0;
+}
+.signup-form, .donate-form {
+    display: flex;
+    flex-direction: column;
+}
+#signup-email {
+    height: 1.5rem;
+}

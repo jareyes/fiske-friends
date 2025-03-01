@@ -1,0 +1,16 @@
+{
+  "name": "fiske-friends",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "config": "^3.3.12",
+    "express": "^4.21.2",
+    "express-handlebars": "^8.0.1"
+  }
+}
