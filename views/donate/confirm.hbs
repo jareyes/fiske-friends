@@ -1,0 +1,21 @@
+<h1>Thank You for Your Donation!</h1>
+
+<div class="donation-confirmation">
+  <p>Your donation to the Friends of the Fiske Free Library has been successfully processed.</p>
+  
+  <div class="receipt-details">
+    <h2>Donation Receipt</h2>
+    {{#if donation_details}}
+      <p>Amount: ${{donation_details.amount}}</p>
+      <p>Date: {{donation_details.date}}</p>
+      <p>Confirmation: {{donation_details.confirmation_code}}</p>
+    {{/if}}
+    <p>A receipt has been saved for your tax records.</p>
+  </div>
+  
+  <p>Your support helps fund important library programs and resources for our community. Thank you for your generosity!</p>
+  
+  <div class="next-steps">
+    <a href="/" class="button">Return to Home</a>
+  </div>
+</div>

@@ -60,26 +60,31 @@
 
 <section class="donate-section">
   <h3>Select a Membership Level</h3>
-  <form class="donate-form">
+  <form class="donate-form" action="/donate/checkout" method="post">
     <div>
-      <input id="membership-friend" type="radio" name="membership-level" value="friend">
+      <input id="membership-friend" type="radio" name="donation-amount" value="10.00">
       <label for="membership-friend">$10 &ndash; Friend</label>
     </div>
     <div>
-      <input id="membership-best-friend" type="radio" name="membership-level" value="best-friend">
+      <input id="membership-best-friend" type="radio" name="donation-amount" value="25.00">
       <label for="membership-best-friend">$25 &ndash; Best Friend</label>
     </div>
     <div>
-      <input id="membership-sponsor" type="radio" name="membership-level" value="sponsor">
+      <input id="membership-sponsor" type="radio" name="donation-amount" value="50.00">
       <label for="membership-sponsor">$50 &ndash; Sponsor</label>
     </div>
     <div>
-      <input id="membership-patron" type="radio" name="membership-level" value="patron">
+      <input id="membership-patron" type="radio" name="donation-amount" value="100.00">
       <label for="membership-patron">$100 &ndash; Patron</label>
     </div>
     <div>
-      <input id="membership-champion" type="radio" name="membership-level" value="patron">
+      <input id="membership-champion" type="radio" name="donation-amount" value="250.00">
       <label for="membership-champion">$250 &ndash; Champion</label>
+    </div>
+    <div>
+      <input id="custom-amount" type="radio" name="donation-amount" value="custom">
+      <label for="custom-amount">Other Amount</label>
+      <input type="number" name="donation-amount" min="5" disabled>
     </div>
     <button class="button" type="submit">Donate</button>
   </form>

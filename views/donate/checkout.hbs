@@ -1,0 +1,65 @@
+<h1>Complete Your Donation</h1>
+
+<div class="donation-summary">
+  <h2>Donation Amount: ${{donation_amount_usd}}</h2>
+  <p>Thank you for supporting the Fiske Free Library!</p>
+</div>
+
+<div class="payment-form-container">
+  <form id="payment-form" action="/donate/pay" method="post">
+    <div class="form-group">
+      <h3>Personal Information</h3>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="first-name">First Name</label>
+          <input id="first-name" name="first_name" type="text" required>
+        </div>
+        <div class="form-field">
+          <label for="last-name">Last Name</label>
+          <input id="last-name" name="last_name" type="text" required>
+        </div>
+      </div>
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <h3>Mailing Address</h3>
+      <div class="form-field">
+        <label for="address-line1">Street Address</label>
+        <input id="address-line1" name="address_line1" type="text" required>
+      </div>
+      <div class="form-field">
+        <label for="address-line2">Apt/Suite (optional)</label>
+        <input id="address-line2" name="address_line2" type="text">
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="city">City</label>
+          <input id="city" name="city" type="text" required>
+        </div>
+        <div class="form-field">
+          <label for="state">State</label>
+          <input id="state" name="state" type="text" required>
+        </div>
+        <div class="form-field">
+          <label for="zipcode">ZIP Code</label>
+          <input id="zipcode" name="zipcode" type="text" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <h3>Payment Information</h3>
+      <div id="card-element">
+        <!-- Stripe Elements will be inserted here -->
+      </div>
+      <div id="card-errors" role="alert"></div>
+    </div>
+
+    <input type="hidden" name="donation_amount" value="{{donation_amount_usd}}">
+    <button class="button" type="submit">Complete Donation</button>
+  </form>
+</div>
