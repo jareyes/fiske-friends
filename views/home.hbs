@@ -82,10 +82,40 @@
       <label for="membership-champion">$250 &ndash; Champion</label>
     </div>
     <div>
-      <input id="custom-amount" type="radio" name="donation-amount" value="custom">
+      <input id="custom-amount" type="radio" name="donation-amount" value="">
       <label for="custom-amount">Other Amount</label>
-      <input type="number" name="donation-amount" min="5" disabled>
+      <input type="number" id="custom-donation-amount" min="5">
     </div>
     <button class="button" type="submit">Donate</button>
   </form>
 </section>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const custom_amount_radio = document.getElementById("custom-amount");
+    const custom_amount_field = document.getElementById("custom-donation-amount");
+    
+    function update_custom_amount_field() {
+        custom_amount_radio.value = custom_amount_field.value;
+    }
+    
+    // Add event listeners to all radio buttons
+    const radios = document.querySelectorAll("input[name='donation-amount']");
+    for(const radio of radios) {
+        radio.addEventListener("change", update_custom_amount_field);
+    }
+    
+    // Update the radio value when custom amount changes
+    custom_amount_field.addEventListener("input", () => {
+        if (custom_amount_radio.checked) {
+            custom_amount_radio.value = custom_amount_field.value;
+        }
+    });
+    
+    // Ensure custom radio is selected when user types in the field
+    custom_amount_field.addEventListener("focus", function() {
+        custom_amount_radio.checked = true;
+        update_custom_amount_field();
+    });
+ });
+</script>

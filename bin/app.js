@@ -4,7 +4,7 @@ const donation_routes = require("../lib/donation_routes.js");
 const express = require("express");
 const hbs = require("express-handlebars");
 const path = require("node:path");
-
+const session = require("express-session");
 
 const HBS = hbs.create({
     extname: "hbs",
@@ -32,7 +32,7 @@ app.use(session({
     cookie: {
         secure: true,
     },
-});
+}));
 
 // Routes
 app.get("/", (req, res, next) => res.render("home"));
