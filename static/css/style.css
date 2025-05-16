@@ -86,9 +86,12 @@ label {
     background: var(--ff-color-blue);
     font-style: italic;
     font-weight: 600;
-    color: white;
     padding: 1rem 0;
     line-height: 2rem;
+}
+.header-title a {
+    color: white;
+    text-decoration: none;
 }
 .nav-list {
     background: white;
