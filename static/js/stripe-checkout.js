@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const card_element = elements.create("card");
     card_element.mount("#card-element");
 
-    const form = document.getElementById("payment-form");
+    const form = document.getElementById("donation-payment-form");
     const card_errors = document.getElementById("card-errors");
     const submit_button = document.querySelector("button[type='submit']");
 
