@@ -179,3 +179,17 @@ label {
 .donation-form-group {
     margin-bottom: 2rem;
 }
+.donation-line-item {
+    display: block;
+    font-family: "Comorant", serif;
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    
+}
+.donation-amount {
+    font-weight: 500;
+}
+#donation-payment-form input {
+    display: block;
+}

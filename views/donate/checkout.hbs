@@ -1,12 +1,13 @@
 <h1>Complete Your Donation</h1>
 
 <div class="donation-summary">
-  <h2>Donation Amount: ${{donation_amount_usd}}</h2>
   <p>Thank you for supporting the Fiske Free Library!</p>
+
+  <span class="donation-line-item">Donation Amount: <span class="donation-amount">${{donation_amount_usd}}</span></span>
 </div>
 
 <div class="payment-form-container">
-  <form id="payment-form" action="/donate/pay" method="post">
+  <form id="donation-payment-form" action="/donate/pay" method="post">
     <div class="donation-form-group">
       <h3 class="donation-payment-section">Personal Information</h3>
       <div class="form-row">
