@@ -5,12 +5,9 @@
   
   <div class="receipt-details">
     <h2>Donation Receipt</h2>
-    {{#if donation_details}}
-      <p>Amount: ${{donation_details.amount}}</p>
-      <p>Date: {{donation_details.date}}</p>
-      <p>Confirmation: {{donation_details.confirmation_code}}</p>
-    {{/if}}
-    <p>A receipt has been saved for your tax records.</p>
+      <p>Amount: {{amount_usd}}</p>
+      <p>Date: {{date}}</p>
+      <p>Confirmation: {{confirmation_code}}</p>
   </div>
   
   <p>Your support helps fund important library programs and resources for our community. Thank you for your generosity!</p>

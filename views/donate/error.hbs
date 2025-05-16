@@ -1,0 +1,21 @@
+<div class="donation-error">
+  <h1>Payment Error</h1>
+  
+  <div class="error-message">
+    <p>{{error_message}}</p>
+  </div>
+  
+  <div class="error-details">
+    {{#if details}}
+      <p>{{details}}</p>
+    {{/if}}
+  </div>
+  
+  <div class="next-steps">
+    <p>You have not been charged. You can try again or contact us for assistance.</p>
+    <div class="button-group">
+      <a href="/donate/checkout" class="button">Try Again</a>
+      <a href="/" class="button button-secondary">Return to Home</a>
+    </div>
+  </div>
+</div>
