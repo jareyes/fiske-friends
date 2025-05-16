@@ -128,6 +128,10 @@ label {
     margin-top: 2rem;
 }
 
+.button:disabled {
+    background: silver;
+}
+
 /* Footer */
 .footer-copyright, .footer-location {
     font-size: 0.8rem;
@@ -166,4 +170,12 @@ label {
 }
 #signup-email {
     height: 1.5rem;
+}
+
+/* Donation */
+.donation-payment-section {
+    border-bottom: 1px solid var(--ff-color-blue);
+}
+.donation-form-group {
+    margin-bottom: 2rem;
 }

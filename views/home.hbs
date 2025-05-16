@@ -70,7 +70,10 @@
       <label for="custom-amount">Other Amount</label>
       <input type="number" id="custom-donation-amount" min="5">
     </div>
-    <button class="button" type="submit">Donate</button>
+    <div id="amount-error" class="error-message" style="color: red; display: none;">
+      Minimum donation amount is $5
+    </div>    
+    <button class="button" id="donate-button" type="submit">Donate</button>
   </form>
 </section>
 
@@ -78,21 +81,51 @@
   document.addEventListener("DOMContentLoaded", () => {
     const custom_amount_radio = document.getElementById("custom-amount");
     const custom_amount_field = document.getElementById("custom-donation-amount");
+    const donate_button = document.getElementById("donate-button");
+    const amount_error = document.getElementById("amount-error");
     
-    function update_custom_amount_field() {
-        custom_amount_radio.value = custom_amount_field.value;
+    function validate_donation_amount() {
+        const radio_checked = document.querySelector("input[name='donation-amount']:checked");
+        console.log("radio_checked", radio_checked);
+        if(radio_checked === null) {
+            donate_button.disabled = true;
+            amount_error.style.display = "none";
+            return;
+        }
+        if(radio_checked.id === "custom-amount") {
+            const amount = parseFloat(custom_amount_field.value);
+            if(isNaN(amount) || amount < 5) {
+                donate_button.disabled = true;
+                amount_error.style.display = "block";
+                return;
+            }
+        }
+        // Things are good to go    
+        donate_button.disabled = false;
+        amount_error.style.display = "none";
+     }
+
+     // Initialize form validation
+     validate_donation_amount();
+     
+     function update_custom_amount_field() {
+         console.log("change!");
+         custom_amount_radio.value = custom_amount_field.value;
+         validate_donation_amount();
     }
-    
+
     // Add event listeners to all radio buttons
     const radios = document.querySelectorAll("input[name='donation-amount']");
+    console.log("radios", radios);
     for(const radio of radios) {
         radio.addEventListener("change", update_custom_amount_field);
     }
     
     // Update the radio value when custom amount changes
     custom_amount_field.addEventListener("input", () => {
-        if (custom_amount_radio.checked) {
+        if(custom_amount_radio.checked) {
             custom_amount_radio.value = custom_amount_field.value;
+            validate_donation_amount();
         }
     });
     
