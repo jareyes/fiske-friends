@@ -2,4 +2,11 @@
   app: {
     port: 3000,
   },
+  session: {
+    secret: null,
+  },
+  stripe: {
+    secret_key: null,
+    publishable_key: null,
+  },
 }

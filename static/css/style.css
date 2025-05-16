@@ -86,9 +86,12 @@ label {
     background: var(--ff-color-blue);
     font-style: italic;
     font-weight: 600;
-    color: white;
     padding: 1rem 0;
     line-height: 2rem;
+}
+.header-title a {
+    color: white;
+    text-decoration: none;
 }
 .nav-list {
     background: white;
@@ -123,6 +126,10 @@ label {
     width: 100%;
     max-width: 300px;
     margin-top: 2rem;
+}
+
+.button:disabled {
+    background: silver;
 }
 
 /* Footer */
@@ -163,4 +170,26 @@ label {
 }
 #signup-email {
     height: 1.5rem;
+}
+
+/* Donation */
+.donation-payment-section {
+    border-bottom: 1px solid var(--ff-color-blue);
+}
+.donation-form-group {
+    margin-bottom: 2rem;
+}
+.donation-line-item {
+    display: block;
+    font-family: "Comorant", serif;
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    
+}
+.donation-amount {
+    font-weight: 500;
+}
+#donation-payment-form input {
+    display: block;
 }
