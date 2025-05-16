@@ -30,8 +30,7 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     cookie: {
-        // FIXME: true in prod
-        secure: false,
+        secure: true,
     },
 }));
 
