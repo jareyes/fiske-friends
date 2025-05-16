@@ -4,6 +4,7 @@
   },
   session: {
     secret: null,
+    secure: true,
   },
   stripe: {
     secret_key: null,

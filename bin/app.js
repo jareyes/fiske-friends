@@ -12,6 +12,7 @@ const HBS = hbs.create({
 });
 const PORT = config.get("app.port");
 const SESSION_SECRET = config.get("session.secret");
+const SESSION_SECURE = config.get("session.secure");
 const VIEWS_DIRPATH = path.join(__dirname, "..", "views");
 
 const app = express();
@@ -25,12 +26,14 @@ app.set("views", VIEWS_DIRPATH);
 app.use(express.static("static"));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+app.set("trust proxy", 1)
 app.use(session({
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: true,
+        secure: SESSION_SECURE,
     },
 }));
 
