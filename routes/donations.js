@@ -68,9 +68,6 @@ async function process_payment(req, res) {
         });
 
         if(payment_intent.status === "succeeded") {
-            if(req.session === undefined) {
-                req.session = {};
-            }
             req.session.donation = {
                 amount_usd: format_usd(donation_amount),
                 date: (new Date()).toLocaleString(),
