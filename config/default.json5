@@ -6,6 +6,9 @@
     secret: null,
     secure: true,
   },
+  sqlite: {
+    filepath: "var/fiskefriends.sqlite",
+  },
   stripe: {
     secret_key: null,
     publishable_key: null,

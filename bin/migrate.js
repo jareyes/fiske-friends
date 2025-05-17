@@ -18,7 +18,7 @@ const SELECT_MIGRATION_QUERY = `
 SELECT COUNT(*) AS count FROM migrations WHERE filename = :filename`;
 const SQLITE_FILEPATH = config.get("sqlite.filepath");
 
-function migrate(db, filepath, query) {
+async function migrate(db, filepath, query) {
     // See if we've already run this migration
     const filename = path.basename(filepath);
     const select = db.prepare(SELECT_MIGRATION_QUERY);
@@ -28,9 +28,12 @@ function migrate(db, filepath, query) {
         return;
     }
 
-    // Run the migration
     try {
         db.exec("BEGIN");
+        // Run the migration
+        const query = await fs.promises.readFile(filepath, "utf8");
+        db.exec(query);
+        // Record it
         const insert = db.prepare(INSERT_MIGRATION_QUERY);
         insert.run({filename});
 
@@ -47,20 +50,24 @@ function migrate(db, filepath, query) {
 async function main(dirpath) {
     // Open database
     const db = new DatabaseSync(SQLITE_FILEPATH);
-
-    // Create migrations table
-    db.exec(CREATE_MIGRATIONS_TABLE_QUERY);
-
-    // Run each migration
-    const filepaths = await file.readdir(dirpath);
-    filepaths.sort();
-
-    for(const filepath of filepaths) {
-        if(!filepath.endsWith(".sql")) {
-            continue;
-        }
-        const query = await fs.promises.readFile(filepath);
+    try {
+        // Create migrations table
+        db.exec(CREATE_MIGRATIONS_TABLE_QUERY);
+        
+        // Run each migration
+        const filepaths = await file.readdir(dirpath);
+        filepaths.sort();
+        
+        for(const filepath of filepaths) {
+            if(!filepath.endsWith(".sql")) {
+                continue;
+            }
+            const query = await fs.promises.readFile(filepath);
         await migrate(db, filepath, query);
+        }
+    }
+    finally {
+        db.close();
     }
 }
 
