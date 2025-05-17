@@ -21,7 +21,7 @@ function checkout(req, res) {
         stripe_publishable_key: STRIPE_PUBLISHABLE_KEY,
         title: "Complete Your Donation",
     };
-    res.render("donate/checkout", locals);
+    res.render("donations/checkout", locals);
 }
 
 async function process_payment(req, res) {
@@ -77,7 +77,7 @@ async function process_payment(req, res) {
         }
 
         // Payment intent didn't succeed but didn't throw an error
-        return res.status(400).render("donate/error", {
+        return res.status(400).render("donations/error", {
             title: "Payment Failed",
             error_message: "Your payment could not be processed.",
             details: "Please check your payment information and try again."
@@ -105,7 +105,7 @@ async function process_payment(req, res) {
 
         const locals = {title: "Payment Error", error_message, details};
         res.status(400);
-        return res.render("donate/error", locals);
+        return res.render("donations/error", locals);
     }
  }
 
@@ -115,7 +115,7 @@ function confirm_payment(req, res) {
         title: "Thank you for your donation",
         ...donation,
     };
-    res.render("donate/confirm", locals);
+    res.render("donations/confirm", locals);
 }
 
 const router = Router();

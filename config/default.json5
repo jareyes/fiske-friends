@@ -1,10 +1,20 @@
 {
   app: {
     port: 3000,
+    salt_rounds: 10,
   },
   session: {
     secret: null,
-    secure: true,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: true,
+	  sameSite: "strict",
+	  domain: "fiskefriends.org",
+    },
+  },
+  sqlite: {
+    filepath: "var/fiskefriends.sqlite",
   },
   stripe: {
     secret_key: null,
