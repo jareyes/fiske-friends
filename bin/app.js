@@ -4,6 +4,7 @@ const authentication_routes = require("../routes/authentication");
 const donation_routes = require("../routes/donations");
 const express = require("express");
 const hbs = require("express-handlebars");
+const middleware = require("../lib/middleware");
 const path = require("node:path");
 const session = require("express-session");
 const {DatabaseSync} = require("node:sqlite");
@@ -40,6 +41,7 @@ function create(sqlite) {
             secure: SESSION_SECURE,
         },
     }));
+    app.use(middleware.session_user);
     
     // Routes
     app.get("/", (req, res, next) => res.render("home"));
