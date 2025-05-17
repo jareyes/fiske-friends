@@ -5,7 +5,13 @@
   },
   session: {
     secret: null,
-    secure: true,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: true,
+	  sameSite: "strict",
+	  domain: "fiskefriends.org",
+    },
   },
   sqlite: {
     filepath: "var/fiskefriends.sqlite",

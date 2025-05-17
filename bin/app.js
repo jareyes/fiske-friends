@@ -14,8 +14,8 @@ const HBS = hbs.create({
     defaultLayout: "base",
 });
 const PORT = config.get("app.port");
-const SESSION_SECRET = config.get("session.secret");
-const SESSION_SECURE = config.get("session.secure");
+const SESSION_CONFIG = config.get("session");
+console.log(SESSION_CONFIG);
 const SQLITE_FILEPATH = config.get("sqlite.filepath");
 const VIEWS_DIRPATH = path.join(__dirname, "..", "views");
 
@@ -31,20 +31,10 @@ function create(sqlite) {
     app.use(express.static("static"));
     app.use(express.json());
     app.use(express.urlencoded({extended: true}));
-    
+
+    // Session middleware
     app.set("trust proxy", 1);
-    app.use(session({
-        secret: SESSION_SECRET,
-        resave: false,
-        saveUninitialized: true,
-        cookie: {
-            secure: SESSION_SECURE,
-	        sameSite: "strict",
-	        domain: "fiskefriends.org",
-        },
-    }));
-    app.use(express.json());
-    app.use(express.urlencoded({extended: true}));
+    app.use(session(SESSION_CONFIG));
     
     // Custom session middleware
     app.use(middleware.session_user);
