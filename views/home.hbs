@@ -13,9 +13,48 @@
 <h2 id="events">Upcoming Events at the Library</h2>
 <ol class="events-list">
   <li>
-    <span class="event-title"> Monthly Planning Meeting</span>
-    <span class="event-date">Friday, June 27, 2025, 5:15&ndash;6:30 PM</span>          
+    <span class="event-title">SHS Alumni Parade</span> (All ages)
+    <span class="event-description">March with Fiske Friends! Meet at Claremont Savings Bank front lawn at 145 Broad Street</span>
+    <span class="event-date">Sarurday, June 14. Setup at 9:00 AM. Parade Line-up at 10 AM</span>
+  <li>
+    <span class="event-title">Comic Workshop</span>
+    <span class="event-description">Draw with New Hampshire illustrator and author Marek Bennett</span>
+    <span class="event-date">Tuesday, June 24, 2025, 1:30 PM</span>
   </li>
+ <li>
+    <span class="event-title">Monthly Friends Planning Meeting</span>
+    <span class="event-date">Friday, June 27, 2025, 5:15&ndash;6:30 PM</span>
+ </li>
+  <li>
+    <span class="event-title">Mama Nous</span> (All ages)
+    <span class="event-description">Cool Songs for Kind Kids</span>
+    <span class="event-date">Wednesday, July 9, 2025, 9:30 AM</span>
+  </li>
+  <li>
+    <span class="event-title">A Universe of Rainbows</span> (All ages)
+    <span class="event-description">Science, poetry, and craft with New Hampshire author Matt Forest Esenwine and illustrator Jamey Christoph</span>
+    <span class="event-date">Tuesday, July 15, 2025, 2:00 PM</span>
+  </li>
+  <li>
+    <span class="event-title">Mr. Aaron Dance Party</span> (Ages 2&ndash;10)
+    <span class="event-date">Thursday, July 24, 2025, 2:00 PM</span>
+  </li>
+ <li>
+    <span class="event-title">Energy Rocks! Renewable Energy Program</span> (All ages)
+    <span class="event-description">Storytelling, science, music and fun! With Vermont author Michael Caduto</span>
+    <span class="event-date">Wednesday, July 30, 2025, 11:00 AM</span>
+ </li>
+ <li>
+    <span class="event-title">Super-powered Critters</span> (All ages)
+    <span class="event-description">Live animal presentation: <em>They may be small, but they are mighty!</em> by the Vermont Institute of Natural Science (VINS)</span>
+    <span class="event-date">Monday, August 4, 2025, 1:00 PM</span>
+ </li>
+ <li>
+    <span class="event-title">Around the World in 12 Colors</span> (All ages)
+    <span class="event-guest">Presented by Mariposa Museum and World Culture Center</span>
+    <span class="event-description">Learn about cultures and places near and far by exploring colorful objects from around the world. Create a colorful basket to take home!</span>
+    <span class="event-date">Tuesday, August 12, 2025, 1:00 PM</span>
+ </li>
 </ol>
 
 <!-- <h2 id="join">Join the Friends</h2>
@@ -72,7 +111,7 @@
     </div>
     <div id="amount-error" class="error-message" style="color: red; display: none;">
       Minimum donation amount is $5
-    </div>    
+    </div>
     <button class="button" id="donate-button" type="submit">Donate</button>
   </form>
 </section>
@@ -83,7 +122,7 @@
     const custom_amount_field = document.getElementById("custom-donation-amount");
     const donate_button = document.getElementById("donate-button");
     const amount_error = document.getElementById("amount-error");
-    
+
     function validate_donation_amount() {
         const radio_checked = document.querySelector("input[name='donation-amount']:checked");
         console.log("radio_checked", radio_checked);
@@ -100,14 +139,14 @@
                 return;
             }
         }
-        // Things are good to go    
+        // Things are good to go
         donate_button.disabled = false;
         amount_error.style.display = "none";
      }
 
      // Initialize form validation
      validate_donation_amount();
-     
+
      function update_custom_amount_field() {
          console.log("change!");
          custom_amount_radio.value = custom_amount_field.value;
@@ -120,7 +159,7 @@
     for(const radio of radios) {
         radio.addEventListener("change", update_custom_amount_field);
     }
-    
+
     // Update the radio value when custom amount changes
     custom_amount_field.addEventListener("input", () => {
         if(custom_amount_radio.checked) {
@@ -128,7 +167,7 @@
             validate_donation_amount();
         }
     });
-    
+
     // Ensure custom radio is selected when user types in the field
     custom_amount_field.addEventListener("focus", function() {
         custom_amount_radio.checked = true;
