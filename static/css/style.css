@@ -163,8 +163,19 @@ label {
     font-size: 0.95rem;
     font-weight: 600;
 }
+.event-time {
+    font-weight: 300;
+    font-size: 0.95rem;
+}
 .event-location {
     font-size: 0.95rem;
+    font-weight: 300;
+}
+.event-location::before {
+    content: "(";
+}
+.event-location::after {
+    content: ")";
 }
 .event-title {
     font-weight: bold;
