@@ -153,11 +153,16 @@ label {
 .events-list {
     line-height: 2rem;
 }
+.event {
+    margin-bottom: 1.25rem;
+}
 .event-date {
     display: block;
     line-height: 1.5rem;
-    margin-bottom: 1.25rem;
-    font-style: italic;
+    font-size: 0.95rem;
+}
+.event-location {
+    font-size: 0.95rem;
 }
 .event-title {
     font-weight: bold;
