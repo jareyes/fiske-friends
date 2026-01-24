@@ -17,6 +17,9 @@ body {
 header {
     width: 100%;
 }
+em {
+    font-weight: bold;
+}
 nav {
     border-bottom: 1px solid var(--ff-color-blue);
 }
