@@ -41,6 +41,7 @@ function create(sqlite) {
     
     // Routes
     app.get("/", (req, res, next) => res.render("home"));
+    app.get("/minutes", (req, res, next) => res.render("minutes"));
     app.use("/donate", donation_routes);
     app.use("/padlock", authentication_routes.create(sqlite));
 
