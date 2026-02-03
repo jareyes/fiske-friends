@@ -164,7 +164,7 @@ label {
     font-weight: 600;
 }
 .event-time {
-    font-weight: 400;
+    font-weight: normal;
     font-size: 0.95rem;
 }
 .event-location {
@@ -179,6 +179,9 @@ label {
 }
 .event-title {
     font-weight: bold;
+}
+.event-description {
+    margin-top: 0.5rem;
 }
 .event-guest, .event-description {
     display: block;
