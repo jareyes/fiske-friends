@@ -1,17 +1,33 @@
 const {Router} = require("express");
+const middleware = require("../lib/middleware");
 const User = require("../lib/user");
 
 function display_login(req, res, next) {
-    res.render("authentication/login");
+    try {
+        const {redirect_url} = req.query;
+        const context = {redirect_url};
+        res.render("authentication/login", context);
+    }
+    catch(err) {
+        next(err);
+    }
 }
 
 async function login(req, res, next, sqlite) {
     try {
-        const {email, password} = req.body;
-        const user = await User.authenticate(sqlite, email, password);
+        const {
+            email,
+            password,
+            redirect_url="/",
+        } = req.body;
+        const user = await User.authenticate(
+            sqlite,
+            email,
+            password,
+        );
         // Add user to session
         req.session.user = user;
-        return res.redirect("/");
+        return res.redirect(redirect_url);
     }
     catch(err) {
         if(!(err instanceof User.AuthenticationError)) {
@@ -36,7 +52,10 @@ function logout(req, res, next) {
 function create(sqlite) {
     const router = new Router();
     router.get("/login", display_login);
-    router.post("/login", (req, res, next) => login(req, res, next, sqlite));
+    router.post(
+        "/login",
+        middleware.supply(login, sqlite),
+    );
     router.get("/logout", logout);
     return router;
 }

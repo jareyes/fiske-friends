@@ -9,7 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^6.0.0",
     "config": "^3.3.12",
     "express": "^4.21.2",
     "express-handlebars": "^8.0.1",

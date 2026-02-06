@@ -1,7 +1,7 @@
 {
   app: {
+    password_salt: "password-salt",
     port: 3000,
-    salt_rounds: 10,
   },
   session: {
     secret: null,

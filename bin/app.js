@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 const config = require("config");
-const authentication_routes = require("../routes/authentication");
-const donation_routes = require("../routes/donations");
 const express = require("express");
 const hbs = require("express-handlebars");
 const middleware = require("../lib/middleware");
 const path = require("node:path");
+const routes = require("../routes");
 const session = require("express-session");
 const {DatabaseSync} = require("node:sqlite");
 
@@ -42,8 +41,7 @@ function create(sqlite) {
     // Routes
     app.get("/", (req, res, next) => res.render("home"));
     app.get("/minutes", (req, res, next) => res.render("minutes"));
-    app.use("/donate", donation_routes);
-    app.use("/padlock", authentication_routes.create(sqlite));
+    app.use(routes(sqlite));
 
     return app;
 }
