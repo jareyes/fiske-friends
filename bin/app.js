@@ -16,7 +16,6 @@ const HBS = hbs.create({
 });
 const PORT = config.get("app.port");
 const SESSION_CONFIG = config.get("session");
-console.log(SESSION_CONFIG);
 const SQLITE_FILEPATH = config.get("sqlite.filepath");
 const VIEWS_DIRPATH = path.join(__dirname, "..", "views");
 
@@ -42,8 +41,6 @@ function create(sqlite) {
     app.use(middleware.template_session_user);
     
     // Routes
-    app.get("/", (req, res, next) => res.render("home"));
-    app.get("/minutes", (req, res, next) => res.render("minutes"));
     app.use(routes(sqlite));
     return app;
 }

@@ -42,7 +42,6 @@ function save_event(req, res, next, sqlite) {
         event.is_published = (event.is_published?.length > 0)? 1 : 0;
         const now_ms = Date.now();
         event.updated_ms = now_ms;
-        console.log("event_id", event.event_id);
         if(event.event_id === "") {
             // Clean up even more
             delete event.event_id;

@@ -17,7 +17,7 @@ INSERT INTO events (
   'Sarah Gilmore Room',
   'Valentine''s Day Social',
   '2026-02-12-valentines-social',
-  1770942600000,
+  1770940800000,
   'Join us for music, refreshments, and come home with a book. Free and open to all. Donations welcomed',
   1770486672440
 ), (
