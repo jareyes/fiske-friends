@@ -6,11 +6,13 @@ const middleware = require("../lib/middleware");
 const path = require("node:path");
 const routes = require("../routes");
 const session = require("express-session");
+const template = require("../lib/template");
 const {DatabaseSync} = require("node:sqlite");
 
 const HBS = hbs.create({
     extname: "hbs",
     defaultLayout: "base",
+    helpers: template,
 });
 const PORT = config.get("app.port");
 const SESSION_CONFIG = config.get("session");
@@ -34,15 +36,15 @@ function create(sqlite) {
     // Session middleware
     app.set("trust proxy", 1);
     app.use(session(SESSION_CONFIG));
-    
-    // Custom session middleware
-    app.use(middleware.session_user);
+
+    // Template context middleware
+    app.use(middleware.template_mounts);
+    app.use(middleware.template_session_user);
     
     // Routes
     app.get("/", (req, res, next) => res.render("home"));
     app.get("/minutes", (req, res, next) => res.render("minutes"));
     app.use(routes(sqlite));
-
     return app;
 }
 

@@ -1,7 +1,17 @@
 {
   app: {
+    domain: "fiskefriends.org",
+    mounts: {
+      auth: "auth",
+      donations: "donate",
+      members: "members",
+      planning: "plan",
+    },
+    link_salt: "link-salt",
     password_salt: "password-salt",
     port: 3000,
+    protocol: "https",
+    timezone: "America/New_York",
   },
   session: {
     secret: null,

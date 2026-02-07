@@ -1,0 +1,22 @@
+
+<h1>Log In</h1>
+
+{{#if error_message}}
+<div class="authentication-error-message">
+  {{ error_message }}
+</div>
+{{/if}}
+
+<form class="form" method="post" action="/{{ mounts.auth }}/login">
+  <input type="hidden" name="redirect_url" value="{{ redirect_url }}">
+    <div class="form-field">
+      <label for="email">Email</label>
+      <input id="email" type="email" name="email" required>
+    </div>
+    <div class="form-field">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" required>
+    </div>
+
+    <button type="submit">Sign In</button>
+</form>

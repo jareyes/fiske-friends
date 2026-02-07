@@ -28,7 +28,7 @@
             </li>
             {{#if user}}
               <li>Hello, {{user.first_name}}</li>
-              <li><a href="/padlock/logout">Logout</a></li>
+              <li><a href="/{{ mounts.auth }}/logout">Logout</a></li>
             {{/if}}
           </ul>
         </nav>

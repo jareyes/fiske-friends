@@ -1,0 +1,50 @@
+{{#block "style"}}
+.form-field label.inline {
+    display: inline;
+}
+textarea {
+    width: 100%;
+    height: 10rem;
+}
+input[type=text] {
+    width: 100%;
+}
+{{/block}}
+<h1>Edit Event</h1>
+
+<form class="form" method="post" action="/{{ mounts.planning }}/events/save">
+  <input type="hidden" name="event_id" value="{{ event.event_id }}">
+  <div class="form-field">
+    <label for="title">Title</label>
+    <input type="text" name="title" value="{{ event.title }}">
+  </div>
+  <div class="form-field">
+    <label class="inline" for="is_published">Publish Online</label>
+    <input class="inline" type="checkbox" name="is_published" {{#if event.is_published}}checked{{/if}}>
+  </div>
+  <div class="form-field">
+    <label for="start">Start Time</label>
+    <input type="datetime-local" name="start" value="{{ datetime_local event.start}}">
+  </div>
+  <div class="form-field">
+    <label for="end">End Time</label>
+    <input type="datetime-local" name="end" value="{{ datetime_local event.end }}">
+  </div>
+  <div class="form-field">
+    <label for="location">Location</label>
+    <input type="text" name="location" value="{{ event.location }}">
+  </div>
+  <div class="form-field">
+    <label for="summary">Summary</label>
+    <textarea name="summary">{{ event.summary }}</textarea>
+  </div>
+  <div class="form-field">
+    <label for="description">Description</label>
+    <textarea name="description">{{{ event.description }}}</textarea>
+  </div>
+  <div class="form-field">
+    <label for="slug">URL Slug</label>
+    <input type="text" name="slug" value="{{ event.slug }}">
+  </div>
+  <button type="submit">Update</button>
+</form>

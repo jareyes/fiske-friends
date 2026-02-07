@@ -221,3 +221,29 @@ label {
 #donation-payment-form input {
     display: block;
 }
+
+
+/* Forms */
+.form {    
+    display: flex;
+    flex-direction: column;
+    margin-top: 1.5rem;
+}
+.form button {
+    margin-top: 1rem;
+    height: 1.5rem;
+}
+.form-field {
+    margin-top: 1rem;
+}
+.form-field label {
+    font-size: 0.8rem;
+    display: block;
+    margin: 0;
+    font-variant: small-caps;
+}
+.form-field input {
+    height: 1.5rem;
+}
+
+    

@@ -1,0 +1,40 @@
+{{#block "style"}}
+table {
+    width: 700px;
+    margin-top: 2rem;
+    border-spacing: 0.5rem;
+}
+th {
+    font-size: 0.8rem;
+    font-variant: small-caps;
+    font-weight: bold;
+    text-align: left;
+}
+thead {
+    border-bottom: 1px solid black;
+}
+tr {
+    margin-bottom: 0.25rem;
+}
+{{/block}}
+
+<h1>Events</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Date</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each events}}
+    <tr>
+      <td><a href="/{{ ../mounts.planning }}/event/{{ slug }}">{{ title }}</a></td>
+      <td>{{ date start }}</td>
+      <td>{{ hour start }}&ndash;{{ hour end}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>

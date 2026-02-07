@@ -1,0 +1,113 @@
+<div class="import-container">
+    <a href="/members" class="back-link">← Back to Members</a>
+    
+    <h1 style="font-family: 'Cormorant', serif; font-size: 2.5rem; margin-bottom: 1.5rem; color: #333;">Import Members from CSV</h1>
+    
+    {{#if success}}
+        <div class="alert alert-success">
+            <strong>Success!</strong> {{success.message}}
+            {{#if success.count}}
+                <br>Imported {{success.count}} member{{#unless (eq success.count 1)}}s{{/unless}}.
+            {{/if}}
+        </div>
+    {{/if}}
+    
+    {{#if error}}
+        <div class="alert alert-error">
+            <strong>Error:</strong> {{error}}
+        </div>
+    {{/if}}
+    
+    <div class="requirements">
+        <h3>CSV File Requirements</h3>
+        <ul>
+            <li>File must be in CSV format (.csv)</li>
+            <li>Maximum file size: 10MB</li>
+            <li>Required columns: first_name, last_name, email, address_line1, city, state, zipcode, telephone</li>
+            <li>Optional columns: address_line2</li>
+            <li>First row should contain column headers</li>
+        </ul>
+    </div>
+    
+    <form class="import-form" action="/members/import" method="post" enctype="multipart/form-data" id="importForm">
+        <div class="form-group">
+            <label for="csv_file" class="form-label">Select CSV File</label>
+            <input 
+                type="file" 
+                id="csv_file" 
+                name="csv_file" 
+                accept=".csv,text/csv" 
+                required 
+                class="form-input"
+            >
+            <div class="file-info">
+                Choose a CSV file containing member information to import.
+            </div>
+        </div>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div style="text-align: center; margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                Uploading and processing...
+            </div>
+        </div>
+        
+        <button type="submit" class="btn" id="submitBtn">
+            Import CSV File
+        </button>
+    </form>
+    
+    <div class="alert alert-info">
+        <strong>Note:</strong> The import process will validate all data before saving. If any errors occur, no data will be imported and you'll receive a detailed error message.
+    </div>
+</div>
+
+<script>
+document.getElementById('importForm').addEventListener('submit', function(e) {
+    const submitBtn = document.getElementById('submitBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const fileInput = document.getElementById('csv_file');
+    
+    if (!fileInput.files.length) {
+        alert('Please select a CSV file to import.');
+        e.preventDefault();
+        return;
+    }
+    
+    // Show progress and disable button
+    submitBtn.textContent = 'Importing...';
+    submitBtn.disabled = true;
+    progressContainer.style.display = 'block';
+    
+    // Simulate progress (since we can't track actual upload progress easily)
+    let progress = 0;
+    const progressFill = document.getElementById('progressFill');
+    const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) progress = 90;
+        progressFill.style.width = progress + '%';
+    }, 200);
+    
+    // Clean up on form submission
+    setTimeout(() => {
+        clearInterval(interval);
+        progressFill.style.width = '100%';
+    }, 2000);
+});
+
+// File input change handler
+document.getElementById('csv_file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const fileInfo = document.querySelector('.file-info');
+        const fileSize = (file.size / 1024 / 1024).toFixed(2);
+        fileInfo.innerHTML = `Selected: ${file.name} (${fileSize} MB)`;
+        
+        if (file.size > 10 * 1024 * 1024) {
+            fileInfo.innerHTML += '<br><span style="color: #dc3545;">⚠️ File size exceeds 10MB limit</span>';
+        }
+    }
+});
+</script>
