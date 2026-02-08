@@ -26,21 +26,24 @@
             <li><a class="nav-link" href="/#events">Events</a></li>
             <li><a class="nav-link" href="/minutes">Meeting Minutes</a>
             </li>
-            {{#if user}}
-              <li>Hello, {{user.first_name}}</li>
-              <li><a href="/{{ mounts.auth }}/logout">Logout</a></li>
-            {{/if}}
           </ul>
+          {{#if user}}
+            <ul class="nav-admin contained">
+              <li>Hello, {{user.first_name}}</li>
+              <li><a href="/{{ mounts.planning }}/events">Events</a></li>
+              <li><a href="/{{ mounts.auth }}/logout">Logout</a></li>
+            </ul>
+          {{/if}}
         </nav>
     </header>
-    <div class="container-body">
-      <article>
+    <div id="content">
+    <article class="contained">
       {{{ body }}}
-      </article>
-      <footer>
-        <span class="footer-copyright">&copy;2026 Friends of the Fiske Free Library</span>
-        <span class="footer-location">Claremont, NH 03743</span>
-      </footer>
-    </div><!-- end container-body -->
+    </article>
+    <footer class="contained">
+      <span class="footer-copyright">&copy;2026 Friends of the Fiske Free Library</span>
+      <span class="footer-location">Claremont, NH 03743</span>
+    </footer>
+    </div>
   </body>
 </html>
