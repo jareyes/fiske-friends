@@ -59,6 +59,9 @@ article.contained {
     article.contained {
         width: 100%;
     }
+    .home-hero {
+        font-size: 2rem;
+    }
 }
 
 footer.contained {
