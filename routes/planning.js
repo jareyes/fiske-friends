@@ -17,6 +17,9 @@ function list_events(req, res, next, sqlite) {
     }
 }
 
+function create_event(req, res, next) {
+    res.render("planning/event-edit");
+}
 function edit_event(req, res, next, sqlite) {
     try {
         const {slug} = req.params;
@@ -79,6 +82,7 @@ function create(sqlite) {
         "/events",
         middleware.supply(list_events, sqlite),
     );
+    router.get("/events/create", create_event);
     router.post(
         "/events/save",
         middleware.supply(save_event, sqlite),

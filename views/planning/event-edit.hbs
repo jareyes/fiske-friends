@@ -46,5 +46,5 @@ input[type=text] {
     <label for="slug">URL Slug</label>
     <input type="text" name="slug" value="{{ event.slug }}">
   </div>
-  <button type="submit">Update</button>
+  <button type="submit">{{#if event.event_id}}Update{{else}}Create{{/if}}</button>
 </form>
