@@ -10,7 +10,7 @@ const CURRENCY_FORMATTER = new Intl.NumberFormat('en-US', {
 const STRIPE_PUBLISHABLE_KEY = config.get("stripe.publishable_key");
 
 function format_usd(amount) {
-    return CURRENCY_FORMATTER.format(amount); 
+    return CURRENCY_FORMATTER.format(amount);
 }
 
 function checkout(req, res) {
@@ -40,7 +40,7 @@ async function process_payment(req, res) {
 
     // Stripe uses amounts in cents
     const amount_cents = Math.trunc(donation_amount * 100);
-    
+
     // Create a payment intent
     try {
         const payment_intent = await stripe.paymentIntents.create({
@@ -70,7 +70,6 @@ async function process_payment(req, res) {
         if(payment_intent.status === "succeeded") {
             req.session.donation = {
                 amount_usd: format_usd(donation_amount),
-                date: (new Date()).toLocaleString(),
                 confirmation_code: payment_intent.id,
             };
             return res.redirect("/donate/thank-you");
@@ -90,7 +89,7 @@ async function process_payment(req, res) {
         // Determine a user-friendly error message
         let error_message = "An error occurred while processing your payment.";
         let details = "Please try again or use a different payment method.";
-        
+
         if(err.type === "StripeCardError") {
             error_message = "Your card was declined.";
             details = err.message ?? "Please check your card details and try again.";
@@ -112,8 +111,9 @@ async function process_payment(req, res) {
 function confirm_payment(req, res) {
     const donation = req.session.donation ?? {};
     const locals = {
-        title: "Thank you for your donation",
         ...donation,
+        time: new Date(),
+        title: "Thank you for your donation",
     };
     res.render("donations/confirm", locals);
 }
@@ -121,5 +121,5 @@ function confirm_payment(req, res) {
 const router = Router();
 router.post("/checkout", checkout);
 router.post("/pay", process_payment);
-router.get("/thank-you", confirm_payment); 
+router.get("/thank-you", confirm_payment);
 module.exports = router;
