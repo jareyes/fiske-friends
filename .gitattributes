@@ -11,3 +11,11 @@ static/minutes/20250702-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
 static/minutes/20250806-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
 static/minutes/20251001-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
 static/minutes/20251105-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
+static/minutes/20260114-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
+static/minutes/20260204-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
+static/minutes/20260217-fffl-strategic-planning-minutes.pdf filter=lfs diff=lfs merge=lfs -text
+static/minutes/20260304-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
+static/minutes/20260401-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
+static/minutes/20260506-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
+static/minutes/20260603-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
+static/minutes/20260701-fffl-minutes.pdf filter=lfs diff=lfs merge=lfs -text
