@@ -9,13 +9,32 @@
     <link rel="stylesheet" href="/css/reset.css">
     <link rel="stylesheet" href="/css/style.css">
     <title>{{#if @root.title}} {{ @root.title }} | {{/if}}Friends of the Fiske Free Library</title>
+    {{#if og}}
+    <meta name="description" content="{{og.description}}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Friends of the Fiske Free Library">
+    <meta property="og:title" content="{{og.title}}">
+    <meta property="og:description" content="{{og.description}}">
+    <meta property="og:url" content="{{og.url}}">
+    <link rel="canonical" href="{{og.url}}">
+    {{#if og.image}}
+    <meta property="og:image" content="{{og.image}}">
+    <meta property="og:image:width" content="{{og.image_width}}">
+    <meta property="og:image:height" content="{{og.image_height}}">
+    <meta property="og:image:alt" content="{{og.image_alt}}">
+    <meta name="twitter:card" content="summary_large_image">
+    {{/if}}
+    {{/if}}
+    {{#if head}}
+    {{{ head }}}
+    {{/if}}
     {{#if style}}
     <style>
         {{{ style }}}
     </style>
     {{/if}}
   </head>
-  <body>
+  <body{{#if body_class}} class="{{body_class}}"{{/if}}>
 
     <header>
       <h1 class="header-title"><span class="contained"><a href="/">Friends of the Fiske Free Library</a><span></h1>

@@ -4,6 +4,7 @@
     mounts: {
       auth: "auth",
       donations: "donate",
+      events: "events",
       members: "members",
       planning: "plan",
     },
@@ -25,6 +26,16 @@
   },
   sqlite: {
     filepath: "var/fiskefriends.sqlite",
+  },
+  events: {
+    adopt_a_zombie: {
+      // Thrill the World dancers people can adopt, exactly as they should
+      // appear on the page and in Stripe. If empty, donors can still write in
+      // a name or sponsor the whole horde.
+      zombies: [],
+      suggested_usd: [10, 25, 50, 100],
+      minimum_usd: 5,
+    },
   },
   stripe: {
     secret_key: null,
