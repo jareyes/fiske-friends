@@ -2,7 +2,6 @@ const config = require("config");
 const {Router} = require("express");
 const Stripe = require("stripe");
 
-const ADOPT_A_ZOMBIE = config.get("events.adopt_a_zombie");
 const APP = config.get("app");
 const MOUNTS = config.get("app.mounts");
 const STRIPE_PUBLISHABLE_KEY = config.get("stripe.publishable_key");
@@ -21,6 +20,10 @@ const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
     currency: "USD",
 });
 
+const ZOMBIES = ["Liza", "Kim", "Jennifer", "Jill", "Mike", "Mallory", "Livingston", "Mary"];
+const SUGGESTED_USD = [10, 25, 50, 100];
+const MIN_SUGGESTED_USD = 5;
+
 let stripe;
 function get_stripe() {
     // Created lazily so this module can be loaded (e.g. by tests) without keys
@@ -33,7 +36,7 @@ function clean(value, max_length = 200) {
 }
 
 // Turns a submitted form into a sponsorship, or a list of problems
-function parse_sponsorship(body, zombies = ADOPT_A_ZOMBIE.zombies) {
+function parse_sponsorship(body, zombies = ZOMBIES) {
     const errors = [];
 
     // Which zombie?
@@ -65,7 +68,7 @@ function parse_sponsorship(body, zombies = ADOPT_A_ZOMBIE.zombies) {
         ? clean(body.amount_other).replace(/[$,]/g, "")
         : amount_choice;
     const amount_usd = Math.round(Number.parseFloat(amount_raw) * 100) / 100;
-    if(!Number.isFinite(amount_usd) || amount_usd < ADOPT_A_ZOMBIE.minimum_usd) {
+    if(!Number.isFinite(amount_usd) || amount_usd < MIN_SUGGSTED_USD) {
         errors.push(`The minimum adoption is $${ADOPT_A_ZOMBIE.minimum_usd}.`);
     }
     else if(amount_usd > MAX_AMOUNT_USD) {
@@ -106,9 +109,9 @@ function page_locals(overrides = {}) {
     return {
         title: "Adopt a Zombie",
         body_class: "theme-zombie",
-        zombies: ADOPT_A_ZOMBIE.zombies,
-        suggested_amounts: ADOPT_A_ZOMBIE.suggested_usd,
-        minimum_usd: ADOPT_A_ZOMBIE.minimum_usd,
+        zombies: ZOMBIES,
+        suggested_amounts: SUGGESTED_USD,
+        minimum_usd: MIN_SUGGESTED_USD,
         stripe_publishable_key: STRIPE_PUBLISHABLE_KEY,
         og: {
             title: "Adopt a Zombie for the Fiske Free Library",
@@ -129,18 +132,18 @@ function show_form(req, res) {
     // Allow /events/adopt-a-zombie?zombie=Name to preselect a dancer
     const preselect = clean(req.query.zombie, MAX_NAME_LENGTH);
     const form = {};
-    if(ADOPT_A_ZOMBIE.zombies.includes(preselect)) {
+    if(ZOMBIES.includes(preselect)) {
         form.zombie = preselect;
     }
     else if(preselect !== "") {
         form.zombie = "__write_in";
         form.zombie_write_in = preselect;
     }
-    else if(ADOPT_A_ZOMBIE.zombies.length === 0) {
+    else if(ZOMBIES.length === 0) {
         form.zombie = "__write_in";
     }
     // Start with the second suggested amount picked
-    const {suggested_usd} = ADOPT_A_ZOMBIE;
+    const suggested_usd = SUGGESTED_USD;
     form.amount = String(suggested_usd[1] ?? suggested_usd[0] ?? "other");
     res.render("events/adopt-a-zombie", page_locals({form}));
 }
