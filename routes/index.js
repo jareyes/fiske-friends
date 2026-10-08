@@ -9,6 +9,8 @@ const middleware = require("../lib/middleware");
 const planning = require("./planning");
 
 const MOUNTS = config.get("app.mounts");
+// Hide the Adopt a Zombie banner once the dance is over (midnight Eastern, Oct 25)
+const ZOMBIE_PROMO_ENDS_MS = Date.parse("2026-10-25T00:00:00-04:00");
 
 function home(req, res, next, sqlite) {
     try {
@@ -17,7 +19,8 @@ function home(req, res, next, sqlite) {
             sqlite,
             now_ms,
         );
-        const context = {events};
+        const show_zombie_promo = now_ms < ZOMBIE_PROMO_ENDS_MS;
+        const context = {events, show_zombie_promo};
         res.render("home", context);
     }
     catch(err) {

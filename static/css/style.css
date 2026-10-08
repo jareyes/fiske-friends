@@ -267,6 +267,43 @@ label {
     height: 1.5rem;
 }
 
+/* Event promo banner */
+.promo-banner {
+    display: block;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0d0d0f;
+    color: #fff0a7;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.promo-banner img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.promo-banner-cta {
+    display: block;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-align: center;
+}
+.promo-banner:hover,
+.promo-banner:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+.promo-banner:hover .promo-banner-cta {
+    text-decoration: underline;
+}
+.promo-banner:focus-visible {
+    outline: 3px solid var(--ff-color-blue);
+    outline-offset: 3px;
+}
+
 /* Responsive styles */
 @media screen and (min-width: 700px) {
     article.contained {
