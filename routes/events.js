@@ -20,7 +20,7 @@ const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
     currency: "USD",
 });
 
-const ZOMBIES = ["Liza", "Kim", "Jennifer", "Jill", "Mike", "Mallory", "Livingston", "Mary"];
+const ZOMBIES = ["Jennifer", "Jill", "Kim", "Laura", "Livingston", "Liza", "Mallory", "Mary", "Mike", "Renee"];
 const SUGGESTED_USD = [10, 25, 50, 100];
 const MIN_SUGGESTED_USD = 5;
 
