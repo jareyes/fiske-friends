@@ -1,0 +1,128 @@
+{{#block "head"}}
+<link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/adopt-a-zombie.css">
+{{/block}}
+
+<section class="zombie-hero">
+  <img class="zombie-hand zombie-hand-left" src="/img/adopt-a-zombie/hand-left.webp" alt="" width="360" height="218">
+  <img class="zombie-hand zombie-hand-right" src="/img/adopt-a-zombie/hand-right.webp" alt="" width="360" height="233">
+  <h1 class="zombie-title">
+    <span class="zombie-title-kicker">Adopt a</span>
+    <img class="zombie-title-art" src="/img/adopt-a-zombie/zombie-title.webp" alt="Zombie" width="900" height="316">
+  </h1>
+</section>
+
+<section class="zombie-moon" aria-label="Event details">
+  <img src="/img/adopt-a-zombie/moon-zombies.webp" alt="Three cartoon zombies shuffling in front of a full moon" width="1200" height="520">
+  <div class="zombie-event">
+    <span class="zombie-event-name">Thrill the World Dance Event</span>
+    <span>Saturday, October 24, 2026 &middot; 6 PM</span>
+    <span>Fiske Free Library, Claremont NH</span>
+  </div>
+</section>
+
+<p class="zombie-intro">
+  Once a year, zombies around the world rise up to dance <em>Thriller</em> at the same
+  moment. This year, Claremont's undead are dancing for the library. Pick a dancer,
+  make a gift, and your zombie shambles on your behalf. Every dollar supports the
+  Fiske Free Library through the Friends.
+</p>
+
+<form id="adopt" class="zombie-form" action="/{{mounts.events}}/adopt-a-zombie" method="post" novalidate>
+  {{#if errors}}
+  <div class="zombie-errors" role="alert" tabindex="-1">
+    <strong>Uh oh, that didn't go through.</strong>
+    <ul>
+      {{#each errors}}<li>{{this}}</li>{{/each}}
+    </ul>
+  </div>
+  {{/if}}
+
+  <fieldset class="zombie-step">
+    <legend><span class="zombie-step-number">1</span> Pick your zombie</legend>
+    <div class="zombie-choices">
+      {{#each zombies}}
+      <label class="zombie-choice">
+        <input type="radio" name="zombie" value="{{this}}" required{{#if (eq this @root.form.zombie)}} checked{{/if}}>
+        <span>{{this}}</span>
+      </label>
+      {{/each}}
+      <label class="zombie-choice">
+        <input type="radio" name="zombie" value="__write_in" required{{#if (eq "__write_in" form.zombie)}} checked{{/if}}>
+        <span>{{#if zombies}}Someone else{{else}}A dancer by name{{/if}}</span>
+      </label>
+      <label class="zombie-choice">
+        <input type="radio" name="zombie" value="__horde" required{{#if (eq "__horde" form.zombie)}} checked{{/if}}>
+        <span>The whole horde</span>
+      </label>
+    </div>
+    <div class="zombie-field" id="zombie-write-in-field">
+      <label for="zombie-write-in">Your zombie's name</label>
+      <input id="zombie-write-in" name="zombie_write_in" type="text" maxlength="80" autocomplete="off" placeholder="e.g. Aunt Linda" value="{{form.zombie_write_in}}">
+    </div>
+  </fieldset>
+
+  <fieldset class="zombie-step">
+    <legend><span class="zombie-step-number">2</span> Choose your gift</legend>
+    <div class="zombie-amounts">
+      {{#each suggested_amounts}}
+      <label class="zombie-choice zombie-amount">
+        <input type="radio" name="amount" value="{{this}}" required{{#if (eq this @root.form.amount)}} checked{{/if}}>
+        <span>${{this}}</span>
+      </label>
+      {{/each}}
+      <label class="zombie-choice zombie-amount">
+        <input type="radio" name="amount" value="other" required{{#if (eq "other" form.amount)}} checked{{/if}}>
+        <span>Other</span>
+      </label>
+    </div>
+    <div class="zombie-field" id="amount-other-field">
+      <label for="amount-other">Amount (minimum ${{minimum_usd}})</label>
+      <div class="zombie-money">
+        <span aria-hidden="true">$</span>
+        <input id="amount-other" name="amount_other" type="number" inputmode="decimal" min="{{minimum_usd}}" step="0.01" value="{{form.amount_other}}">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="zombie-step">
+    <legend><span class="zombie-step-number">3</span> Your details</legend>
+    <div class="zombie-row">
+      <div class="zombie-field">
+        <label for="first-name">First name</label>
+        <input id="first-name" name="first_name" type="text" autocomplete="given-name" required value="{{form.first_name}}">
+      </div>
+      <div class="zombie-field">
+        <label for="last-name">Last name</label>
+        <input id="last-name" name="last_name" type="text" autocomplete="family-name" required value="{{form.last_name}}">
+      </div>
+    </div>
+    <div class="zombie-field">
+      <label for="email">Email <small>(for your receipt)</small></label>
+      <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required value="{{form.email}}">
+    </div>
+    <div class="zombie-field">
+      <label for="card-element">Card</label>
+      <div id="card-element" class="zombie-card"></div>
+      <div id="card-errors" class="zombie-card-errors" role="alert"></div>
+    </div>
+  </fieldset>
+
+  <noscript>
+    <p class="zombie-errors">Card payments need JavaScript turned on. Sorry about that!</p>
+  </noscript>
+
+  <button class="zombie-submit" type="submit">
+    <span id="submit-label">Adopt a zombie</span>
+  </button>
+  <p class="zombie-fine-print">
+    Payments are processed securely by Stripe. The Friends of the Fiske Free Library is a
+    nonprofit and your gift is tax-deductible.
+  </p>
+</form>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  const stripe_publishable_key = "{{stripe_publishable_key}}";
+</script>
+<script src="/js/adopt-a-zombie.js"></script>

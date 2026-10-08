@@ -1,0 +1,42 @@
+{{#block "head"}}
+<link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/adopt-a-zombie.css">
+{{/block}}
+
+<section class="zombie-hero zombie-thanks">
+  <img class="zombie-hand zombie-hand-left" src="/img/adopt-a-zombie/hand-left.webp" alt="" width="360" height="218">
+  <img class="zombie-hand zombie-hand-right" src="/img/adopt-a-zombie/hand-right.webp" alt="" width="360" height="233">
+  <h1 class="zombie-title">
+    <span class="zombie-title-kicker">It's alive!</span>
+  </h1>
+  <p class="zombie-tagline">
+    <span>You adopted</span>
+    <strong>{{#if is_horde}}the whole horde{{else}}{{zombie}}{{/if}}</strong>
+    <span>Thank you for supporting<br>the Fiske Free Library!</span>
+  </p>
+</section>
+
+<section class="zombie-moon" aria-label="Event details">
+  <img src="/img/adopt-a-zombie/moon-zombies.webp" alt="Three cartoon zombies shuffling in front of a full moon" width="1200" height="520">
+  <div class="zombie-event">
+    <span class="zombie-event-name">Come see them dance</span>
+    <span>Saturday, October 24, 2026 &middot; 6 PM</span>
+    <span>Fiske Free Library, Claremont NH</span>
+  </div>
+</section>
+
+<div class="zombie-receipt">
+  <h2>Your receipt</h2>
+  <dl>
+    <dt>Zombie</dt><dd>{{zombie}}</dd>
+    <dt>Amount</dt><dd>{{amount_usd}}</dd>
+    <dt>Date</dt><dd>{{date time}}</dd>
+    <dt>Confirmation</dt><dd class="zombie-code">{{confirmation_code}}</dd>
+  </dl>
+  <p>A receipt is also on its way to your inbox.</p>
+</div>
+
+<div class="zombie-actions">
+  <a class="zombie-submit" href="/{{mounts.events}}/adopt-a-zombie">Adopt another zombie</a>
+  <a class="zombie-link" href="/">Back to the Friends home page</a>
+</div>

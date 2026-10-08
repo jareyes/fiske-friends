@@ -1,0 +1,428 @@
+/* Adopt a Zombie (Thrill the World 2026)
+ * Colors and art come from the event poster. Scoped to body.theme-zombie so
+ * none of this leaks into the rest of the site.
+ */
+.theme-zombie {
+    --z-bg: #212025;
+    --z-surface: #322f36;
+    --z-line: #4b4750;
+    --z-cream: #fff0a7;
+    --z-cream-dim: #d8cf9c;
+    --z-moon-shade: #dece7b;
+    --z-orange: #e0702a;
+    --z-teal: #6fb3a0;
+    --z-ink: #0d0d0f;
+    --z-error: #ff9d8a;
+    --z-display: "Creepster", "Impact", fantasy;
+    background: var(--z-bg);
+}
+.theme-zombie #content {
+    background: var(--z-bg) url("/img/adopt-a-zombie/texture.jpg") center top / 1600px auto repeat;
+    color: #f4f1e6;
+}
+.theme-zombie footer {
+    color: var(--z-cream-dim);
+}
+.theme-zombie article a,
+.theme-zombie footer a {
+    color: var(--z-cream);
+}
+.theme-zombie article.contained {
+    padding-top: 0;
+}
+
+/* Hero */
+.zombie-hero {
+    position: relative;
+    margin: 0 -1rem;
+    padding: 2.25rem 1rem 1rem;
+    text-align: center;
+    overflow: hidden;
+}
+.zombie-hand {
+    position: absolute;
+    top: 0.75rem;
+    width: clamp(78px, 22vw, 150px);
+    height: auto;
+    pointer-events: none;
+}
+.zombie-hand-left {
+    left: 0;
+    animation: zombie-reach-left 4s ease-in-out infinite;
+}
+.zombie-hand-right {
+    right: 0;
+    animation: zombie-reach-right 4s ease-in-out infinite;
+}
+@keyframes zombie-reach-left {
+    0%, 100% { transform: translateX(-12%) rotate(0deg); }
+    50% { transform: translateX(0) rotate(4deg); }
+}
+@keyframes zombie-reach-right {
+    0%, 100% { transform: translateX(12%) rotate(0deg); }
+    50% { transform: translateX(0) rotate(-4deg); }
+}
+.zombie-title {
+    margin: 0;
+    line-height: 1;
+}
+.zombie-title-kicker {
+    display: block;
+    font-family: var(--z-display);
+    font-weight: 400;
+    font-size: clamp(2.25rem, 10vw, 3.5rem);
+    letter-spacing: 0.06em;
+    color: var(--z-orange);
+    text-transform: uppercase;
+}
+.zombie-title-art {
+    display: block;
+    width: min(88%, 460px);
+    height: auto;
+    margin: 0.25rem auto 0;
+}
+.zombie-tagline {
+    margin: 1rem 0 0;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.zombie-tagline span,
+.zombie-tagline strong {
+    display: block;
+}
+.zombie-tagline strong {
+    margin-bottom: 0.6rem;
+    font-family: var(--z-display);
+    font-weight: 400;
+    font-size: clamp(1.45rem, 7vw, 2rem);
+    letter-spacing: 0.06em;
+    color: #fff;
+}
+.zombie-jump {
+    display: inline-block;
+    margin-top: 1.25rem;
+    padding: 0.6rem 1.5rem;
+    border-radius: 10px;
+    background: var(--z-cream);
+    color: var(--z-ink) !important;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+.zombie-jump:hover,
+.zombie-jump:focus-visible {
+    background: #fff;
+}
+
+/* Moon and event band */
+.zombie-moon {
+    margin: 1.5rem -1rem 0;
+}
+.zombie-moon img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.zombie-event {
+    background: var(--z-ink);
+    padding: 1rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    line-height: 1.5;
+}
+.zombie-event span {
+    display: block;
+}
+.zombie-event-name {
+    font-family: var(--z-display);
+    font-size: 1.6rem;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    color: #fff;
+}
+
+.zombie-intro {
+    margin: 1.75rem 0;
+    font-size: 1.05rem;
+    line-height: 1.65;
+}
+.zombie-intro em {
+    font-style: italic;
+    color: var(--z-cream);
+}
+
+/* Form */
+.zombie-form {
+    margin-bottom: 2.5rem;
+}
+.zombie-step {
+    border: 1px solid var(--z-line);
+    border-radius: 14px;
+    background: rgba(20, 19, 23, 0.6);
+    padding: 1.25rem 1rem 1.25rem;
+    margin: 0 0 1.25rem;
+    min-width: 0;
+}
+.zombie-step legend {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0 0.4rem;
+    font-family: var(--z-display);
+    font-size: 1.6rem;
+    letter-spacing: 0.04em;
+    color: var(--z-cream);
+}
+.zombie-step-number {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--z-orange);
+    color: var(--z-ink);
+    font-family: "Open Sans", sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+.zombie-choices,
+.zombie-amounts {
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+}
+.zombie-amounts {
+    grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+}
+.zombie-choice {
+    position: relative;
+    margin: 0;
+    cursor: pointer;
+}
+.zombie-choice input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+}
+.zombie-choice span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.25rem;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--z-line);
+    border-radius: 10px;
+    background: var(--z-surface);
+    color: #f4f1e6;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.25;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.zombie-amount span {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+.zombie-choice:hover span {
+    border-color: var(--z-teal);
+}
+.zombie-choice input:focus-visible + span {
+    outline: 3px solid var(--z-teal);
+    outline-offset: 2px;
+}
+.zombie-choice input:checked + span {
+    border-color: var(--z-cream);
+    background: var(--z-cream);
+    color: var(--z-ink);
+    transform: rotate(-1.5deg);
+}
+
+.zombie-row {
+    display: grid;
+    gap: 0 0.75rem;
+    grid-template-columns: 1fr 1fr;
+}
+.zombie-field {
+    margin-top: 1rem;
+}
+.zombie-step > .zombie-row:first-of-type .zombie-field {
+    margin-top: 0;
+}
+.zombie-field label {
+    display: block;
+    margin: 0 0 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--z-cream-dim);
+}
+.zombie-field label small {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.zombie-field input,
+.zombie-card {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 0.8rem;
+    border: 2px solid var(--z-line);
+    border-radius: 10px;
+    background: var(--z-ink);
+    color: #fff;
+    font: inherit;
+    font-size: 1rem; /* 16px keeps iOS from zooming on focus */
+}
+.zombie-card {
+    padding-top: 0.85rem;
+}
+.zombie-field input:focus,
+.zombie-card.StripeElement--focus {
+    outline: none;
+    border-color: var(--z-teal);
+}
+.zombie-field input[aria-invalid="true"],
+.zombie-card.StripeElement--invalid {
+    border-color: var(--z-error);
+}
+.zombie-money {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+.zombie-card-errors {
+    min-height: 1.25rem;
+    margin-top: 0.4rem;
+    color: var(--z-error);
+    font-size: 0.9rem;
+}
+.zombie-errors {
+    margin: 0 0 1.25rem;
+    padding: 1rem;
+    border: 2px solid var(--z-error);
+    border-radius: 12px;
+    background: rgba(255, 120, 100, 0.12);
+    color: #ffe2dc;
+}
+.zombie-errors ul {
+    margin: 0.5rem 0 0 1.25rem;
+    list-style: disc;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+.zombie-submit {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: none;
+    border-radius: 12px;
+    background: var(--z-orange);
+    color: var(--z-ink) !important;
+    font-family: var(--z-display);
+    font-size: 1.75rem;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #8f3f12;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.zombie-submit:hover {
+    background: #ee8240;
+}
+.zombie-submit:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #8f3f12;
+}
+.zombie-submit:disabled {
+    background: #8a7f73;
+    box-shadow: none;
+    cursor: wait;
+}
+.zombie-fine-print {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--z-cream-dim);
+    text-align: center;
+}
+
+/* Thank you page */
+.zombie-receipt {
+    margin: 2rem 0 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--z-line);
+    border-radius: 14px;
+    background: rgba(20, 19, 23, 0.6);
+}
+.theme-zombie .zombie-receipt h2 {
+    margin: 0 0 1rem;
+    padding: 0;
+    border: none;
+    font-family: var(--z-display);
+    font-weight: 400;
+    font-size: 1.75rem;
+    color: var(--z-cream);
+}
+.zombie-receipt dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem 1rem;
+}
+.zombie-receipt dt {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--z-cream-dim);
+}
+.zombie-code {
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+    word-break: break-all;
+}
+.zombie-actions {
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+    margin-bottom: 2.5rem;
+}
+.zombie-link {
+    font-weight: 600;
+}
+
+@media (min-width: 700px) {
+    .zombie-step {
+        padding: 1.5rem;
+    }
+}
+@media (max-width: 380px) {
+    .zombie-row {
+        grid-template-columns: 1fr;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .zombie-hand {
+        animation: none;
+    }
+    .zombie-choice input:checked + span {
+        transform: none;
+    }
+}

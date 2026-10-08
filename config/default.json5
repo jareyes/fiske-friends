@@ -4,6 +4,7 @@
     mounts: {
       auth: "auth",
       donations: "donate",
+      events: "event",
       members: "members",
       planning: "plan",
     },

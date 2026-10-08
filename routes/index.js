@@ -2,6 +2,7 @@ const auth = require("./auth");
 const config = require("config");
 const donations = require("./donations");
 const Event = require("../lib/event");
+const events = require("./events");
 const {Router} = require("express");
 const members = require("./members");
 const middleware = require("../lib/middleware");
@@ -36,6 +37,7 @@ function create(sqlite) {
     );
     router.use(`/${MOUNTS.auth}`, auth.create(sqlite));
     router.use(`/${MOUNTS.donations}`, donations);
+    router.use(`/${MOUNTS.events}`, events.create());
     router.use(
         `/${MOUNTS.members}`,
         members.create(sqlite),
