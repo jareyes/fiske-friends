@@ -68,7 +68,7 @@ function parse_sponsorship(body, zombies = ZOMBIES) {
         ? clean(body.amount_other).replace(/[$,]/g, "")
         : amount_choice;
     const amount_usd = Math.round(Number.parseFloat(amount_raw) * 100) / 100;
-    if(!Number.isFinite(amount_usd) || amount_usd < MIN_SUGGSTED_USD) {
+    if(!Number.isFinite(amount_usd) || amount_usd < MIN_SUGGESTED_USD) {
         errors.push(`The minimum adoption is $${ADOPT_A_ZOMBIE.minimum_usd}.`);
     }
     else if(amount_usd > MAX_AMOUNT_USD) {
