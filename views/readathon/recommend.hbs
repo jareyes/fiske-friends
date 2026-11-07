@@ -1,0 +1,39 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head">
+  <h1 class="ra-h1">Recommend a book</h1>
+  <p class="ra-lede-dark">Something you read this month, or any time. Only the title is needed.</p>
+</header>
+
+<form class="ra-form" action="{{base}}/books/recommend" method="post" novalidate>
+  {{> readathon-errors}}
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">1</span> The book</legend>
+    <label class="ra-field"><span>Title</span><input name="title" type="text" maxlength="150" required value="{{form.title}}" placeholder="e.g. Ox-Cart Man"></label>
+    <label class="ra-field"><span>Author <small>(if you know it)</small></span><input name="author" type="text" maxlength="100" value="{{form.author}}" placeholder="e.g. Donald Hall"></label>
+  </fieldset>
+
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">2</span> Who would love it?</legend>
+    <div class="ra-choices ra-choices-wrap">
+      {{#each audiences}}
+      <label class="ra-choice ra-choice-small"><input type="radio" name="audience" value="{{name}}"{{#if checked}} checked{{/if}}><span>{{name}}</span></label>
+      {{/each}}
+    </div>
+    <label class="ra-field">
+      <span>Why? <small>(a sentence is plenty)</small></span>
+      <textarea name="why" rows="3" maxlength="280" placeholder="It made me laugh out loud on the bus.">{{form.why}}</textarea>
+    </label>
+  </fieldset>
+
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">3</span> Your name</legend>
+    <label class="ra-field"><span>First name or nickname</span><input name="recommended_by" type="text" maxlength="60" value="{{form.recommended_by}}" placeholder="e.g. Katie, age 8"></label>
+    <label class="ra-check"><input type="checkbox" name="read_during" value="1"{{#if form.read_during}} checked{{/if}}><span>I read it during the read-a-thon</span></label>
+    <input type="hidden" name="list" value="community">
+  </fieldset>
+
+  <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">Send my recommendation</button>
+  <p class="ra-fine">A Friends volunteer reads every suggestion before it goes up, to keep the lists friendly for all ages. We only ever show a first name.</p>
+</form>

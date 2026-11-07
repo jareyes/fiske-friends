@@ -12,6 +12,7 @@ const {DatabaseSync} = require("node:sqlite");
 const HBS = hbs.create({
     extname: "hbs",
     defaultLayout: "base",
+    partialsDir: path.join(__dirname, "..", "views", "partials"),
     helpers: template,
 });
 const PORT = config.get("app.port");

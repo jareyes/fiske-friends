@@ -1,0 +1,59 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head">
+  <h1 class="ra-h1">How it works</h1>
+  <p class="ra-lede-dark">Read anything, count your minutes, earn prizes. That's it!</p>
+</header>
+
+<div class="ra-faq">
+  <details open>
+    <summary>What counts as reading?</summary>
+    <p>All of it: novels, picture books, audiobooks, comics, magazines, the newspaper, recipes, reading aloud to someone, and being read to. We count minutes, so every kind of book is worth the same.</p>
+  </details>
+  <details>
+    <summary>How do I sign up?</summary>
+    <p><b>Online:</b> tap <a href="{{base}}/join">Join</a>, add everyone in your home, and enter a grown-up's email. <b>At the library:</b> ask the front desk for a free paper kit.</p>
+  </details>
+  <details>
+    <summary>How do I use the timer?</summary>
+    <ol>
+      <li>Go to <b>My reading</b> and tap <b>Start reading</b>.</li>
+      <li>Tap <b>Start</b>. You can lock your phone; we'll remember.</li>
+      <li>Tap <b>I'm done</b> when you finish. Your bookmark fills in right away.</li>
+    </ol>
+  </details>
+  <details>
+    <summary>I forgot to use the timer</summary>
+    <p>Tap <b>I already read</b> and pick how many minutes. You can add earlier days too.</p>
+  </details>
+  <details>
+    <summary>How do I log for my kids?</summary>
+    <p>Everyone you added gets their own page. Tap <b>Switch reader</b> to change who's reading. Reading aloud together? Log it for each of you.</p>
+  </details>
+  <details>
+    <summary>How do teams work?</summary>
+    <p>Anyone can <a href="{{base}}/teams/new">start a team</a> with coworkers, classmates, friends, or a club, and pick a goal like 25 hours. Share the team link and everyone's minutes add up toward it. Each reader can be on one team, so kids can be on their class team while grown-ups read with coworkers.</p>
+  </details>
+  <details>
+    <summary>No computer or phone?</summary>
+    <p>The paper kit has everything: a 31-day log, a bookmark, and a bingo card. Bring your log to the desk each week and a volunteer adds your minutes. You get every prize, same as everyone.</p>
+  </details>
+  <details>
+    <summary>Where do I get my prizes?</summary>
+    <p><b>Weekly stickers:</b> at the library desk, for any week you read. <b>Bingo prizes:</b> show your card at the desk. <b>Enamel pin:</b> when your bookmark is full (10 hours).</p>
+  </details>
+  <details>
+    <summary>Does it cost anything?</summary>
+    <p>No. Everything is free, including the finale party.</p>
+  </details>
+  <details>
+    <summary>An event got snowed out</summary>
+    <p>Check this site or the Friends Facebook page for the new date. You can swap an event bingo square for any other square.</p>
+  </details>
+</div>
+
+<aside class="ra-cta-card">
+  <div><h2 class="ra-h2">Still stuck?</h2><p>Ask at the Fiske Free Library front desk. Volunteers are happy to help.</p></div>
+  {{#unless signed_in}}<a class="ra-btn ra-btn-lamp" href="{{base}}/join">Join now</a>{{/unless}}
+</aside>

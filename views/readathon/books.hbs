@@ -1,0 +1,45 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head">
+  <h1 class="ra-h1">Find something to read</h1>
+  <p class="ra-lede-dark">{{#if list}}{{list.blurb}}{{else}}Lists from library staff, kids, and readers like you.{{/if}}</p>
+</header>
+
+<nav class="ra-list-chips" aria-label="Book lists">
+  <a href="{{base}}/books"{{#if all_current}} aria-current="page"{{/if}}>All</a>
+  {{#each lists}}<a href="{{@root.base}}/books?list={{id}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
+</nav>
+
+<form class="ra-search" action="{{base}}/books" method="get" role="search">
+  {{#if list}}<input type="hidden" name="list" value="{{list.id}}">{{/if}}
+  <label class="ra-visually-hidden" for="book-q">Search books</label>
+  <input id="book-q" name="q" type="search" value="{{query}}" placeholder="Search by title or author">
+  <button class="ra-btn ra-btn-ghost" type="submit">Search</button>
+</form>
+
+{{#if books}}
+<ul class="ra-books-list">
+  {{#each books}}
+  <li class="ra-book-card">
+    <span class="ra-spine s{{color}}" aria-hidden="true">{{initial}}</span>
+    <div>
+      <h2>{{title}}</h2>
+      {{#if author}}<p class="ra-by">{{author}}</p>{{/if}}
+      {{#if why}}<p class="ra-why">&ldquo;{{why}}&rdquo;</p>{{/if}}
+      <p class="ra-picked">Picked by {{recommended_by}}{{#if audience}} &middot; {{audience}}{{/if}}{{#if read_during}} &middot; read in January{{/if}}</p>
+    </div>
+  </li>
+  {{/each}}
+</ul>
+{{else}}
+<p class="ra-card ra-center">No books match that yet. Try another list, or recommend one!</p>
+{{/if}}
+
+<aside class="ra-cta-card">
+  <div>
+    <h2 class="ra-h2">Loved a book?</h2>
+    <p>Tell your neighbors about it. Kids can recommend too!</p>
+  </div>
+  <a class="ra-btn ra-btn-lamp" href="{{base}}/books/recommend">Recommend a book</a>
+</aside>

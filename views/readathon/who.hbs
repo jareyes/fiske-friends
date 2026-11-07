@@ -1,0 +1,20 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head ra-center">
+  {{#if welcome}}<p class="ra-badge">You're in!</p>{{/if}}
+  <h1 class="ra-h1">Who's reading?</h1>
+</header>
+
+<ul class="ra-who">
+  {{#each readers}}
+  <li>
+    <a class="ra-who-card" href="{{@root.base}}/r/{{reader_id}}">
+      <span class="ra-avatar ra-avatar-big a{{color}}" aria-hidden="true">{{initial}}</span>
+      <strong>{{name}}</strong>
+      <span class="ra-muted">{{#if minutes_today}}{{minutes_today}} min today{{else}}Not yet today{{/if}}</span>
+    </a>
+  </li>
+  {{/each}}
+</ul>
+<p class="ra-fine ra-center"><a href="{{base}}/sign-out">Sign out</a></p>

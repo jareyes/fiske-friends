@@ -1,0 +1,25 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<section class="ra-yay">
+  <div class="ra-confetti" aria-hidden="true">{{#each bookmark.cells}}<i></i>{{/each}}</div>
+  <p class="ra-yay-plus">+{{added}} <small>minutes</small></p>
+  <h1 class="ra-h1">{{#if pin}}You filled your bookmark!{{else}}{{#if new_books}}You colored in {{new_books}} {{#if new_books_plural}}books{{else}}book{{/if}}!{{else}}Nice reading, {{reader.name}}!{{/if}}{{/if}}</h1>
+  {{#if pin}}<p class="ra-win">Pick up your enamel pin at the library desk.</p>{{/if}}
+  {{#unless pin}}{{#if goal_met}}<p class="ra-lede-dark">That's today's goal done.</p>{{/if}}{{/unless}}
+</section>
+
+<div class="ra-yay-bookmark">{{> readathon-bookmark}}</div>
+{{#unless pin}}<p class="ra-center ra-next"><b>{{stats.minutes_to_next_book}} more minutes</b> until the next book</p>{{/unless}}
+{{#if team}}
+<a class="ra-team-card ra-team-yay" href="{{base}}/teams/{{team.code}}">
+  <span class="ra-team-card-top"><span class="ra-kicker-dark">You helped your team</span><strong>{{team.name}}</strong></span>
+  <span class="ra-meter ra-meter-sky" aria-hidden="true"><span style="width: {{team.percent}}%"></span></span>
+  <span class="ra-muted">{{#if team.reached}}Team goal reached! {{team.total_label}} read together.{{else}}{{team.percent}}% of the goal &middot; {{team.to_go_label}} to go{{/if}}</span>
+</a>
+{{/if}}
+
+<div class="ra-actions ra-actions-row">
+  <a class="ra-btn ra-btn-lamp ra-btn-big" href="{{reader_url}}">Done</a>
+  <a class="ra-btn ra-btn-ghost" href="{{reader_url}}/bingo">Check my bingo card</a>
+</div>

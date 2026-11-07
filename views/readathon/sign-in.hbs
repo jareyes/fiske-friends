@@ -1,0 +1,33 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head">
+  <h1 class="ra-h1">Welcome back</h1>
+</header>
+
+{{#if sent}}
+<div class="ra-card ra-center">
+  <span class="ra-step-icon ra-icon-mail" aria-hidden="true"></span>
+  <h2 class="ra-h2">Check your email</h2>
+  <p>If <strong>{{email}}</strong> is signed up, we just sent a sign-in link. It works for 7 days.</p>
+  {{#if demo_link}}
+  <p class="ra-demo-box">Demo only, since email isn't set up yet: <a href="{{demo_link}}">open the sign-in link</a></p>
+  {{/if}}
+  <p class="ra-muted">Nothing there? Check spam, or ask at the library desk.</p>
+</div>
+{{else}}
+{{#if expired}}
+<div class="ra-errors" role="alert"><strong>That link has expired or isn't right.</strong> Enter your email and we'll send a new one.</div>
+{{/if}}
+<form class="ra-form" action="{{base}}/sign-in" method="post">
+  <div class="ra-step">
+    <p class="ra-help">Enter the email you used to join and we'll send you a link. No password needed.</p>
+    <label class="ra-field">
+      <span>Email</span>
+      <input name="email" type="email" inputmode="email" autocomplete="email" required placeholder="you@example.com">
+    </label>
+  </div>
+  <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">Send my link</button>
+  <p class="ra-fine">New here? <a href="{{base}}/join">Join the read-a-thon</a>.</p>
+</form>
+{{/if}}

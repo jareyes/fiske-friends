@@ -1,0 +1,82 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head">
+  <h1 class="ra-h1">Join the read-a-thon</h1>
+  <p class="ra-lede-dark">Three quick steps. It's free.</p>
+</header>
+{{#if team}}<p class="ra-flash" role="status">You're invited to <b>{{team.name}}</b>! Sign up first, then pick who joins the team.</p>{{/if}}
+
+<form class="ra-form" action="{{base}}/join" method="post" novalidate data-join>
+  {{> readathon-errors}}
+  {{#if team}}<input type="hidden" name="team" value="{{team.code}}">{{/if}}
+
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">1</span> Who's reading?</legend>
+    <p class="ra-help">Add everyone in your home who wants to join. Kids only need a first name.</p>
+    <div class="ra-readers" data-readers>
+      {{#each rows}}
+      <div class="ra-reader-row" data-reader-row>
+        <label class="ra-field">
+          <span>Reader {{number}} first name</span>
+          <input name="readers[{{i}}][name]" type="text" maxlength="40" autocomplete="off" value="{{name}}" placeholder="{{#if (eq i 0)}}e.g. Renee{{else}}e.g. Katie{{/if}}">
+        </label>
+        <div class="ra-choices ra-choices-3" role="radiogroup" aria-label="Reader {{number}} is a">
+          {{#each @root.ages}}
+          <label class="ra-choice">
+            <input type="radio" name="readers[{{../i}}][age_group]" value="{{id}}"{{#if (eq id ../age_group)}} checked{{/if}}>
+            <span>{{name}}</span>
+          </label>
+          {{/each}}
+        </div>
+      </div>
+      {{/each}}
+    </div>
+    {{#if can_add}}
+    <button class="ra-btn ra-btn-ghost" type="submit" name="add_reader" value="1" data-add-reader>+ Add another reader</button>
+    {{/if}}
+  </fieldset>
+
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">2</span> Pick a daily goal</legend>
+    <p class="ra-help">Pick something easy. You can change it any time.</p>
+    <div class="ra-choices ra-choices-2">
+      {{#each goals}}
+      <label class="ra-choice ra-choice-tall">
+        <input type="radio" name="goal" value="{{minutes}}"{{#if (eq minutes @root.form.goal)}} checked{{/if}}>
+        <span><b>{{name}}</b><small>{{hint}}</small></span>
+      </label>
+      {{/each}}
+    </div>
+  </fieldset>
+
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">3</span> A grown-up's email</legend>
+    <p class="ra-help">So you can sign back in on any device. We won't share it.</p>
+    <label class="ra-field">
+      <span>Email</span>
+      <input name="email" type="email" inputmode="email" autocomplete="email" required value="{{form.email}}" placeholder="you@example.com">
+    </label>
+    <label class="ra-check">
+      <input type="checkbox" name="wants_updates" value="1"{{#if form.wants_updates}} checked{{/if}}>
+      <span>Send me a weekly cheer and news from the Friends</span>
+    </label>
+  </fieldset>
+
+  <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">Let's read!</button>
+  <p class="ra-fine">No computer? Pick up a paper kit at the library desk instead. Already joined? <a href="{{base}}/sign-in">Sign in</a>.</p>
+</form>
+
+<template id="ra-reader-template">
+  <div class="ra-reader-row" data-reader-row>
+    <label class="ra-field">
+      <span>Reader __N__ first name</span>
+      <input name="readers[__I__][name]" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Katie">
+    </label>
+    <div class="ra-choices ra-choices-3" role="radiogroup" aria-label="Reader __N__ is a">
+      {{#each ages}}
+      <label class="ra-choice"><input type="radio" name="readers[__I__][age_group]" value="{{id}}"{{#if (eq id "kid")}} checked{{/if}}><span>{{name}}</span></label>
+      {{/each}}
+    </div>
+  </div>
+</template>

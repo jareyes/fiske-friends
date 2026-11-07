@@ -1,0 +1,28 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+
+<section class="ra-timer" data-timer data-reader="{{reader.reader_id}}" data-day="{{today}}">
+  <a class="ra-timer-back" href="{{reader_url}}">&larr; Back</a>
+  {{#if is_open}}
+  <p class="ra-timer-who">{{reader.name}} is reading</p>
+  <div class="ra-timer-ring" aria-hidden="true"><div class="ra-timer-moon"></div></div>
+  <p class="ra-timer-face" data-face role="timer" aria-live="off">0:00</p>
+  <p class="ra-timer-note" data-note aria-live="polite">Press start, then enjoy your book.</p>
+
+  <div class="ra-timer-controls" data-controls hidden>
+    <button class="ra-btn ra-btn-lamp ra-btn-big" type="button" data-toggle>Start</button>
+    <form action="{{reader_url}}/log" method="post" data-save hidden>
+      <input type="hidden" name="source" value="timer">
+      <input type="hidden" name="day" value="{{today}}">
+      <input type="hidden" name="minutes" value="" data-minutes>
+      <button class="ra-btn ra-btn-snow ra-btn-big" type="submit">I'm done</button>
+    </form>
+  </div>
+  <p class="ra-timer-tip" data-tip hidden>You can close this page or lock your phone. We'll remember when you started.</p>
+  <noscript>
+    <p class="ra-timer-note">The timer needs JavaScript. You can still <a href="{{reader_url}}/log">type in your minutes</a>.</p>
+  </noscript>
+  {{else}}
+  <p class="ra-timer-who">The timer opens on January 1.</p>
+  <a class="ra-btn ra-btn-lamp" href="{{base}}/books">Find a book for day one</a>
+  {{/if}}
+</section>

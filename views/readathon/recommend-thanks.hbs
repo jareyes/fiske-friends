@@ -1,0 +1,24 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<section class="ra-yay">
+  <p class="ra-badge">Thank you!</p>
+  <h1 class="ra-h1">Your book is on its way to the list</h1>
+  <p class="ra-lede-dark">A volunteer will check it soon, usually within a day.</p>
+</section>
+
+<div class="ra-book-card ra-book-card-solo">
+  <span class="ra-spine s1" aria-hidden="true">{{initial}}</span>
+  <div>
+    <h2>{{recommendation.title}}</h2>
+    {{#if recommendation.author}}<p class="ra-by">{{recommendation.author}}</p>{{/if}}
+    {{#if recommendation.why}}<p class="ra-why">&ldquo;{{recommendation.why}}&rdquo;</p>{{/if}}
+    <p class="ra-picked">Picked by {{#if recommendation.recommended_by}}{{recommendation.recommended_by}}{{else}}a reader{{/if}}</p>
+  </div>
+</div>
+{{#if signed_in}}<p class="ra-center ra-muted">It also marks the "Recommend a book" square on your bingo card.</p>{{/if}}
+
+<div class="ra-actions ra-actions-row">
+  <a class="ra-btn ra-btn-lamp" href="{{base}}/books/recommend">Recommend another</a>
+  <a class="ra-btn ra-btn-ghost" href="{{base}}/books">Back to book lists</a>
+</div>

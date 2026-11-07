@@ -4,7 +4,8 @@
   "description": "",
   "main": "bin/app.js",
   "scripts": {
-    "test": "NODE_ENV=test node --test"
+    "test": "NODE_ENV=test node --test",
+    "demo:readathon": "node bin/readathon-demo.js"
   },
   "author": "",
   "license": "ISC",

@@ -1,0 +1,88 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+{{#if (eq flash "new")}}<p class="ra-flash" role="status">Your team is ready! Now invite your teammates with the link below.</p>{{/if}}
+{{#if (eq flash "joined")}}<p class="ra-flash" role="status">Welcome to the team!</p>{{/if}}
+
+<header class="ra-team-head">
+  <p class="ra-kicker-dark">Team</p>
+  <h1 class="ra-h1">{{team.name}}</h1>
+</header>
+
+<section class="ra-team-goal" aria-label="Team goal">
+  {{#if team.reached}}
+  <p class="ra-goal-label">Goal reached!</p>
+  {{else}}
+  <p class="ra-goal-label">Team goal</p>
+  {{/if}}
+  <p class="ra-goal-number"><b>{{team.total_hours}}</b> of {{team.goal_label}}</p>
+  <div class="ra-meter ra-meter-lamp" role="img" aria-label="{{team.percent}} percent of the team goal"><span style="width: {{team.percent}}%"></span></div>
+  <p class="ra-muted">{{#if team.reached}}Amazing teamwork. Keep going for a new record!{{else}}{{team.to_go_label}} to go &middot; {{team.read_today}} of {{team.member_count}} read today{{/if}}</p>
+</section>
+
+{{#if on_team}}
+<section class="ra-card ra-share" aria-labelledby="invite-title">
+  <h2 id="invite-title" class="ra-h2">Invite teammates</h2>
+  <p>Send this link to coworkers, classmates, or friends. They'll join the read-a-thon and your team in one go.</p>
+  <div class="ra-share-row">
+    <label class="ra-visually-hidden" for="share-url">Team invite link</label>
+    <input id="share-url" type="text" readonly value="{{invite_url}}" data-share-url>
+    <button class="ra-btn ra-btn-lamp" type="button" data-copy>Copy</button>
+  </div>
+  <p class="ra-muted" data-copy-status role="status"></p>
+</section>
+{{/if}}
+
+{{#if team.members}}
+<section aria-labelledby="members-title">
+  <h2 id="members-title" class="ra-h2">The team</h2>
+  <ul class="ra-members">
+    {{#each team.members}}
+    <li{{#if is_mine}} class="is-mine"{{/if}}>
+      <span class="ra-avatar a{{color}}" aria-hidden="true">{{initial}}</span>
+      <span class="ra-member-name"><b>{{name}}</b>{{#if read_today}}<small class="ra-read-today">read today</small>{{/if}}</span>
+      <span class="ra-member-bar" aria-hidden="true"><span style="width: {{share}}%"></span></span>
+      <span class="ra-member-min">{{minutes}} min</span>
+    </li>
+    {{/each}}
+  </ul>
+  <p class="ra-fine">Every minute counts the same, whether it's a picture book or a long novel.</p>
+</section>
+{{/if}}
+
+{{#if signed_in}}
+  {{#if can_join}}
+  <form class="ra-card ra-join-team" action="{{base}}/teams/{{team.code}}/join" method="post">
+    <h2 class="ra-h2">{{#if on_team}}Add someone else from your home{{else}}Join {{team.name}}{{/if}}</h2>
+    <div class="ra-pick-readers">
+      {{#each readers}}{{#unless on_team}}
+      <label class="ra-pick-reader">
+        <input type="checkbox" name="reader_ids" value="{{reader_id}}"{{#unless other_team}} checked{{/unless}}>
+        <span><span class="ra-avatar a{{color}}" aria-hidden="true">{{initial}}</span><b>{{name}}</b>{{#if other_team}}<small>on {{other_team}}</small>{{/if}}</span>
+      </label>
+      {{/unless}}{{/each}}
+    </div>
+    <button class="ra-btn ra-btn-lamp ra-btn-block" type="submit">Join the team</button>
+  </form>
+  {{/if}}
+  {{#if on_team}}
+  <details class="ra-details">
+    <summary>Leave this team</summary>
+    <form action="{{base}}/teams/{{team.code}}/leave" method="post">
+      <div class="ra-pick-readers">
+        {{#each readers}}{{#if on_team}}
+        <label class="ra-pick-reader"><input type="checkbox" name="reader_ids" value="{{reader_id}}"><span><span class="ra-avatar a{{color}}" aria-hidden="true">{{initial}}</span><b>{{name}}</b></span></label>
+        {{/if}}{{/each}}
+      </div>
+      <button class="ra-btn ra-btn-ghost" type="submit">Leave</button>
+      <p class="ra-fine">Your minutes move with you, so the team total will go down.</p>
+    </form>
+  </details>
+  {{/if}}
+{{else}}
+<aside class="ra-cta-card">
+  <div><h2 class="ra-h2">Read with {{team.name}}</h2><p>Join the read-a-thon (it's free) and you'll be added to this team.</p></div>
+  <a class="ra-btn ra-btn-lamp" href="{{base}}/join?team={{team.code}}">Join the team</a>
+</aside>
+<p class="ra-fine">Already signed up? <a href="{{base}}/sign-in">Sign in</a>, then open this link again.</p>
+{{/if}}

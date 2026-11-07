@@ -1,0 +1,81 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+{{#if reader}}
+<header class="ra-cheer-head">
+  <span class="ra-avatar ra-avatar-big a{{reader.color}}" aria-hidden="true">{{reader.initial}}</span>
+  <h1 class="ra-h1">Cheer on {{reader.name}}!</h1>
+  <p class="ra-lede-dark">{{reader.name}} is reading all January in the Fiske Free Library read-a-thon{{#if reader.minutes}}, with <b>{{reader.minutes}} minutes</b> and <b>{{reader.books}} {{#if reader.books_plural}}books{{else}}book{{/if}}</b> colored in so far{{/if}}.</p>
+  <p class="ra-muted">Your gift supports {{purpose}}.</p>
+</header>
+{{#if cheers.recent}}
+<ul class="ra-cheer-strip" aria-label="Cheers so far">
+  {{#each cheers.recent}}<li><b>{{name}}</b>{{#if message}} &ldquo;{{message}}&rdquo;{{/if}}</li>{{/each}}
+</ul>
+{{/if}}
+{{else}}
+<header class="ra-page-head">
+  <h1 class="ra-h1">Give to the read-a-thon</h1>
+  <p class="ra-lede-dark">Every gift supports {{purpose}}.</p>
+</header>
+<section class="ra-fund ra-fund-small" aria-label="Raised so far">
+  <p class="ra-fund-number"><b>{{fundraising.total}}</b> raised of {{fundraising.goal}}</p>
+  <div class="ra-meter ra-meter-pine" role="img" aria-label="{{fundraising.percent}} percent of the goal"><span style="width: {{fundraising.percent}}%"></span></div>
+</section>
+{{/if}}
+
+<form class="ra-form" action="{{action}}" method="post" novalidate data-gift
+      data-who="{{#if reader}}{{reader.name}}{{/if}}"
+      data-fake="{{#if fake_payments}}1{{/if}}"
+      data-stripe-key="{{stripe_publishable_key}}">
+  {{> readathon-errors}}
+
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">1</span> Pick an amount</legend>
+    <div class="ra-choices ra-choices-5">
+      {{#each amounts}}
+      <label class="ra-choice"><input type="radio" name="amount" value="{{n}}"{{#if checked}} checked{{/if}}><span><b>${{n}}</b></span></label>
+      {{/each}}
+      <label class="ra-choice"><input type="radio" name="amount" value="other"{{#if other_checked}} checked{{/if}} data-amount-other><span>Other</span></label>
+    </div>
+    <label class="ra-field" data-amount-other-field>
+      <span>Amount (at least ${{minimum_usd}})</span>
+      <span class="ra-money"><span aria-hidden="true">$</span><input name="amount_other" type="number" inputmode="decimal" min="{{minimum_usd}}" step="1" value="{{form.amount_other}}"></span>
+    </label>
+  </fieldset>
+
+  {{#if reader}}
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">2</span> Send a cheer <small>(optional)</small></legend>
+    <p class="ra-help">This shows up on {{reader.name}}&rsquo;s reading page.</p>
+    <label class="ra-field"><span>Sign it as</span><input name="display_name" type="text" maxlength="60" value="{{form.display_name}}" placeholder="e.g. Grandma Jo"></label>
+    <label class="ra-field"><span>Message</span><textarea name="message" rows="2" maxlength="200" placeholder="Proud of you! Keep reading!">{{form.message}}</textarea></label>
+    <label class="ra-check"><input type="checkbox" name="hide_amount" value="1"{{#if form.hide_amount}} checked{{/if}}><span>Don't show the amount</span></label>
+    <label class="ra-check"><input type="checkbox" name="anonymous" value="1"{{#if form.anonymous}} checked{{/if}}><span>Give anonymously</span></label>
+  </fieldset>
+  {{/if}}
+
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">{{#if reader}}3{{else}}2{{/if}}</span> Your receipt</legend>
+    <div class="ra-row">
+      <label class="ra-field"><span>First name</span><input name="first_name" type="text" autocomplete="given-name" required value="{{form.first_name}}"></label>
+      <label class="ra-field"><span>Last name</span><input name="last_name" type="text" autocomplete="family-name" required value="{{form.last_name}}"></label>
+    </div>
+    <label class="ra-field"><span>Email</span><input name="email" type="email" inputmode="email" autocomplete="email" required value="{{form.email}}"></label>
+    <div class="ra-field">
+      <span>Card</span>
+      {{#if fake_payments}}
+      <div class="ra-card-element ra-card-fake">Demo mode: no card needed. Nothing will be charged.</div>
+      {{else}}
+      <div class="ra-card-element" data-card></div>
+      {{/if}}
+      <p class="ra-card-errors" role="alert" data-card-errors></p>
+    </div>
+  </fieldset>
+
+  <noscript><p class="ra-errors">Card payments need JavaScript turned on. Sorry about that!</p></noscript>
+  <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit" data-gift-submit>{{#if reader}}Cheer on {{reader.name}}{{else}}Give to the read-a-thon{{/if}}</button>
+  <p class="ra-fine">Payments are processed securely by Stripe. The Friends of the Fiske Free Library is a nonprofit and your gift is tax-deductible. Giving is optional for readers: everyone gets the same prizes.</p>
+</form>
+
+{{#unless fake_payments}}<script src="https://js.stripe.com/v3/"></script>{{/unless}}

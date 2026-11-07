@@ -1,0 +1,118 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-hello">
+  <span class="ra-avatar a{{reader.color}}" aria-hidden="true">{{initial}}</span>
+  <div>
+    <h1 class="ra-h1">{{#if welcome}}Welcome, {{reader.name}}!{{else}}Hi, {{reader.name}}!{{/if}}</h1>
+    {{#if several_readers}}<a class="ra-small-link" href="{{base}}/me">Not {{reader.name}}? Switch reader</a>{{/if}}
+  </div>
+</header>
+
+{{#if (eq phase "before")}}
+<section class="ra-card ra-center">
+  <h2 class="ra-h2">See you January 1!</h2>
+  <p>The read-a-thon hasn't started yet. Pick out your first book while you wait.</p>
+  <a class="ra-btn ra-btn-lamp" href="{{base}}/books">Browse book lists</a>
+</section>
+{{else}}
+<section class="ra-today" aria-label="Today">
+  <div class="ra-goal">
+    <p class="ra-goal-label">{{#if goal_met}}Goal met today!{{else}}Today's goal{{/if}}</p>
+    <p class="ra-goal-number"><b>{{stats.today_minutes}}</b> of {{reader.goal_minutes}} min</p>
+    <div class="ra-meter ra-meter-lamp" role="img" aria-label="{{goal_percent}} percent of today's goal"><span style="width: {{goal_percent}}%"></span></div>
+    {{#unless goal_met}}<p class="ra-muted">{{goal_left}} minutes to go</p>{{/unless}}
+  </div>
+  {{#if (eq phase "during")}}
+  <div class="ra-actions">
+    <a class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" href="{{reader_url}}/timer"><span class="ra-btn-icon ra-icon-play" aria-hidden="true"></span>Start reading</a>
+    <a class="ra-btn ra-btn-ghost ra-btn-block" href="{{reader_url}}/log">I already read</a>
+  </div>
+  {{else}}
+  <p class="ra-muted">The read-a-thon is over. Thanks for reading! You can still add minutes you forgot.</p>
+  <a class="ra-btn ra-btn-ghost ra-btn-block" href="{{reader_url}}/log">Add forgotten minutes</a>
+  {{/if}}
+</section>
+{{/if}}
+
+<section class="ra-card ra-bookmark-card" aria-labelledby="bm-title">
+  <div class="ra-bookmark-wrap">{{> readathon-bookmark}}</div>
+  <div class="ra-bookmark-side">
+    <h2 id="bm-title" class="ra-h2">Your bookmark</h2>
+    <p>Every 30 minutes colors in a book. Fill all 20 to win an enamel pin.</p>
+    {{#if bookmark.full}}
+    <p class="ra-win">Bookmark full! Pick up your pin at the library desk.</p>
+    {{else}}
+    <p class="ra-next"><b>{{stats.minutes_to_next_book}} minutes</b> until your next book</p>
+    {{/if}}
+    <ul class="ra-mini-stats">
+      <li><b>{{stats.total}}</b> minutes</li>
+      <li><b>{{stats.days_read}}</b> days</li>
+      <li><b>{{stats.stickers}}</b> of 5 stickers</li>
+    </ul>
+  </div>
+</section>
+
+{{#if team}}
+<a class="ra-team-card" href="{{base}}/teams/{{team.code}}">
+  <span class="ra-team-card-top"><span class="ra-kicker-dark">My team</span><strong>{{team.name}}</strong></span>
+  <span class="ra-meter ra-meter-sky" aria-hidden="true"><span style="width: {{team.percent}}%"></span></span>
+  <span class="ra-muted">{{team.total_hours}} of {{team.goal_label}} &middot; {{team.read_today}} of {{team.member_count}} read today</span>
+</a>
+{{else}}
+<div class="ra-team-card ra-team-card-empty">
+  <span><strong>Read with a team</strong><span class="ra-muted">Coworkers, classmates, friends: reach a goal together.</span></span>
+  <a class="ra-btn ra-btn-ghost" href="{{base}}/teams">See teams</a>
+</div>
+{{/if}}
+
+<section class="ra-tiles" aria-label="More">
+  <a class="ra-tile" href="{{reader_url}}/bingo">
+    <span class="ra-tile-icon ra-icon-grid" aria-hidden="true"></span>
+    <strong>Bingo card</strong>
+    <span>{{#if board.blackout}}Blackout!{{else}}{{#if board.bingos}}Bingo! Pick a prize{{else}}{{board.to_bingo}} more for a bingo{{/if}}{{/if}}</span>
+  </a>
+  <a class="ra-tile" href="{{reader_url}}/cheers">
+    <span class="ra-tile-icon ra-icon-heart" aria-hidden="true"></span>
+    <strong>Cheers</strong>
+    <span>{{#if cheers.count}}{{cheers.count}} so far, {{cheers.total}}{{else}}Share your link{{/if}}</span>
+  </a>
+  <a class="ra-tile" href="{{base}}/books">
+    <span class="ra-tile-icon ra-icon-book" aria-hidden="true"></span>
+    <strong>Find a book</strong>
+    <span>Lists for every reader</span>
+  </a>
+</section>
+
+<details class="ra-details" id="log">
+  <summary>My reading log</summary>
+  {{#if recent}}
+  <ul class="ra-log">
+    {{#each recent}}
+    <li>
+      <span><b>{{day_label}}</b>{{#if title}} &middot; {{title}}{{/if}}</span>
+      <span class="ra-log-min">{{minutes}} min
+        <form action="{{@root.reader_url}}/entries/{{entry_id}}/delete" method="post"><button class="ra-text-btn" type="submit" aria-label="Remove {{minutes}} minutes from {{day_label}}">Remove</button></form>
+      </span>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <p class="ra-muted">Nothing yet. Any amount counts!</p>
+  {{/if}}
+</details>
+
+<details class="ra-details">
+  <summary>Change my daily goal</summary>
+  <form class="ra-goal-form" action="{{reader_url}}/goal" method="post">
+    <div class="ra-choices ra-choices-2">
+      {{#each goals}}
+      <label class="ra-choice ra-choice-tall">
+        <input type="radio" name="goal" value="{{minutes}}"{{#if current}} checked{{/if}}>
+        <span><b>{{name}}</b><small>{{hint}}</small></span>
+      </label>
+      {{/each}}
+    </div>
+    <button class="ra-btn ra-btn-ghost" type="submit">Save goal</button>
+  </form>
+</details>

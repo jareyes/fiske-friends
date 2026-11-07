@@ -7,12 +7,30 @@
       events: "event",
       members: "members",
       planning: "plan",
+      readathon: "readathon",
     },
     link_salt: "link-salt",
     password_salt: "password-salt",
     port: 3000,
     protocol: "https",
     timezone: "America/New_York",
+  },
+  readathon: {
+    starts: "2027-01-01",
+    ends: "2027-01-31",
+    community_goal_minutes: 100000,
+    // For demos only: pretend today is this date (YYYY-MM-DD). Leave null in production.
+    today_override: null,
+    // For demos only: show sign-in links on screen instead of emailing them.
+    show_sign_in_links: false,
+    // For demos only: skip the card and record pretend gifts.
+    fake_payments: false,
+    fundraising: {
+      goal_usd: 5000,
+      // A sponsor gives this much per hour the whole community reads, up to the cap
+      match_per_hour_usd: 1,
+      match_cap_usd: 1500,
+    },
   },
   session: {
     secret: null,

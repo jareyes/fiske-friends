@@ -1,0 +1,53 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head">
+  <h1 class="ra-h1">Add {{reader.name}}'s reading</h1>
+  <p class="ra-lede-dark">Forgot the timer? No problem. A good guess is fine.</p>
+</header>
+
+{{#if is_open}}
+<form class="ra-form" action="{{reader_url}}/log" method="post" novalidate>
+  {{> readathon-errors}}
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">1</span> How long?</legend>
+    <div class="ra-choices ra-choices-4">
+      {{#each minute_choices}}
+      <label class="ra-choice"><input type="radio" name="minutes" value="{{n}}"{{#if checked}} checked{{/if}}><span><b>{{n}}</b>&nbsp;min</span></label>
+      {{/each}}
+      <label class="ra-choice"><input type="radio" name="minutes" value="other"{{#if other_checked}} checked{{/if}} data-other-toggle><span>Other</span></label>
+    </div>
+    <label class="ra-field" data-other-field>
+      <span>Minutes</span>
+      <input name="minutes_other" type="number" inputmode="numeric" min="1" max="600" value="{{form.minutes_other}}" placeholder="e.g. 25">
+    </label>
+  </fieldset>
+
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">2</span> When?</legend>
+    <label class="ra-field">
+      <span>Day</span>
+      <select name="day">
+        {{#each days}}<option value="{{day}}"{{#if selected}} selected{{/if}}>{{label}}</option>{{/each}}
+      </select>
+    </label>
+  </fieldset>
+
+  <details class="ra-step ra-optional">
+    <summary><span class="ra-step-number">3</span> What did you read? <small>(optional)</small></summary>
+    <label class="ra-field">
+      <span>Title</span>
+      <input name="title" type="text" maxlength="120" value="{{form.title}}" placeholder="e.g. Ox-Cart Man">
+    </label>
+    <div class="ra-choices ra-choices-wrap">
+      {{#each formats}}
+      <label class="ra-choice ra-choice-small"><input type="radio" name="format" value="{{name}}"{{#if checked}} checked{{/if}}><span>{{name}}</span></label>
+      {{/each}}
+    </div>
+  </details>
+
+  <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">Save my minutes</button>
+</form>
+{{else}}
+<div class="ra-card ra-center"><p>Logging opens on January 1. See you then!</p></div>
+{{/if}}

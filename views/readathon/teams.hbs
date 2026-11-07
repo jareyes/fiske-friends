@@ -1,0 +1,34 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head">
+  <h1 class="ra-h1">Read together</h1>
+  <p class="ra-lede-dark">Coworkers, classmates, neighbors, clubs: make a team, pick a goal, and cheer each other on.</p>
+</header>
+
+<div class="ra-team-cta">
+  {{#if signed_in}}
+  <a class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" href="{{base}}/teams/new">Start a team</a>
+  {{else}}
+  <a class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" href="{{base}}/join">Join the read-a-thon to start a team</a>
+  {{/if}}
+  <p class="ra-fine">Want to join a team? Ask a teammate to send you their team link.</p>
+</div>
+
+{{#if teams}}
+<h2 class="ra-h2 ra-teams-title">How the teams are doing</h2>
+<ul class="ra-teams">
+  {{#each teams}}
+  <li class="ra-team-row{{#if is_mine}} is-mine{{/if}}">
+    <div class="ra-team-row-top">
+      {{#if linkable}}<a href="{{@root.base}}/teams/{{code}}"><strong>{{name}}</strong></a>{{else}}<strong>{{name}}</strong>{{/if}}
+      <span class="ra-tags">{{#if reached}}<span class="ra-tag ra-tag-win">Goal reached!</span>{{/if}}{{#if is_mine}}<span class="ra-tag">Your team</span>{{else}}{{#if is_open}}<span class="ra-tag ra-tag-open">Anyone can join</span>{{/if}}{{/if}}</span>
+    </div>
+    <div class="ra-meter ra-meter-sky" role="img" aria-label="{{percent}} percent of their goal"><span style="width: {{percent}}%"></span></div>
+    <p class="ra-muted">{{total_hours}} of {{goal_label}} &middot; {{member_count}} {{#if (eq member_count 1)}}reader{{else}}readers{{/if}}</p>
+  </li>
+  {{/each}}
+</ul>
+{{else}}
+<p class="ra-card ra-center">No teams yet. Be the first!</p>
+{{/if}}

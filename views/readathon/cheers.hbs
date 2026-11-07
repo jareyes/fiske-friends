@@ -1,0 +1,31 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head">
+  <h1 class="ra-h1">People cheering for {{reader.name}}</h1>
+  <p class="ra-lede-dark">{{#if cheers.count}}{{cheers.count}} {{#if (eq cheers.count 1)}}cheer{{else}}cheers{{/if}}, {{cheers.total}} for the library!{{else}}No cheers yet. Share your link with family!{{/if}}</p>
+</header>
+
+<section class="ra-card ra-share" aria-labelledby="share-title">
+  <h2 id="share-title" class="ra-h2">Your cheer link</h2>
+  <p>Send it to grandparents, aunts, uncles, and friends. They can cheer you on with a gift for the library.</p>
+  <div class="ra-share-row">
+    <label class="ra-visually-hidden" for="share-url">Your cheer link</label>
+    <input id="share-url" type="text" readonly value="{{share_url}}" data-share-url>
+    <button class="ra-btn ra-btn-lamp" type="button" data-copy>Copy</button>
+  </div>
+  <p class="ra-muted" data-copy-status role="status"><a href="{{cheer_path}}">See what they'll see</a></p>
+</section>
+
+{{#if cheers.cheers}}
+<ul class="ra-cheers">
+  {{#each cheers.cheers}}
+  <li>
+    <span class="ra-cheer-star" aria-hidden="true"></span>
+    <div><b>{{name}}</b>{{#if amount}} <span class="ra-muted">&middot; {{amount}}</span>{{/if}}{{#if message}}<p>&ldquo;{{message}}&rdquo;</p>{{/if}}</div>
+  </li>
+  {{/each}}
+</ul>
+{{/if}}
+
+<p class="ra-fine">Cheers are optional and never change your prizes. Gifts support {{purpose}}.</p>

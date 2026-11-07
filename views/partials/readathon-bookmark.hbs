@@ -1,0 +1,12 @@
+<figure class="ra-bookmark" aria-label="Bookmark {{bookmark.number}}: {{bookmark.colored}} of 20 books colored in">
+  <span class="ra-bookmark-hole" aria-hidden="true"></span>
+  <span class="ra-bookmark-tassel" aria-hidden="true"></span>
+  <figcaption>
+    <span class="ra-bookmark-title">Resolve to Read</span>
+    <span class="ra-bookmark-sub">{{#if (eq bookmark.number 1)}}My bookmark{{else}}Bookmark #{{bookmark.number}}{{/if}}</span>
+  </figcaption>
+  <ol class="ra-books" aria-hidden="true">
+    {{#each bookmark.cells}}<li class="ra-book c{{color}}{{#if filled}} is-filled{{/if}}{{#if fresh}} is-fresh{{/if}}" style="--i: {{@index}}"></li>{{/each}}
+  </ol>
+  <span class="ra-bookmark-count">{{bookmark.colored}} of 20</span>
+</figure>

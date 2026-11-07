@@ -7,6 +7,7 @@ const {Router} = require("express");
 const members = require("./members");
 const middleware = require("../lib/middleware");
 const planning = require("./planning");
+const readathon = require("./readathon");
 
 const MOUNTS = config.get("app.mounts");
 // Hide the Adopt a Zombie banner once the dance is over (midnight Eastern, Oct 25)
@@ -48,6 +49,10 @@ function create(sqlite) {
     router.use(
         `/${MOUNTS.planning}`,
         planning.create(sqlite),
+    );
+    router.use(
+        `/${MOUNTS.readathon}`,
+        readathon.create(sqlite),
     );
     return router;
 }

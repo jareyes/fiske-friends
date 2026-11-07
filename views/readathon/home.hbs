@@ -1,0 +1,76 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{#if demo_today}}<p class="ra-demo">Demo mode: pretending today is {{demo_today}}, 2027.</p>{{/if}}
+
+<section class="ra-hero">
+  <p class="ra-kicker">Fiske Free Library &middot; {{date_range}}</p>
+  <h1 class="ra-title">Resolve to <span>Read</span></h1>
+  <p class="ra-lede">A month-long read-a-thon for every age. No rules, just read.</p>
+  <div class="ra-hero-actions">
+    {{#if signed_in}}
+      <a class="ra-btn ra-btn-lamp ra-btn-big" href="{{base}}/me">Go to my reading</a>
+    {{else}}
+      <a class="ra-btn ra-btn-lamp ra-btn-big" href="{{base}}/join">Join the read-a-thon</a>
+      <a class="ra-link-light" href="{{base}}/sign-in">Already joined? Sign in</a>
+    {{/if}}
+  </div>
+  {{#if (eq phase "before")}}<p class="ra-countdown">Starts in <strong>{{days_to_go}} days</strong>. It's free!</p>{{/if}}
+  {{> readathon-hero-art}}
+</section>
+
+<section class="ra-section" aria-labelledby="how-title">
+  <h2 id="how-title" class="ra-h2">Three easy steps</h2>
+  <ol class="ra-steps">
+    <li>
+      <span class="ra-step-icon ra-icon-book" aria-hidden="true"></span>
+      <strong>Read anything</strong>
+      <span>Books, audiobooks, comics, or reading to a kid. It all counts.</span>
+    </li>
+    <li>
+      <span class="ra-step-icon ra-icon-clock" aria-hidden="true"></span>
+      <strong>Count your minutes</strong>
+      <span>Use our timer, type it in, or fill in a paper log.</span>
+    </li>
+    <li>
+      <span class="ra-step-icon ra-icon-star" aria-hidden="true"></span>
+      <strong>Earn prizes</strong>
+      <span>Color your bookmark, collect stickers, play bingo, win a pin.</span>
+    </li>
+  </ol>
+</section>
+
+<section class="ra-section ra-community" aria-labelledby="total-title">
+  <h2 id="total-title" class="ra-h2">Claremont is reading</h2>
+  <p class="ra-big-number">{{totals.minutes_label}} <small>minutes</small></p>
+  <div class="ra-meter" role="img" aria-label="{{totals.percent}} percent of the {{totals.goal_label}} minute goal"><span style="width: {{totals.percent}}%"></span></div>
+  <p class="ra-muted">{{totals.readers_label}} readers so far. Let's reach {{totals.goal_label}} minutes together!</p>
+  <a class="ra-btn ra-btn-ghost" href="{{base}}/teams">See how the teams are doing</a>
+</section>
+
+<section class="ra-section ra-fund" aria-labelledby="fund-title">
+  <h2 id="fund-title" class="ra-h2">Reading raises money too</h2>
+  <p>Gifts support {{purpose}}. Plus, a local sponsor gives {{fundraising.match_per_hour}} for every hour Claremont reads, up to {{fundraising.match_cap}}.</p>
+  <p class="ra-fund-number"><b>{{fundraising.total}}</b> raised of {{fundraising.goal}}</p>
+  <div class="ra-meter ra-meter-pine" role="img" aria-label="{{fundraising.percent}} percent of the {{fundraising.goal}} goal"><span style="width: {{fundraising.percent}}%"></span></div>
+  <p class="ra-muted">{{fundraising.gifts}} in gifts + {{fundraising.match}} from {{fundraising.hours}} hours of reading</p>
+  <a class="ra-btn ra-btn-ghost" href="{{base}}/give">Donate</a>
+  <p class="ra-fine">Readers: giving is optional. Everyone gets the same prizes.</p>
+</section>
+
+{{#if upcoming}}
+<section class="ra-section" aria-labelledby="events-title">
+  <h2 id="events-title" class="ra-h2">Coming up at the library</h2>
+  <ul class="ra-events">
+    {{#each upcoming}}
+    <li>
+      <span class="ra-date"><small>{{day_name}}</small><b>{{day_number}}</b><small>{{#if is_feb}}Feb{{else}}Jan{{/if}}</small></span>
+      <span><strong>{{title}}</strong><br>{{at}} &middot; {{where}}<br><span class="ra-muted">{{blurb}}</span></span>
+    </li>
+    {{/each}}
+  </ul>
+</section>
+{{/if}}
+
+<nav class="ra-footer-links" aria-label="More">
+  <a href="{{base}}/books">Find something to read</a>
+  <a href="{{base}}/how">How it works</a>
+</nav>

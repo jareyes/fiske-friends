@@ -1,0 +1,30 @@
+# systemd service for the read-a-thon preview at read.fiskefriends.org
+# Runs bin/readathon-demo.js: sample data in memory, fake payments, pretend date.
+#
+# Install:
+#   sudo cp readathon-preview.service /etc/systemd/system/
+#   (edit the three CHANGE ME lines to match your main site's service: `systemctl cat <main-service>`)
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now readathon-preview
+
+[Unit]
+Description=Fiske Friends read-a-thon preview (demo data)
+After=network.target
+
+[Service]
+Type=simple
+# CHANGE ME: the same user your main site's service runs as
+User=www-data
+# CHANGE ME: the folder the site's code is in on the server
+WorkingDirectory=/srv/fiske-friends
+# CHANGE ME: the same node your main site's service uses (`which node`)
+ExecStart=/usr/bin/node bin/readathon-demo.js
+Environment=PORT=3001
+Environment=HOST=127.0.0.1
+# Holds READATHON_DEMO_PASSWORD, readable only by root
+EnvironmentFile=/etc/fiske-friends/readathon-preview.env
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

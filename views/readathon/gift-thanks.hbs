@@ -1,0 +1,29 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<section class="ra-yay">
+  <div class="ra-confetti" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="ra-badge">Thank you!</p>
+  <h1 class="ra-h1">{{#if gift.to}}You cheered on {{gift.to}}!{{else}}You're helping Claremont read!{{/if}}</h1>
+  <p class="ra-lede-dark">{{#if gift.to}}Your cheer is on {{gift.to}}&rsquo;s reading page now.{{else}}Your gift supports {{purpose}}.{{/if}}</p>
+</section>
+
+<div class="ra-card ra-receipt">
+  <h2 class="ra-h2">Your receipt</h2>
+  <dl>
+    <dt>Gift</dt><dd>{{gift.amount}}</dd>
+    <dt>For</dt><dd>{{#if gift.to}}Cheering on {{gift.to}}{{else}}The whole read-a-thon{{/if}}</dd>
+    <dt>Date</dt><dd>{{date gift.time}}</dd>
+    <dt>Confirmation</dt><dd class="ra-code">{{gift.confirmation}}</dd>
+  </dl>
+  {{#if gift.is_demo}}
+  <p class="ra-demo-box">Demo mode: no card was charged and no receipt was emailed.</p>
+  {{else}}
+  <p class="ra-muted">A receipt is also on its way to your inbox. The Friends of the Fiske Free Library is a nonprofit and your gift is tax-deductible.</p>
+  {{/if}}
+</div>
+
+<div class="ra-actions ra-actions-row">
+  <a class="ra-btn ra-btn-lamp" href="{{base}}">See the read-a-thon</a>
+  <a class="ra-btn ra-btn-ghost" href="{{gift.again}}">Give again</a>
+</div>

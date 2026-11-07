@@ -1,0 +1,44 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head">
+  <h1 class="ra-h1">{{reader.name}}'s bingo card</h1>
+  <p class="ra-lede-dark">Tap a square when you've done it. Five in a row wins a prize!</p>
+</header>
+
+{{#if message}}<p class="ra-flash{{#if message.bad}} ra-flash-bad{{/if}}" role="status">{{message.text}}</p>{{/if}}
+
+<p class="ra-bingo-status{{#if board.bingos}} is-win{{/if}}" role="status">
+  {{#if board.blackout}}<b>Blackout!</b> You're in the grand prize drawing.
+  {{else}}{{#if board.bingos}}<b>Bingo!</b> Show this at the desk to pick a prize.
+  {{else}}<b>{{board.to_bingo}} more</b> in a row for a bingo{{/if}}{{/if}}
+</p>
+
+<form class="ra-bingo" action="{{reader_url}}/bingo" method="post">
+  <div class="ra-bingo-head" aria-hidden="true"><span>R</span><span>E</span><span>A</span><span>D</span><span>!</span></div>
+  <div class="ra-bingo-grid">
+    {{#each board.squares}}
+    {{#if tappable}}
+    <button class="ra-square{{#if marked}} is-marked{{/if}}{{#if in_win}} is-win{{/if}}" type="submit" name="square" value="{{index}}" aria-pressed="{{#if marked}}true{{else}}false{{/if}}">
+      <span>{{label}}</span>{{#if (eq kind "event")}}<small>event</small>{{/if}}
+    </button>
+    {{else}}
+    <div class="ra-square is-marked{{#if (eq kind "free")}} is-free{{/if}}{{#if (eq kind "auto")}}{{#unless marked}} is-auto-off{{/unless}}{{/if}}{{#if in_win}} is-win{{/if}}" {{#if (eq kind "auto")}}{{#unless marked}}data-off{{/unless}}{{/if}}>
+      <span>{{label}}</span>{{#if (eq kind "auto")}}<small>{{#if marked}}done!{{else}}automatic{{/if}}</small>{{/if}}
+    </div>
+    {{/if}}
+    {{/each}}
+  </div>
+</form>
+
+<details class="ra-details" open>
+  <summary>At an event? Enter the code</summary>
+  <form class="ra-code-form" action="{{reader_url}}/bingo/code" method="post">
+    <label class="ra-field">
+      <span>Code from the screen</span>
+      <input name="code" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. SILENT">
+    </label>
+    <button class="ra-btn ra-btn-ghost" type="submit">Check in</button>
+  </form>
+</details>
+<p class="ra-fine">Squares marked <b>automatic</b> fill in by themselves from your reading log. Using a paper card? Show it at the desk.</p>

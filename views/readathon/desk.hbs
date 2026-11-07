@@ -1,0 +1,100 @@
+{{#block "head"}}{{> readathon-head}}{{/block}}
+{{> readathon-nav}}
+
+<header class="ra-page-head">
+  <h1 class="ra-h1">Volunteer desk</h1>
+  <p class="ra-lede-dark">{{totals.minutes_label}} minutes from {{totals.readers}} readers so far.</p>
+</header>
+
+{{#if message}}<p class="ra-flash" role="status">{{message}}</p>{{/if}}
+
+<section class="ra-card">
+  <h2 class="ra-h2">Add minutes from a paper log</h2>
+  <form class="ra-search" action="{{base}}/desk" method="get" role="search">
+    <label class="ra-visually-hidden" for="desk-q">Find a reader</label>
+    <input id="desk-q" name="q" type="search" value="{{query}}" placeholder="Reader's first name or email">
+    <button class="ra-btn ra-btn-ghost" type="submit">Find</button>
+  </form>
+  {{#if query}}
+  {{#if results}}
+  <ul class="ra-desk-results">
+    {{#each results}}
+    <li>
+      <div><strong>{{name}}</strong> <span class="ra-muted">{{#if email}}{{email}}{{else}}paper only{{/if}} &middot; {{total}} min &middot; {{stickers}} of 5 stickers</span></div>
+      <form class="ra-desk-add" action="{{@root.base}}/desk/minutes" method="post">
+        <input type="hidden" name="reader_id" value="{{reader_id}}">
+        <input type="hidden" name="q" value="{{@root.query}}">
+        <label class="ra-visually-hidden" for="d-{{reader_id}}">Day</label>
+        <select id="d-{{reader_id}}" name="day">{{#each @root.days}}<option value="{{day}}">{{label}}</option>{{/each}}</select>
+        <label class="ra-visually-hidden" for="m-{{reader_id}}">Minutes</label>
+        <input id="m-{{reader_id}}" name="minutes" type="number" min="1" max="600" placeholder="min" required>
+        <button class="ra-btn ra-btn-lamp" type="submit">Add</button>
+      </form>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <p class="ra-muted">Nobody found. Sign them up below.</p>
+  {{/if}}
+  {{/if}}
+</section>
+
+<section class="ra-card">
+  <h2 class="ra-h2">Sign up a paper reader</h2>
+  <form class="ra-desk-new" action="{{base}}/desk/readers" method="post">
+    <label class="ra-field"><span>First name</span><input name="name" type="text" maxlength="40" required></label>
+    <label class="ra-field"><span>Email <small>(optional)</small></span><input name="email" type="email"></label>
+    <div class="ra-choices ra-choices-3">
+      {{#each ages}}<label class="ra-choice"><input type="radio" name="age_group" value="{{id}}"{{#if (eq id "adult")}} checked{{/if}}><span>{{name}}</span></label>{{/each}}
+    </div>
+    <button class="ra-btn ra-btn-lamp" type="submit">Sign up</button>
+  </form>
+</section>
+
+<section class="ra-card">
+  <h2 class="ra-h2">Gifts: {{fundraising.total}} of {{fundraising.goal}}</h2>
+  <p class="ra-muted">{{fundraising.gifts}} from {{fundraising.gifts_count}} gifts, plus {{fundraising.match}} sponsor match for {{fundraising.hours}} hours read. Full details and refunds are in Stripe (search for campaign 2027-01-readathon).</p>
+  {{#if gifts}}
+  <ul class="ra-desk-results">
+    {{#each gifts}}
+    <li><div><strong>{{amount}}</strong> to {{to}} <span class="ra-muted">from {{first_name}} {{last_name}} &middot; {{email}}{{#if is_demo}} &middot; demo{{/if}}</span>{{#if message}}<br>&ldquo;{{message}}&rdquo;{{/if}}</div></li>
+    {{/each}}
+  </ul>
+  {{/if}}
+</section>
+
+<section class="ra-card">
+  <h2 class="ra-h2">Teams ({{teams.length}})</h2>
+  <p class="ra-muted">Team names show on the public teams page. Hide any that aren't friendly for all ages.</p>
+  {{#if teams}}
+  <ul class="ra-desk-results">
+    {{#each teams}}
+    <li class="ra-desk-team">
+      <div><strong>{{name}}</strong> <span class="ra-muted">{{member_count}} readers{{#if is_open}} &middot; anyone can join{{/if}}{{#if is_hidden}} &middot; hidden{{/if}}</span></div>
+      <form action="{{@root.base}}/desk/teams/{{team_id}}" method="post">
+        {{#if is_hidden}}<button class="ra-btn ra-btn-ghost" name="hidden" value="0" type="submit">Show</button>{{else}}<button class="ra-btn ra-btn-ghost" name="hidden" value="1" type="submit">Hide</button>{{/if}}
+      </form>
+    </li>
+    {{/each}}
+  </ul>
+  {{/if}}
+</section>
+
+<section class="ra-card">
+  <h2 class="ra-h2">Book recommendations to check ({{pending.length}})</h2>
+  {{#if pending}}
+  <ul class="ra-desk-results">
+    {{#each pending}}
+    <li>
+      <div><strong>{{title}}</strong>{{#if author}} by {{author}}{{/if}}<br><span class="ra-muted">{{audience}} &middot; from {{#if recommended_by}}{{recommended_by}}{{else}}no name{{/if}}</span>{{#if why}}<br>&ldquo;{{why}}&rdquo;{{/if}}</div>
+      <form class="ra-desk-review" action="{{@root.base}}/desk/recommendations/{{recommendation_id}}" method="post">
+        <button class="ra-btn ra-btn-lamp" name="status" value="approved" type="submit">Approve</button>
+        <button class="ra-btn ra-btn-ghost" name="status" value="declined" type="submit">Decline</button>
+      </form>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <p class="ra-muted">All caught up.</p>
+  {{/if}}
+</section>
