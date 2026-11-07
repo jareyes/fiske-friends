@@ -20,24 +20,141 @@
     --ra-sky: #6684f5;
     --ra-display: "Fredoka", "Trebuchet MS", "Arial Rounded MT Bold", sans-serif;
     --ra-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
-    background: var(--ra-snow);
-}
-.theme-readathon #content {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
     background: var(--ra-snow);
     color: var(--ra-ink);
     font-family: var(--ra-body);
     font-size: 1.05rem;
     line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
 }
-.theme-readathon article.contained {
+.theme-readathon a {
+    color: var(--ra-night-2);
+}
+.ra-wrap {
     box-sizing: border-box;
     width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+.ra-main {
+    flex: 1;
     min-width: 0;
-    padding-top: 0.75rem;
+    padding-top: 1.5rem;
     padding-bottom: 3rem;
 }
-.theme-readathon #content a {
-    color: var(--ra-night-2);
+.ra-home .ra-main {
+    padding-top: 0;
+}
+.ra-skip {
+    position: absolute;
+    left: -9999px;
+    top: 0.5rem;
+    z-index: 10;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    background: var(--ra-lamp);
+    color: var(--ra-ink) !important;
+    font-weight: 800;
+}
+.ra-skip:focus {
+    left: 0.5rem;
+}
+
+/* ---------- site header and footer ---------- */
+.ra-site-header {
+    background: var(--ra-paper);
+    border-bottom: 1px solid var(--ra-line);
+}
+.ra-site-header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+.ra-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--ra-ink) !important;
+    text-decoration: none;
+}
+.ra-brand .ra-nav-mark {
+    width: 38px;
+    height: 38px;
+}
+.ra-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+.ra-brand-name {
+    font-family: var(--ra-display);
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+.ra-brand-by {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ra-muted);
+}
+.ra-home .ra-site-header,
+.theme-readathon-night .ra-site-header {
+    background: var(--ra-night);
+    border-bottom-color: transparent;
+}
+.ra-home .ra-brand,
+.theme-readathon-night .ra-brand {
+    color: #fff !important;
+}
+.ra-home .ra-brand-by,
+.theme-readathon-night .ra-brand-by {
+    color: #c9d2ff;
+}
+.ra-home .ra-nav-mark,
+.theme-readathon-night .ra-nav-mark {
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+.ra-home .ra-nav ul a {
+    color: #e8ebff !important;
+}
+.ra-home .ra-nav ul a:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+.ra-site-footer {
+    padding: 1.75rem 0 2rem;
+    background: var(--ra-night);
+    color: #c9d2ff;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+.ra-site-footer a {
+    color: #fff;
+}
+.ra-site-footer strong {
+    color: var(--ra-lamp);
+}
+.ra-footer-about {
+    margin: 0 0 0.9rem;
+    max-width: 34rem;
+}
+.ra-footer-links-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    margin: 0 0 0.9rem;
+    font-weight: 700;
+}
+.ra-footer-fine {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #9aa3d6;
 }
 .theme-readathon b,
 .theme-readathon strong {
@@ -114,31 +231,15 @@
 
 /* ---------- demo banner and sub-navigation ---------- */
 .ra-demo {
-    margin: 0 0 0.75rem;
+    margin: 0;
     padding: 0.4rem 0.8rem;
-    border-radius: 10px;
     background: var(--ra-lamp-soft);
     color: var(--ra-ink);
     font-size: 0.85rem;
     text-align: center;
 }
 .ra-nav {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem 1rem;
-    margin-bottom: 1.5rem;
-}
-.ra-nav-home {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-family: var(--ra-display);
-    font-weight: 600;
-    font-size: 1.15rem;
-    color: var(--ra-ink) !important;
-    text-decoration: none;
+    margin: 0 -0.3rem;
 }
 .ra-nav-mark {
     width: 26px;
@@ -1055,19 +1156,18 @@
 }
 
 /* ---------- timer (full night sky) ---------- */
-.theme-readathon-night,
-.theme-readathon-night #content {
+.theme-readathon-night {
     background: var(--ra-night);
 }
-.theme-readathon-night footer {
-    color: #aeb6e6;
+.theme-readathon-night .ra-site-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .ra-timer {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2.5rem 0 1rem;
+    padding: 0 0 1rem;
     color: #e8ebff;
     text-align: center;
 }

@@ -1,6 +1,3 @@
-{{#block "head"}}{{> readathon-head}}{{/block}}
-{{> readathon-nav}}
-
 <header class="ra-page-head">
   <h1 class="ra-h1">People cheering for {{reader.name}}</h1>
   <p class="ra-lede-dark">{{#if cheers.count}}{{cheers.count}} {{#if (eq cheers.count 1)}}cheer{{else}}cheers{{/if}}, {{cheers.total}} for the library!{{else}}No cheers yet. Share your link with family!{{/if}}</p>

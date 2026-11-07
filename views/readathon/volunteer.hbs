@@ -1,0 +1,16 @@
+<header class="ra-page-head">
+  <h1 class="ra-h1">Volunteer sign-in</h1>
+  <p class="ra-lede-dark">For Friends volunteers running the read-a-thon desk.</p>
+</header>
+
+{{#if error}}<div class="ra-errors" role="alert"><strong>{{error}}</strong></div>{{/if}}
+
+<form class="ra-form" action="{{base}}/volunteer" method="post">
+  <input type="hidden" name="next" value="{{next}}">
+  <div class="ra-step">
+    <label class="ra-field"><span>Email</span><input name="email" type="email" autocomplete="username" required value="{{email}}"></label>
+    <label class="ra-field"><span>Password</span><input name="password" type="password" autocomplete="current-password" required></label>
+  </div>
+  <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">Sign in</button>
+  <p class="ra-fine">Readers don't need this. <a href="{{base}}/sign-in">Reader sign-in is here.</a></p>
+</form>

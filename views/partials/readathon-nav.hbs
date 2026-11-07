@@ -1,8 +1,4 @@
-{{#if @root.demo_today}}
-<p class="ra-demo">Demo mode: pretending today is {{@root.demo_today}}, 2027.</p>
-{{/if}}
 <nav class="ra-nav" aria-label="Read-a-thon">
-  <a class="ra-nav-home" href="{{@root.base}}"><span class="ra-nav-mark" aria-hidden="true"></span>Resolve to Read</a>
   <ul>
     <li><a href="{{#if @root.reader_url}}{{@root.reader_url}}{{else}}{{@root.base}}/me{{/if}}"{{#if (eq @root.nav "me")}} aria-current="page"{{/if}}>My reading</a></li>
     {{#if @root.reader_url}}<li><a href="{{@root.reader_url}}/bingo"{{#if (eq @root.nav "bingo")}} aria-current="page"{{/if}}>Bingo</a></li>{{/if}}

@@ -1,9 +1,6 @@
-{{#block "head"}}{{> readathon-head}}{{/block}}
-{{> readathon-nav}}
-
 <header class="ra-page-head">
   <h1 class="ra-h1">Volunteer desk</h1>
-  <p class="ra-lede-dark">{{totals.minutes_label}} minutes from {{totals.readers}} readers so far.</p>
+  <p class="ra-lede-dark">{{totals.minutes_label}} minutes from {{totals.readers}} readers so far. <a class="ra-small-link" href="{{base}}/volunteer/sign-out">Sign out</a></p>
 </header>
 
 {{#if message}}<p class="ra-flash" role="status">{{message}}</p>{{/if}}

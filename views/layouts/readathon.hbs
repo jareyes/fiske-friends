@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{title}}</title>
+    <meta name="description" content="{{og.description}}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Resolve to Read: Friends of the Fiske Free Library">
+    <meta property="og:title" content="{{og.title}}">
+    <meta property="og:description" content="{{og.description}}">
+    <meta property="og:url" content="{{og.url}}">
+    <meta name="theme-color" content="#1f2559">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231f2559'/%3E%3Ccircle cx='16' cy='16' r='9' fill='%23ffc83d'/%3E%3Ccircle cx='20' cy='13' r='8' fill='%231f2559'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="/css/reset.css">
+    {{> readathon-head}}
+  </head>
+  <body class="{{body_class}}">
+    <a class="ra-skip" href="#main">Skip to content</a>
+    <header class="ra-site-header">
+      <div class="ra-wrap ra-site-header-inner">
+        <a class="ra-brand" href="{{base}}">
+          <span class="ra-nav-mark" aria-hidden="true"></span>
+          <span class="ra-brand-text">
+            <span class="ra-brand-name">Resolve to Read</span>
+            <span class="ra-brand-by">Friends of the Fiske Free Library</span>
+          </span>
+        </a>
+        {{#unless bare}}{{> readathon-nav}}{{/unless}}
+      </div>
+    </header>
+    {{#if demo_today}}<p class="ra-demo">Demo mode: pretending today is {{demo_today}}, 2027. Nothing here is real.</p>{{/if}}
+    <main id="main" class="ra-wrap ra-main">
+      {{{body}}}
+    </main>
+    <footer class="ra-site-footer">
+      <div class="ra-wrap">
+        <p class="ra-footer-about"><strong>Resolve to Read</strong> is a project of the <a href="{{friends_url}}">Friends of the Fiske Free Library</a>, the volunteer nonprofit that supports the Fiske Free Library in Claremont, New Hampshire.</p>
+        <ul class="ra-footer-links-row">
+          <li><a href="{{base}}/how">Help</a></li>
+          <li><a href="{{friends_url}}">Friends of the Fiske Free Library</a></li>
+          <li><a href="{{base}}/desk">Volunteers</a></li>
+        </ul>
+        <p class="ra-footer-fine">&copy; 2026 Friends of the Fiske Free Library &middot; Claremont, NH 03743</p>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -9,6 +9,7 @@ const middleware = require("../lib/middleware");
 const Readathon = require("../lib/readathon");
 const {Router} = require("express");
 const Token = require("../lib/token");
+const User = require("../lib/user");
 
 const APP = config.get("app");
 const MOUNTS = config.get("app.mounts");
@@ -22,8 +23,10 @@ const DATE_RANGE_LABEL = "January 1 to 31, 2027";
 
 function page(res, view, locals = {}) {
     res.render(`readathon/${view}`, {
+        layout: "readathon",
         body_class: "theme-readathon",
         base: BASE,
+        friends_url: SITE_URL,
         date_range: DATE_RANGE_LABEL,
         demo_today: SETTINGS.today_override
             ? Readathon.label_day(SETTINGS.today_override)
@@ -86,6 +89,7 @@ function home(req, res, sqlite) {
     }));
     const phase = Readathon.phase(today);
     page(res, "home", {
+        body_class: "theme-readathon ra-home",
         fundraising: Gifts.totals(sqlite, totals.minutes),
         purpose: content.FUNDRAISING_PURPOSE,
         phase,
@@ -268,6 +272,7 @@ function timer(req, res, sqlite) {
     page(res, "timer", {
         title: "Reading timer",
         body_class: "theme-readathon theme-readathon-night",
+        bare: true,
         is_open: Readathon.phase(today) === "during",
         today,
     });
@@ -523,10 +528,45 @@ function desk_team(req, res, sqlite) {
     desk_back(req, res, req.body.hidden === "1" ? "Team hidden from the teams page." : "Team is showing again.");
 }
 
+// Volunteers sign in here instead of the main site's login, so the desk stays on the read-a-thon site
+function require_volunteer(sqlite) {
+    const admin = middleware.require_admin(sqlite);
+    return (req, res, next) => {
+        if(req.session.user === undefined) {
+            return res.redirect(`${BASE}/volunteer?next=${encodeURIComponent(req.originalUrl)}`);
+        }
+        admin(req, res, next);
+    };
+}
+
+function safe_next(value) {
+    const next = String(value ?? "");
+    return next.startsWith(`${BASE}/`) && !next.startsWith("//") ? next : `${BASE}/desk`;
+}
+
+function show_volunteer(req, res, locals = {}) {
+    page(res, "volunteer", {title: "Volunteer sign-in", next: safe_next(req.query.next), ...locals});
+}
+
+async function volunteer_sign_in(req, res, next, sqlite) {
+    const email = Readathon.clean(req.body.email, 200);
+    try {
+        req.session.user = await User.authenticate(sqlite, email, String(req.body.password ?? ""));
+        res.redirect(safe_next(req.body.next));
+    }
+    catch(err) {
+        if(!(err instanceof User.AuthenticationError)) {
+            return next(err);
+        }
+        res.status(401);
+        show_volunteer(req, res, {error: "That email and password don't match.", email, next: safe_next(req.body.next)});
+    }
+}
+
 function create(sqlite) {
     const router = Router();
     const own = load_reader(sqlite);
-    const admin = middleware.require_admin(sqlite);
+    const volunteer = require_volunteer(sqlite);
     const wrap = handler => (req, res, next) => {
         try {
             handler(req, res, sqlite);
@@ -562,14 +602,20 @@ function create(sqlite) {
     router.get("/books/recommend/thanks", recommend_thanks);
     router.get("/how", how);
 
+    router.get("/volunteer", (req, res) => show_volunteer(req, res));
+    router.post("/volunteer", (req, res, next) => volunteer_sign_in(req, res, next, sqlite));
+    router.get("/volunteer/sign-out", (req, res) => {
+        delete req.session.user;
+        res.redirect(BASE);
+    });
     router.use(gift_routes.create(sqlite, {page, own}));
     router.use(team_routes.create(sqlite, {page, household_id}));
 
-    router.get("/desk", middleware.require_authentication, admin, wrap((req, res, db) => desk(req, res, db)));
-    router.post("/desk/minutes", middleware.require_authentication, admin, wrap(desk_add_minutes));
-    router.post("/desk/readers", middleware.require_authentication, admin, wrap(desk_add_reader));
-    router.post("/desk/teams/:team_id", middleware.require_authentication, admin, wrap(desk_team));
-    router.post("/desk/recommendations/:recommendation_id", middleware.require_authentication, admin, wrap(desk_review));
+    router.get("/desk", volunteer, wrap((req, res, db) => desk(req, res, db)));
+    router.post("/desk/minutes", volunteer, wrap(desk_add_minutes));
+    router.post("/desk/readers", volunteer, wrap(desk_add_reader));
+    router.post("/desk/teams/:team_id", volunteer, wrap(desk_team));
+    router.post("/desk/recommendations/:recommendation_id", volunteer, wrap(desk_review));
     return router;
 }
 

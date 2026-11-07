@@ -5,7 +5,7 @@
 //   node bin/readathon-demo.js          then open http://localhost:3000/readathon
 //
 // Sample family:   demo@example.com  (Renee and Katie). Use "Sign in"; the link appears on screen.
-// Volunteer desk:  volunteer@example.com at /auth/login, then /readathon/desk
+// Volunteer desk:  volunteer@example.com at /readathon/volunteer (or the "Volunteers" footer link)
 //                  password "readathon", or whatever READATHON_DEMO_PASSWORD is set to
 //
 // To share it as a preview on the server, see events/202701-readathon/README.md.
@@ -177,7 +177,7 @@ async function main() {
         console.log(`\nRead-a-thon demo running (pretending today is ${Readathon.today()}).`);
         console.log(`  Open:      http://localhost:${port}/readathon`);
         console.log("  Family:    sign in as demo@example.com (the link shows on screen)");
-        console.log(`  Volunteer: volunteer@example.com / ${process.env.READATHON_DEMO_PASSWORD ? "(your READATHON_DEMO_PASSWORD)" : "readathon"} at /auth/login, then /readathon/desk`);
+        console.log(`  Volunteer: volunteer@example.com / ${process.env.READATHON_DEMO_PASSWORD ? "(your READATHON_DEMO_PASSWORD)" : "readathon"} at /readathon/volunteer (Volunteers link in the footer)`);
         console.log("  Timer:     add ?demo to the timer page address for a skip-ahead button\n");
     });
 }
