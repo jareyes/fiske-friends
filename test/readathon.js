@@ -209,33 +209,64 @@ suite("lib/readathon.js duration_short", () => {
     });
 });
 
-suite("lib/readathon.js newly_earned_squares", () => {
-    test("lists automatic squares that just turned on", () => {
-        const earned = Readathon.newly_earned_squares({streak7: true, hours5: false}, {streak7: true, hours5: true});
-        assert.deepStrictEqual(earned.map(square => square.label), ["Read for 5 hours in all"]);
-        assert.deepStrictEqual(Readathon.newly_earned_squares({hours5: true}, {hours5: true}), []);
-    });
-});
-
 suite("lib/readathon.js bingo", () => {
+    const card = Readathon.bingo_card("adult");
+
+    test("every card follows the rules", () => {
+        for(const age of ["kid", "teen", "adult"]) {
+            assert.deepStrictEqual(Readathon.bingo_card_problems(Readathon.bingo_card(age)), [], `the ${age} card`);
+        }
+    });
+
+    test("the rule check explains what's wrong", () => {
+        const squares = card.squares.slice(0, 24).map(square => ({...square}));
+        squares[1] = {label: "Teen night", kind: "event", code: "teen night"};
+        squares[12] = {label: "Read a comic"};
+        squares[3] = {label: "Read every day", kind: "auto", key: "daily"};
+        assert.deepStrictEqual(Readathon.bingo_card_problems({title: "Test", squares}), [
+            "has 24 squares instead of 25",
+            "the middle square isn't free",
+            'square 2 ("Teen night") needs a code in capital letters',
+            'square 4 ("Read every day") has an unknown automatic key "daily"',
+        ]);
+    });
+
+    test("readers get the card for their age group", () => {
+        assert.strictEqual(Readathon.bingo_card("kid").title, "Kids' card");
+        assert.strictEqual(Readathon.bingo_card("teen").title, "Teen card");
+        assert.strictEqual(Readathon.bingo_card("adult").title, "Grown-up card");
+        assert.strictEqual(Readathon.bingo_card("wizard").title, "Grown-up card");
+    });
+
     test("the free square plus a row of four makes a bingo", () => {
-        const board = Readathon.bingo_board([10, 11, 13, 14], {});
+        const board = Readathon.bingo_board(card, [10, 11, 13, 14], {});
         assert.strictEqual(board.bingos, 1);
         assert.strictEqual(board.to_bingo, 0);
+        assert.strictEqual(board.title, "Grown-up card");
     });
 
     test("automatic squares come from the reading log", () => {
-        const off = Readathon.bingo_board([], {streak7: false, hours5: false, recommended: false});
-        const on = Readathon.bingo_board([], {streak7: true, hours5: true, recommended: true});
+        const off = Readathon.bingo_board(card, [], {streak7: false, hours5: false, recommended: false});
+        const on = Readathon.bingo_board(card, [], {streak7: true, hours5: true, recommended: true});
         assert.strictEqual(off.count, 1);
         assert.strictEqual(on.count, 4);
         assert.strictEqual(on.squares[8].tappable, false);
     });
 
-    test("event codes find their square, ignoring case", () => {
-        assert.strictEqual(Readathon.event_code_square(" silent "), 1);
-        assert.strictEqual(Readathon.event_code_square("nope"), -1);
-        assert.strictEqual(Readathon.event_code_square(""), -1);
+    test("lists automatic squares that just turned on", () => {
+        const earned = Readathon.newly_earned_squares(card, {streak7: true, hours5: false}, {streak7: true, hours5: true});
+        assert.deepStrictEqual(earned.map(square => square.label), ["Read for 5 hours in all"]);
+        assert.deepStrictEqual(Readathon.newly_earned_squares(card, {hours5: true}, {hours5: true}), []);
+    });
+
+    test("event codes find their square on the reader's card, ignoring case", () => {
+        assert.strictEqual(Readathon.event_code_square(card, " silent "), 1);
+        assert.strictEqual(Readathon.event_code_square(card, "nope"), -1);
+        assert.strictEqual(Readathon.event_code_square(card, ""), -1);
+        const kid_card = {title: "Kids' card", squares: card.squares.map(square => square.code === "AUTHOR" ? {label: "Read a picture book"} : square)};
+        assert.strictEqual(Readathon.event_code_square(kid_card, "AUTHOR"), -1, "not on this card");
+        assert.strictEqual(Readathon.is_event_code("author"), true, "but a real event");
+        assert.strictEqual(Readathon.is_event_code("nope"), false);
     });
 });
 

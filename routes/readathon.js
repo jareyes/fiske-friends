@@ -239,6 +239,7 @@ function reader_home(req, res, sqlite) {
     const welcome = !!req.session.readathon_welcome;
     delete req.session.readathon_welcome;
     const board = Readathon.bingo_board(
+        Readathon.bingo_card(reader.age_group),
         Readathon.list_marks(sqlite, reader.reader_id),
         Readathon.auto_squares(sqlite, reader, stats),
     );
@@ -334,8 +335,9 @@ function yay(req, res, sqlite) {
     const before_auto = flash.before_auto ?? {};
     const after_auto = Readathon.auto_squares(sqlite, reader, stats);
     const marks = Readathon.list_marks(sqlite, reader.reader_id);
-    const new_squares = Readathon.newly_earned_squares(before_auto, after_auto);
-    const new_bingo = Readathon.bingo_board(marks, after_auto).bingos > Readathon.bingo_board(marks, before_auto).bingos;
+    const card = Readathon.bingo_card(reader.age_group);
+    const new_squares = Readathon.newly_earned_squares(card, before_auto, after_auto);
+    const new_bingo = Readathon.bingo_board(card, marks, after_auto).bingos > Readathon.bingo_board(card, marks, before_auto).bingos;
     const team = reader.team_id ? Teams.progress(sqlite, Teams.get_team(sqlite, reader.team_id), Readathon.today()) : null;
     page(res, "yay", {
         title: "Nice reading!",
@@ -363,6 +365,7 @@ function bingo(req, res, sqlite, message = null) {
     const {reader} = res.locals;
     const {stats} = reader_context(sqlite, reader);
     const board = Readathon.bingo_board(
+        Readathon.bingo_card(reader.age_group),
         Readathon.list_marks(sqlite, reader.reader_id),
         Readathon.auto_squares(sqlite, reader, stats),
     );
@@ -379,7 +382,7 @@ function bingo(req, res, sqlite, message = null) {
 function toggle_square(req, res, sqlite) {
     const {reader} = res.locals;
     const square = Number.parseInt(req.body.square, 10);
-    const definition = content.BINGO_SQUARES[square];
+    const definition = Readathon.bingo_card(reader.age_group).squares[square];
     if(definition && definition.kind !== "free" && definition.kind !== "auto") {
         const marked = Readathon.list_marks(sqlite, reader.reader_id).includes(square);
         Readathon.set_mark(sqlite, reader.reader_id, square, !marked);
@@ -389,8 +392,15 @@ function toggle_square(req, res, sqlite) {
 
 function bingo_code(req, res, sqlite) {
     const {reader} = res.locals;
-    const square = Readathon.event_code_square(req.body.code);
-    if(square < 0) {
+    const card = Readathon.bingo_card(reader.age_group);
+    const square = Readathon.event_code_square(card, req.body.code);
+    if(square < 0 && Readathon.is_event_code(req.body.code)) {
+        // A real event, just not one on this reader's card (say, teen night on a kid's card)
+        req.session.readathon_bingo_message = {
+            text: `Thanks for coming! That event isn't on ${reader.name}'s card, but every minute you read there still counts.`,
+        };
+    }
+    else if(square < 0) {
         req.session.readathon_bingo_message = {
             bad: true,
             text: "We don't know that code. Check the screen at the event, or ask a volunteer.",
@@ -399,7 +409,7 @@ function bingo_code(req, res, sqlite) {
     else {
         Readathon.set_mark(sqlite, reader.reader_id, square, true, "code");
         req.session.readathon_bingo_message = {
-            text: `Checked in! "${content.BINGO_SQUARES[square].label}" is marked.`,
+            text: `Checked in! "${card.squares[square].label}" is marked.`,
         };
     }
     res.redirect(`${BASE}/r/${reader.reader_id}/bingo`);
