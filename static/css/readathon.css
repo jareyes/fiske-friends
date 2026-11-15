@@ -831,6 +831,17 @@
 .ra-reader-row .ra-choices {
     margin-bottom: 0.25rem;
 }
+/* First name beside birth year; town beside state */
+.ra-reader-fields,
+.ra-place {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 0 0.75rem;
+}
+/* On phones, "New Hampshire" doesn't fit beside the town */
+@media (max-width: 30rem) {
+    .ra-place { grid-template-columns: 1fr; }
+}
 .ra-errors {
     padding: 1rem 1.1rem;
     border-radius: 18px;

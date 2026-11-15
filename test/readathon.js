@@ -27,26 +27,63 @@ suite("lib/readathon.js dates", () => {
 });
 
 suite("lib/readathon.js parse_join", () => {
-    test("accepts a family with a goal and email", () => {
+    const today = "2026-11-15";
+    const place = {city: "Claremont", state: "NH"};
+
+    test("accepts a family with birth years, a goal, an email and a town", () => {
         const {errors, household} = Readathon.parse_join({
-            readers: [{name: " Josh ", age_group: "adult"}, {name: "Maya", age_group: "kid"}, {name: "", age_group: "kid"}],
+            readers: [
+                {name: " Josh ", age_group: "adult", birth_year: "1980"},
+                {name: "Maya", age_group: "kid", birth_year: " 2017 "},
+                {name: "", age_group: "kid", birth_year: ""},
+            ],
             goal: "15",
             email: "Josh@Example.com",
-        });
+            city: "  West   Claremont ",
+            state: "nh",
+        }, today);
         assert.deepStrictEqual(errors, []);
-        assert.deepStrictEqual(household.readers.map(r => r.name), ["Josh", "Maya"]);
+        assert.deepStrictEqual(household.readers.map(r => [r.name, r.birth_year]), [["Josh", 1980], ["Maya", 2017]]);
         assert.strictEqual(household.email, "josh@example.com");
         assert.strictEqual(household.goal_minutes, 15);
+        assert.strictEqual(household.city, "West Claremont");
+        assert.strictEqual(household.state, "NH");
     });
 
-    test("needs a reader, a goal from the list, and an email", () => {
-        const {errors} = Readathon.parse_join({readers: [{name: "  "}], goal: "17", email: "nope"});
-        assert.strictEqual(errors.length, 3);
+    test("needs a reader, a goal from the list, an email, and a town and state", () => {
+        const {errors} = Readathon.parse_join({readers: [{name: "  "}], goal: "17", email: "nope", city: " ", state: "ZZ"}, today);
+        assert.strictEqual(errors.length, 4);
+    });
+
+    test("needs a believable birth year for each reader, by name", () => {
+        const {errors} = Readathon.parse_join({
+            readers: [
+                {name: "Josh", birth_year: ""},
+                {name: "Maya", birth_year: "17"},
+                {name: "Ava", birth_year: "2027"},
+                {name: "Old", birth_year: "1899"},
+                {name: "Ok", birth_year: "2026"},
+            ],
+            goal: "15",
+            email: "a@b.co",
+            ...place,
+        }, today);
+        assert.deepStrictEqual(errors, [
+            "Add the year Josh was born, like 2017.",
+            "Add the year Maya was born, like 2017.",
+            "Add the year Ava was born, like 2017.",
+            "Add the year Old was born, like 2017.",
+        ]);
+    });
+
+    test("keeps what was typed so the form can be shown again", () => {
+        const {rows} = Readathon.parse_join({readers: [{name: "Maya", age_group: "kid", birth_year: "20l7"}], ...place}, today);
+        assert.deepStrictEqual(rows, [{name: "Maya", age_group: "kid", birth_year: "20l7"}]);
     });
 
     test("treats an unknown age as a grown-up and caps at six readers", () => {
-        const readers = Array.from({length: 8}, (_, i) => ({name: `R${i}`, age_group: "wizard"}));
-        const {household} = Readathon.parse_join({readers, goal: "5", email: "a@b.co"});
+        const readers = Array.from({length: 8}, (_, i) => ({name: `R${i}`, age_group: "wizard", birth_year: "1990"}));
+        const {household} = Readathon.parse_join({readers, goal: "5", email: "a@b.co", ...place}, today);
         assert.strictEqual(household.readers.length, 6);
         assert.strictEqual(household.readers[0].age_group, "adult");
     });
@@ -147,11 +184,15 @@ suite("lib/readathon.js database", () => {
     test("creates a household, logs reading and totals the community", () => {
         const id = Readathon.create_household(sqlite, {
             email: "family@example.com",
+            city: "Claremont",
+            state: "NH",
             goal_minutes: 15,
-            readers: [{name: "Josh", age_group: "adult"}, {name: "Maya", age_group: "kid"}],
+            readers: [{name: "Josh", age_group: "adult", birth_year: 1980}, {name: "Maya", age_group: "kid", birth_year: 2017}],
         });
         const readers = Readathon.list_readers(sqlite, id);
-        assert.deepStrictEqual(readers.map(r => [r.name, r.color]), [["Josh", 0], ["Maya", 1]]);
+        assert.deepStrictEqual(readers.map(r => [r.name, r.color, r.birth_year]), [["Josh", 0, 1980], ["Maya", 1, 2017]]);
+        const household = Readathon.get_household(sqlite, id);
+        assert.deepStrictEqual([household.city, household.state], ["Claremont", "NH"]);
         assert.notStrictEqual(Readathon.find_household_by_email(sqlite, "FAMILY@example.com"), null);
 
         Readathon.add_entry(sqlite, readers[1].reader_id, {day: "2027-01-02", minutes: 20});

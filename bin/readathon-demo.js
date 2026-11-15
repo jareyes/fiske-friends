@@ -59,11 +59,13 @@ async function seed(sqlite) {
     // The family used in the meeting demo
     const household_id = Readathon.create_household(sqlite, {
         email: "demo@example.com",
+        city: "Claremont",
+        state: "NH",
         wants_updates: 1,
         goal_minutes: 30,
         readers: [
-            {name: "Renee", age_group: "adult", goal_minutes: 30},
-            {name: "Katie", age_group: "kid", goal_minutes: 15},
+            {name: "Renee", age_group: "adult", birth_year: 1984, goal_minutes: 30},
+            {name: "Katie", age_group: "kid", birth_year: 2018, goal_minutes: 15},
         ],
     });
     const [renee, katie] = Readathon.list_readers(sqlite, household_id);
@@ -83,12 +85,18 @@ async function seed(sqlite) {
     // Other readers, so the community total looks like the middle of January
     const names = ["Ava", "Ben", "Carmen", "Dot", "Eli", "Fern", "Gus", "Hana", "Ike", "June", "Kai", "Lena",
         "Milo", "Nora", "Otis", "Pia", "Quinn", "Rosa", "Sam", "Tess", "Uma", "Vic", "Wes", "Zoe"];
+    const towns = [["Claremont", "NH"], ["Claremont", "NH"], ["Claremont", "NH"], ["Newport", "NH"], ["Charlestown", "NH"], ["Windsor", "VT"]];
+    const birth_years = {kid: 2017, teen: 2011, adult: 1975};
     const random = random_generator(42);
     names.forEach((name, n) => {
+        const age_group = ["kid", "teen", "adult"][n % 3];
+        const [city, state] = towns[n % towns.length];
         const id = Readathon.create_household(sqlite, {
             email: `reader${n}@example.org`,
+            city,
+            state,
             goal_minutes: 15,
-            readers: [{name, age_group: ["kid", "teen", "adult"][n % 3]}],
+            readers: [{name, age_group, birth_year: birth_years[age_group] - (n % 4)}],
         });
         const [reader] = Readathon.list_readers(sqlite, id);
         days.forEach(day => {

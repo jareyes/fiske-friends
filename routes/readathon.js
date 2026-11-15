@@ -105,7 +105,9 @@ function home(req, res, sqlite) {
     });
 }
 
-function show_join(req, res, rows = [{name: "", age_group: "adult"}], form = {goal: "15"}, errors = [], sqlite = null) {
+const BLANK_JOIN_FORM = {goal: "15", city: SETTINGS.default_city, state: SETTINGS.default_state};
+
+function show_join(req, res, rows = [{name: "", age_group: "adult", birth_year: ""}], form = BLANK_JOIN_FORM, errors = [], sqlite = null) {
     const team_code = Readathon.clean(req.body?.team ?? req.query.team, 16);
     const team = sqlite && team_code ? Teams.get_by_code(sqlite, team_code) : null;
     page(res, "join", {
@@ -117,6 +119,8 @@ function show_join(req, res, rows = [{name: "", age_group: "adult"}], form = {go
         can_add: rows.length < Readathon.MAX_READERS,
         goals: content.GOALS,
         ages: content.AGE_GROUPS,
+        states: content.STATES,
+        latest_birth_year: Readathon.today().slice(0, 4),
     });
 }
 
@@ -125,11 +129,13 @@ function join(req, res, sqlite) {
     const form = {
         goal: String(req.body.goal ?? ""),
         email: Readathon.clean(req.body.email, 200),
+        city: Readathon.clean(req.body.city, 60),
+        state: Readathon.clean(req.body.state, 2).toUpperCase(),
         wants_updates: !!req.body.wants_updates,
     };
     // Without JavaScript, "Add another reader" submits the form and comes back with one more row
     if(req.body.add_reader !== undefined) {
-        return show_join(req, res, [...rows, {name: "", age_group: "kid"}].slice(0, Readathon.MAX_READERS), form, [], sqlite);
+        return show_join(req, res, [...rows, {name: "", age_group: "kid", birth_year: ""}].slice(0, Readathon.MAX_READERS), form, [], sqlite);
     }
     if(errors.length > 0) {
         res.status(400);
@@ -476,6 +482,8 @@ function desk(req, res, sqlite, message = null) {
         }),
         days: Readathon.loggable_days(today).slice(0, 14).map(day => ({day, label: Readathon.label_day(day, today)})),
         ages: content.AGE_GROUPS,
+        states: content.STATES,
+        latest_birth_year: today.slice(0, 4),
     });
     delete req.session.readathon_desk_message;
 }
@@ -509,11 +517,19 @@ function desk_add_reader(req, res, sqlite) {
         return desk_back(req, res, `${email} is already signed up. Search for them instead.`, email);
     }
     const age_group = content.AGE_GROUPS.some(a => a.id === req.body.age_group) ? req.body.age_group : "adult";
+    // Birth year, town and state are optional here; paper forms aren't always filled in
+    const birth_year_text = Readathon.clean(req.body.birth_year, 4);
+    const birth_year = Readathon.parse_birth_year(birth_year_text);
+    if(birth_year_text !== "" && birth_year === null) {
+        return desk_back(req, res, "Birth year should be four digits, like 1958. Leave it blank if you don't know.");
+    }
     Readathon.create_household(sqlite, {
         email: email || null,
+        city: Readathon.clean(req.body.city, 60) || null,
+        state: Readathon.parse_state(req.body.state),
         source: "desk",
         goal_minutes: 15,
-        readers: [{name, age_group}],
+        readers: [{name, age_group, birth_year}],
     });
     desk_back(req, res, `Signed up ${name}. Give them a paper kit!`, name);
 }

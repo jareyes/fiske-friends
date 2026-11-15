@@ -41,6 +41,16 @@
   <form class="ra-desk-new" action="{{base}}/desk/readers" method="post">
     <label class="ra-field"><span>First name</span><input name="name" type="text" maxlength="40" required></label>
     <label class="ra-field"><span>Email <small>(optional)</small></span><input name="email" type="email"></label>
+    <label class="ra-field"><span>Birth year <small>(optional)</small></span><input name="birth_year" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="e.g. 1958"></label>
+    <div class="ra-place">
+      <label class="ra-field"><span>Town or city <small>(optional)</small></span><input name="city" type="text" maxlength="60"></label>
+      <label class="ra-field"><span>State <small>(optional)</small></span>
+        <select name="state">
+          <option value="">&mdash;</option>
+          {{#each states}}<option value="{{id}}">{{name}}</option>{{/each}}
+        </select>
+      </label>
+    </div>
     <div class="ra-choices ra-choices-3">
       {{#each ages}}<label class="ra-choice"><input type="radio" name="age_group" value="{{id}}"{{#if (eq id "adult")}} checked{{/if}}><span>{{name}}</span></label>{{/each}}
     </div>

@@ -19,6 +19,9 @@
     starts: "2027-01-01",
     ends: "2027-01-31",
     community_goal_minutes: 100000,
+    // Pre-filled on the sign-up form; families can change them
+    default_city: "Claremont",
+    default_state: "NH",
     // For demos only: pretend today is this date (YYYY-MM-DD). Leave null in production.
     today_override: null,
     // For demos only: show sign-in links on screen instead of emailing them.
