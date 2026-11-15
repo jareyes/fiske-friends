@@ -1476,6 +1476,42 @@
 .ra-timer-controls .ra-btn {
     min-width: 9rem;
 }
+.ra-timer-cancel {
+    margin-top: 1rem;
+}
+.ra-timer-link {
+    border: 0;
+    background: none;
+    padding: 0.5rem;
+    color: #c9d2ff;
+    font: inherit;
+    font-size: 0.95rem;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.ra-timer-confirm {
+    max-width: 24rem;
+    margin: 1.25rem auto 0;
+    padding: 1rem 1.1rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+.ra-timer-confirm .ra-timer-link {
+    margin-top: 0.5rem;
+}
+.ra-timer-cancel .ra-timer-confirm {
+    margin-top: 0;
+}
+.ra-timer-confirm p {
+    margin: 0 0 0.85rem;
+}
+.ra-timer-confirm-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+}
 .ra-timer-tip {
     max-width: 22rem;
     margin: 1.5rem 0 0;

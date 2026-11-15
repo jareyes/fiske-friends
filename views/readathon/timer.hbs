@@ -15,6 +15,26 @@
       <button class="ra-btn ra-btn-snow ra-btn-big" type="submit">I'm done</button>
     </form>
   </div>
+
+  <div class="ra-timer-confirm" data-long-check hidden>
+    <p>That's <b data-long-time></b>. Did you read the whole time?</p>
+    <div class="ra-timer-confirm-buttons">
+      <button class="ra-btn ra-btn-lamp" type="button" data-long-yes>Yes, save it</button>
+      <a class="ra-btn ra-btn-snow" href="{{reader_url}}/log" data-long-fix>Fix the time</a>
+    </div>
+    <button class="ra-timer-link" type="button" data-long-back>Not done yet</button>
+  </div>
+
+  <div class="ra-timer-cancel" data-cancel hidden>
+    <button class="ra-timer-link" type="button" data-cancel-ask>Don't save this time</button>
+    <div class="ra-timer-confirm" data-cancel-confirm hidden>
+      <p>Throw away <b data-cancel-time></b>? It won't be saved.</p>
+      <div class="ra-timer-confirm-buttons">
+        <button class="ra-btn ra-btn-snow" type="button" data-cancel-yes>Yes, throw it away</button>
+        <button class="ra-btn ra-btn-lamp" type="button" data-cancel-no>Keep it</button>
+      </div>
+    </div>
+  </div>
   <p class="ra-timer-tip" data-tip hidden>You can close this page or lock your phone. We'll remember when you started.</p>
   <noscript>
     <p class="ra-timer-note">The timer needs JavaScript. You can still <a href="{{reader_url}}/log">type in your minutes</a>.</p>

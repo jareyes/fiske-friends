@@ -74,9 +74,15 @@
         const minutes_input = root.querySelector("[data-minutes]");
         const controls = root.querySelector("[data-controls]");
         const tip = root.querySelector("[data-tip]");
+        const cancel = root.querySelector("[data-cancel]");
+        const cancel_ask = root.querySelector("[data-cancel-ask]");
+        const cancel_confirm = root.querySelector("[data-cancel-confirm]");
+        const long_check = root.querySelector("[data-long-check]");
+        const long_fix = root.querySelector("[data-long-fix]");
         if(!face || !toggle) {
             return;
         }
+        let long_ok = false;
         const LIMIT_MS = 4 * 60 * 60 * 1000;
         const NUDGE_MS = 2 * 60 * 60 * 1000;
 
@@ -101,6 +107,22 @@
             }
         };
         const pad = n => String(n).padStart(2, "0");
+        const minutes_read = () => Math.max(1, Math.min(240, Math.round(elapsed() / 60000)));
+        // "45 min", "3 hr 12 min"
+        const minutes_label = () => {
+            const minutes = minutes_read();
+            const h = Math.floor(minutes / 60);
+            const m = minutes % 60;
+            return h === 0 ? `${m} min` : (m === 0 ? `${h} hr` : `${h} hr ${m} min`);
+        };
+        const forget = () => {
+            try {
+                store?.removeItem(key);
+            }
+            catch(err) {
+                // Nothing to clear
+            }
+        };
 
         function render() {
             const ms = elapsed();
@@ -112,9 +134,16 @@
             root.classList.toggle("is-running", state.running);
             toggle.textContent = state.running ? "Pause" : (ms > 0 ? "Keep reading" : "Start");
             save.hidden = ms < 1000;
+            if(cancel) {
+                cancel.hidden = ms < 1000 || !long_check.hidden;
+                cancel.querySelector("[data-cancel-time]").textContent = face.textContent;
+            }
             if(ms >= LIMIT_MS && state.running) {
                 pause();
                 note.textContent = "We stopped at 4 hours. Tap I'm done to save it!";
+            }
+            else if(long_check && !long_check.hidden) {
+                note.textContent = "Paused.";
             }
             else if(state.running && ms >= NUDGE_MS) {
                 note.textContent = "Still reading? Wow! Tap I'm done whenever you finish.";
@@ -142,16 +171,59 @@
         controls.hidden = false;
         tip.hidden = false;
         toggle.addEventListener("click", () => (state.running ? pause() : start()));
-        save.addEventListener("submit", () => {
-            const minutes = Math.max(1, Math.min(240, Math.round(elapsed() / 60000)));
-            minutes_input.value = String(minutes);
-            try {
-                store?.removeItem(key);
+        save.addEventListener("submit", event => {
+            // A long session might be a timer someone forgot about: check before saving
+            if(elapsed() >= NUDGE_MS && !long_ok && long_check) {
+                event.preventDefault();
+                if(state.running) {
+                    pause();
+                }
+                long_check.querySelector("[data-long-time]").textContent = minutes_label();
+                long_fix.href = `${long_fix.getAttribute("href").split("?")[0]}?minutes=${minutes_read()}`;
+                long_check.hidden = false;
+                controls.hidden = true;
+                cancel.hidden = true;
+                long_check.querySelector("[data-long-yes]").focus();
+                return;
             }
-            catch(err) {
-                // Nothing to clear
-            }
+            minutes_input.value = String(minutes_read());
+            forget();
         });
+        if(long_check) {
+            long_check.querySelector("[data-long-yes]").addEventListener("click", () => {
+                long_ok = true;
+                save.requestSubmit();
+            });
+            // Fixing the time happens on the add-reading form, so this timer is done
+            long_fix.addEventListener("click", forget);
+            long_check.querySelector("[data-long-back]").addEventListener("click", () => {
+                long_check.hidden = true;
+                controls.hidden = false;
+                render();
+                toggle.focus();
+            });
+        }
+
+        // Backing out: "Don't save this time", then confirm, so a stray tap doesn't lose real reading
+        if(cancel) {
+            const close_confirm = () => {
+                cancel_confirm.hidden = true;
+                cancel_ask.hidden = false;
+            };
+            cancel_ask.addEventListener("click", () => {
+                cancel_ask.hidden = true;
+                cancel_confirm.hidden = false;
+                cancel_confirm.querySelector("[data-cancel-no]").focus();
+            });
+            cancel_confirm.querySelector("[data-cancel-no]").addEventListener("click", close_confirm);
+            cancel_confirm.querySelector("[data-cancel-yes]").addEventListener("click", () => {
+                forget();
+                state = {running: false, started_at: 0, banked: 0, day};
+                close_confirm();
+                render();
+                note.textContent = "OK, nothing was saved. Press start whenever you're ready.";
+            });
+        }
         // Demo helper for the planning meeting: add ?demo to the URL to skip ahead
         if(new URLSearchParams(window.location.search).has("demo")) {
             const skip = document.createElement("button");

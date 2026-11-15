@@ -317,6 +317,15 @@ function log_message(req) {
     return text;
 }
 
+// "Fix the time" from the timer opens the add-reading form with its minutes filled in
+function prefill_minutes(value) {
+    const minutes = Number.parseInt(value, 10);
+    if(!Number.isInteger(minutes) || minutes < 1 || minutes > 600) {
+        return {};
+    }
+    return MINUTE_CHOICES.includes(minutes) ? {minutes: String(minutes)} : {minutes: "other", minutes_other: String(minutes)};
+}
+
 // The add-reading form, or the same form for changing an entry when entry is given
 function show_log(req, res, sqlite, form = {}, errors = [], entry = null) {
     const {reader} = res.locals;
@@ -737,7 +746,7 @@ function create(sqlite) {
     router.post("/r/:reader_id/goal", own, wrap(update_goal));
     router.get("/r/:reader_id/reading-log", own, wrap(reading_log));
     router.get("/r/:reader_id/timer", own, wrap(timer));
-    router.get("/r/:reader_id/log", own, wrap((req, res, db) => show_log(req, res, db)));
+    router.get("/r/:reader_id/log", own, wrap((req, res, db) => show_log(req, res, db, prefill_minutes(req.query.minutes))));
     router.post("/r/:reader_id/log", own, wrap(save_log));
     router.get("/r/:reader_id/yay", own, wrap(yay));
     router.get("/r/:reader_id/entries/:entry_id", own, wrap(edit_entry));
