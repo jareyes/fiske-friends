@@ -4,6 +4,7 @@
 //   /readathon/teams/new         start a team (signed in)
 //   /readathon/teams/:code       a team's page; also its invite link
 const config = require("config");
+const Prizes = require("../lib/readathon-prizes");
 const Readathon = require("../lib/readathon");
 const Teams = require("../lib/readathon-teams");
 const {Router} = require("express");
@@ -19,20 +20,24 @@ function create(sqlite, {page, household_id}) {
         return id === null ? [] : Readathon.list_readers(sqlite, id);
     }
 
+    // Team ids anyone in the signed-in household is on
+    function household_team_ids(readers) {
+        return new Set(readers.flatMap(r => Teams.team_ids_for_reader(sqlite, r.reader_id)));
+    }
+
     router.get("/teams", (req, res, next) => {
         try {
-            const readers = household_readers(req);
+            const mine = household_team_ids(household_readers(req));
             page(res, "teams", {
                 title: "Teams",
                 nav: "teams",
                 signed_in: household_id(req) !== null,
                 teams: Teams.list_public(sqlite).map(team => ({
                     ...team,
-                    is_mine: readers.some(r => r.team_id === team.team_id),
+                    is_mine: mine.has(team.team_id),
                     // Invite-only teams are listed but only linked for their own members
-                    linkable: !!team.is_open || readers.some(r => r.team_id === team.team_id),
+                    linkable: !!team.is_open || mine.has(team.team_id),
                 })),
-                my_team_count: new Set(readers.map(r => r.team_id).filter(Boolean)).size,
             });
         }
         catch(err) {
@@ -41,20 +46,17 @@ function create(sqlite, {page, household_id}) {
     });
 
     function show_new(req, res, readers, form = {}, errors = []) {
-        const goal = String(form.goal_hours ?? "25");
         const picked = form.reader_ids ?? readers.map(r => r.reader_id);
         page(res, "team-new", {
             title: "Start a team",
             nav: "teams",
             errors,
             form,
-            goals: Teams.GOAL_HOURS.map(hours => ({hours, checked: String(hours) === goal})),
             open_checked: form.is_open === "1",
             readers: readers.map(r => ({
                 ...r,
                 initial: r.name.charAt(0).toUpperCase(),
                 checked: picked.includes(r.reader_id),
-                current_team: Teams.get_team(sqlite, r.team_id)?.name ?? null,
             })),
         });
     }
@@ -84,6 +86,7 @@ function create(sqlite, {page, household_id}) {
                 return show_new(req, res, readers, {...req.body, reader_ids}, errors);
             }
             const code = Teams.create_team(sqlite, team, reader_ids);
+            Prizes.update_team_awards(sqlite, Teams.get_by_code(sqlite, code).team_id);
             console.log({event: "Readathon.TEAM_CREATED", code, members: reader_ids.length});
             req.session.readathon_team_flash = "new";
             res.redirect(`${BASE}/teams/${code}`);
@@ -109,8 +112,7 @@ function create(sqlite, {page, household_id}) {
             const readers = household_readers(req).map(r => ({
                 ...r,
                 initial: r.name.charAt(0).toUpperCase(),
-                on_team: r.team_id === team.team_id,
-                other_team: r.team_id && r.team_id !== team.team_id ? Teams.get_team(sqlite, r.team_id)?.name : null,
+                on_team: Teams.team_ids_for_reader(sqlite, r.reader_id).includes(team.team_id),
             }));
             const flash = req.session.readathon_team_flash ?? null;
             delete req.session.readathon_team_flash;
@@ -149,6 +151,7 @@ function create(sqlite, {page, household_id}) {
             const ids = Teams.chosen_readers(req.body, readers.map(r => r.reader_id));
             if(ids.length > 0) {
                 Teams.join(sqlite, res.locals.team.team_id, ids);
+                Prizes.update_team_awards(sqlite, res.locals.team.team_id);
                 req.session.readathon_team_flash = "joined";
             }
             res.redirect(`${BASE}/teams/${res.locals.team.code}`);
@@ -163,10 +166,10 @@ function create(sqlite, {page, household_id}) {
             const readers = household_readers(req);
             const ids = Teams.chosen_readers(req.body, readers.map(r => r.reader_id));
             for(const id of ids) {
-                if(readers.find(r => r.reader_id === id)?.team_id === res.locals.team.team_id) {
-                    Teams.leave(sqlite, id);
-                }
+                Teams.leave(sqlite, res.locals.team.team_id, id);
             }
+            // A smaller team might now be at its goal
+            Prizes.update_team_awards(sqlite, res.locals.team.team_id);
             res.redirect(`${BASE}/teams`);
         }
         catch(err) {

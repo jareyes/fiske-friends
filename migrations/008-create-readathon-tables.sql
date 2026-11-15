@@ -18,7 +18,10 @@ CREATE TABLE IF NOT EXISTS readathon_readers (
   name TEXT NOT NULL,
   age_group TEXT NOT NULL CHECK (age_group IN ('kid', 'teen', 'adult')),
   birth_year INTEGER CHECK (birth_year BETWEEN 1900 AND 2100),
-  goal_minutes INTEGER NOT NULL DEFAULT 15,
+  -- The whole month's goal, in minutes
+  goal_minutes INTEGER NOT NULL DEFAULT 300,
+  -- When they first reached their goal: that earns a raffle entry, kept even if they change their goal later
+  goal_reached_ms INTEGER,
   color INTEGER NOT NULL DEFAULT 0,
   created_ms INTEGER NOT NULL
 ) STRICT;

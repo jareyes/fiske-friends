@@ -1,9 +1,12 @@
 <section class="ra-yay">
   <div class="ra-confetti" aria-hidden="true">{{#each confetti}}<i></i>{{/each}}</div>
   <p class="ra-yay-plus">+{{added}} <small>minutes</small></p>
-  <h1 class="ra-h1">{{#if pin}}You've read 10 hours!{{else}}{{#if goal_reached}}You reached your goal!{{else}}{{#if new_bingo}}Bingo!{{else}}Nice reading, {{reader.name}}!{{/if}}{{/if}}{{/if}}</h1>
-  {{#if pin}}<p class="ra-win">Pick up your enamel pin at the library desk.</p>{{/if}}
-  <p class="ra-lede-dark"><b>{{total_label}}</b> read so far.{{#if goal_reached}}{{#if pin}} That's your {{goal_label}} goal, too!{{/if}}{{/if}}{{#if halfway}} You're halfway to your {{goal_label}} goal!{{/if}}</p>
+  <h1 class="ra-h1">{{#if goal_reached}}You reached your goal!{{else}}{{#if new_blackout}}Full card!{{else}}{{#if new_bingo}}Bingo!{{else}}Nice reading, {{reader.name}}!{{/if}}{{/if}}{{/if}}</h1>
+  <p class="ra-lede-dark"><b>{{total_label}}</b> read so far.{{#if halfway}} You're halfway to your {{goal_label}} goal!{{/if}}</p>
+  {{#if raffle_goal}}<p class="ra-win">That's an entry in the grand prize raffle!</p>{{/if}}
+  {{#each raffle_teams}}<p class="ra-win">{{this}} reached its team goal: another raffle entry!</p>{{/each}}
+  {{#if first_bingo}}<p class="ra-win">You earned an enamel pin! Pick it up at the library desk.</p>{{/if}}
+  {{#if new_blackout}}<p class="ra-win">You earned a tote bag! Pick it up at the library desk.</p>{{/if}}
 </section>
 
 {{#if new_squares}}
@@ -14,13 +17,13 @@
   </ul>
 </section>
 {{/if}}
-{{#if team}}
-<a class="ra-team-card ra-team-yay" href="{{base}}/teams/{{team.code}}">
-  <span class="ra-team-card-top"><span class="ra-kicker-dark">You helped your team</span><strong>{{team.name}}</strong></span>
-  <span class="ra-meter ra-meter-sky" aria-hidden="true"><span style="width: {{team.percent}}%"></span></span>
-  <span class="ra-muted">{{#if team.reached}}Team goal reached! {{team.total_label}} read together.{{else}}{{team.percent}}% of the goal &middot; {{team.to_go_label}} to go{{/if}}</span>
+{{#each teams}}
+<a class="ra-team-card ra-team-yay" href="{{@root.base}}/teams/{{code}}">
+  <span class="ra-team-card-top"><span class="ra-kicker-dark">You helped your team</span><strong>{{name}}</strong></span>
+  <span class="ra-meter ra-meter-sky" aria-hidden="true"><span style="width: {{percent}}%"></span></span>
+  <span class="ra-muted">{{#if reached}}Team goal reached! {{total_label}} read together.{{else}}{{percent}}% of the goal &middot; {{to_go_label}} to go{{/if}}</span>
 </a>
-{{/if}}
+{{/each}}
 
 <div class="ra-actions ra-actions-row">
   <a class="ra-btn ra-btn-lamp ra-btn-big" href="{{reader_url}}">Done</a>

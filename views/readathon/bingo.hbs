@@ -1,14 +1,14 @@
 <header class="ra-page-head">
   <p class="ra-kicker-dark">{{board.title}}</p>
   <h1 class="ra-h1">{{reader.name}}'s bingo card</h1>
-  <p class="ra-lede-dark">Tap a square when you've done it. Five in a row wins a prize!</p>
+  <p class="ra-lede-dark">Tap a square when you've done it. Five in a row wins an enamel pin!</p>
 </header>
 
 {{#if message}}<p class="ra-flash{{#if message.bad}} ra-flash-bad{{/if}}" role="status">{{message.text}}</p>{{/if}}
 
 <p class="ra-bingo-status{{#if board.bingos}} is-win{{/if}}" role="status">
-  {{#if board.blackout}}<b>Blackout!</b> You're in the grand prize drawing.
-  {{else}}{{#if board.bingos}}<b>Bingo!</b> Show this at the desk to pick a prize.
+  {{#if board.blackout}}<b>Full card!</b> You earned a tote bag and an enamel pin. Pick them up at the library desk.
+  {{else}}{{#if board.bingos}}<b>Bingo!</b> You earned an enamel pin. Pick it up at the library desk. Fill the whole card for a tote bag!
   {{else}}<b>{{board.to_bingo}} more</b> in a row for a bingo{{/if}}{{/if}}
 </p>
 

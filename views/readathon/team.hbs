@@ -10,12 +10,14 @@
   {{#if team.reached}}
   <p class="ra-goal-label">Goal reached!</p>
   {{else}}
-  <p class="ra-goal-label">Team goal</p>
+  <p class="ra-goal-label">Team goal{{#if team.reached_before}}: reached once already!{{/if}}</p>
   {{/if}}
   <p class="ra-goal-number"><b>{{team.total_hours}}</b> of {{team.goal_label}}</p>
   <div class="ra-meter ra-meter-lamp" role="img" aria-label="{{team.percent}} percent of the team goal"><span style="width: {{team.percent}}%"></span></div>
-  <p class="ra-muted">{{#if team.reached}}Amazing teamwork. Keep going for a new record!{{else}}{{team.to_go_label}} to go &middot; {{team.read_today}} of {{team.member_count}} read today{{/if}}</p>
+  <p class="ra-muted">{{#if team.reached}}Amazing teamwork. Everyone on the team earned a raffle entry!{{else}}{{team.to_go_label}} to go &middot; {{team.read_today}} of {{team.member_count}} read today{{/if}}</p>
+  {{#if team.reached_before}}<p class="ra-muted">New teammates made the goal bigger. Reach it again so they earn a raffle entry too.</p>{{/if}}
 </section>
+<p class="ra-fine">The team goal is everyone's January goals added up. When the team reaches it, everyone on the team earns an entry in the grand prize raffle.</p>
 
 {{#if on_team}}
 <section class="ra-card ra-share" aria-labelledby="invite-title">
@@ -54,8 +56,8 @@
     <div class="ra-pick-readers">
       {{#each readers}}{{#unless on_team}}
       <label class="ra-pick-reader">
-        <input type="checkbox" name="reader_ids" value="{{reader_id}}"{{#unless other_team}} checked{{/unless}}>
-        <span><span class="ra-avatar a{{color}}" aria-hidden="true">{{initial}}</span><b>{{name}}</b>{{#if other_team}}<small>on {{other_team}}</small>{{/if}}</span>
+        <input type="checkbox" name="reader_ids" value="{{reader_id}}" checked>
+        <span><span class="ra-avatar a{{color}}" aria-hidden="true">{{initial}}</span><b>{{name}}</b></span>
       </label>
       {{/unless}}{{/each}}
     </div>
@@ -72,7 +74,7 @@
         {{/if}}{{/each}}
       </div>
       <button class="ra-btn ra-btn-ghost" type="submit">Leave</button>
-      <p class="ra-fine">Your minutes move with you, so the team total will go down.</p>
+      <p class="ra-fine">Your minutes go with you, so the team total and goal will go down. A raffle entry you already earned with this team is yours to keep.</p>
     </form>
   </details>
   {{/if}}

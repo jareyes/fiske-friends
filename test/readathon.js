@@ -1,6 +1,7 @@
 const assert = require("node:assert");
 const fs = require("node:fs");
 const path = require("node:path");
+const Prizes = require("../lib/readathon-prizes");
 const Readathon = require("../lib/readathon");
 const {DatabaseSync} = require("node:sqlite");
 const {suite, test} = require("node:test");
@@ -177,7 +178,7 @@ suite("lib/readathon.js parse_log", () => {
 });
 
 suite("lib/readathon.js stats", () => {
-    test("adds up minutes, days, streaks and weekly stickers", () => {
+    test("adds up minutes, days and streaks", () => {
         const s = Readathon.stats(entries([
             ["2027-01-01", 45], ["2027-01-02", 30], ["2027-01-03", 20],
             ["2027-01-09", 10], ["2027-01-10", 25], ["2027-01-11", 30], ["2027-01-11", 5],
@@ -187,8 +188,6 @@ suite("lib/readathon.js stats", () => {
         assert.strictEqual(s.days_read, 6);
         assert.strictEqual(s.streak, 3, "today has no reading yet, so the streak counts back from yesterday");
         assert.strictEqual(s.best_streak, 3);
-        assert.strictEqual(s.stickers, 2);
-        assert.strictEqual(s.weeks.length, 5);
     });
 });
 
@@ -384,59 +383,126 @@ suite("lib/readathon-gifts.js database", () => {
 
 const Teams = require("../lib/readathon-teams");
 
-suite("lib/readathon-teams.js", () => {
+suite("lib/readathon-teams.js and lib/readathon-prizes.js", () => {
     const sqlite = new DatabaseSync(":memory:");
     const dirpath = path.join(__dirname, "..", "migrations");
     for(const file of fs.readdirSync(dirpath).filter(f => f.endsWith(".sql")).sort()) {
         sqlite.exec(fs.readFileSync(path.join(dirpath, file), "utf8"));
     }
-    const family = Readathon.create_household(sqlite, {email: "t@example.com", readers: [{name: "Josh", age_group: "adult"}, {name: "Maya", age_group: "kid"}]});
+    // Goals: Josh 5 hours, Maya 2 hours, Ava 5 hours
+    const family = Readathon.create_household(sqlite, {email: "t@example.com", readers: [
+        {name: "Josh", age_group: "adult", goal_minutes: 300},
+        {name: "Maya", age_group: "kid", goal_minutes: 120},
+    ]});
     const [josh, maya] = Readathon.list_readers(sqlite, family);
-    const other = Readathon.create_household(sqlite, {email: "o@example.com", readers: [{name: "Ava", age_group: "adult"}]});
+    const other = Readathon.create_household(sqlite, {email: "o@example.com", readers: [{name: "Ava", age_group: "adult", goal_minutes: 300}]});
     const [ava] = Readathon.list_readers(sqlite, other);
+    const log = (reader, day, minutes) => {
+        Readathon.add_entry(sqlite, reader.reader_id, {day, minutes});
+        return Prizes.update_awards(sqlite, reader.reader_id);
+    };
 
-    test("parse_team needs a name, a goal from the list, and readers from your own home", () => {
-        const ok = Teams.parse_team({name: " Night  Owls ", goal_hours: "25", reader_ids: [String(josh.reader_id), String(ava.reader_id)], is_open: "1"}, [josh.reader_id, maya.reader_id]);
+    test("parse_team needs a name and readers from your own home", () => {
+        const ok = Teams.parse_team({name: " Night  Owls ", reader_ids: [String(josh.reader_id), String(ava.reader_id)], is_open: "1"}, [josh.reader_id, maya.reader_id]);
         assert.deepStrictEqual(ok.errors, []);
         assert.strictEqual(ok.team.name, "Night Owls");
-        assert.strictEqual(ok.team.goal_minutes, 1500);
         assert.strictEqual(ok.team.is_open, 1);
         assert.deepStrictEqual(ok.reader_ids, [josh.reader_id], "someone else's reader is ignored");
-        assert.strictEqual(Teams.parse_team({name: "NO", goal_hours: "7"}, [josh.reader_id]).errors.length, 3);
+        assert.strictEqual(Teams.parse_team({name: "NO"}, [josh.reader_id]).errors.length, 2);
     });
 
-    test("a team adds up its members' January minutes and who read today", () => {
-        const code = Teams.create_team(sqlite, {name: "Committee", goal_minutes: 600}, [josh.reader_id]);
-        const team = Teams.get_by_code(sqlite, code);
+    test("a team's goal is its members' goals added up, and everyone's minutes count", () => {
+        const team = Teams.get_by_code(sqlite, Teams.create_team(sqlite, {name: "Committee"}, [josh.reader_id]));
         Teams.join(sqlite, team.team_id, [ava.reader_id]);
         Readathon.add_entry(sqlite, josh.reader_id, {day: "2027-01-12", minutes: 60});
         Readathon.add_entry(sqlite, ava.reader_id, {day: "2027-01-11", minutes: 120});
         Readathon.add_entry(sqlite, ava.reader_id, {day: "2026-12-31", minutes: 500});
         const p = Teams.progress(sqlite, team, "2027-01-12", SETTINGS);
-        assert.strictEqual(p.total, 180);
+        assert.strictEqual(p.goal_minutes, 600);
+        assert.strictEqual(p.goal_label, "10 hours");
+        assert.strictEqual(p.total, 180, "reading before January doesn't count");
         assert.strictEqual(p.percent, 30);
         assert.strictEqual(p.read_today, 1);
         assert.deepStrictEqual(p.members.map(m => [m.name, m.share]), [["Ava", 67], ["Josh", 33]]);
-        assert.strictEqual(p.total_label, "3 hours");
     });
 
-    test("kids and grown-ups can be on different teams; joining another team moves you", () => {
-        const class_code = Teams.create_team(sqlite, {name: "4th Grade", goal_minutes: 6000, is_open: 0}, [maya.reader_id]);
-        const class_team = Teams.get_by_code(sqlite, class_code);
-        assert.notStrictEqual(Readathon.get_reader(sqlite, maya.reader_id).team_id, Readathon.get_reader(sqlite, josh.reader_id).team_id);
-        Teams.join(sqlite, class_team.team_id, [ava.reader_id]);
-        assert.strictEqual(Readathon.get_reader(sqlite, ava.reader_id).team_id, class_team.team_id);
-        Teams.leave(sqlite, ava.reader_id);
-        assert.strictEqual(Readathon.get_reader(sqlite, ava.reader_id).team_id, null);
+    test("readers can be on many teams; leaving one doesn't touch the others", () => {
+        const class_team = Teams.get_by_code(sqlite, Teams.create_team(sqlite, {name: "4th Grade"}, [maya.reader_id, ava.reader_id]));
+        const committee = Teams.list_public(sqlite, SETTINGS).find(t => t.name === "Committee");
+        assert.deepStrictEqual(Teams.team_ids_for_reader(sqlite, ava.reader_id), [committee.team_id, class_team.team_id]);
+        Teams.leave(sqlite, class_team.team_id, ava.reader_id);
+        assert.deepStrictEqual(Teams.team_ids_for_reader(sqlite, ava.reader_id), [committee.team_id]);
+        assert.strictEqual(Teams.progress(sqlite, class_team, null, SETTINGS).goal_minutes, 120, "Ava's goal left with her");
+    });
+
+    test("reaching your goal earns a raffle entry that stays even if you raise your goal", () => {
+        assert.strictEqual(Prizes.raffle(sqlite, maya.reader_id).count, 0);
+        assert.deepStrictEqual(log(maya, "2027-01-05", 60), {goal: false, teams: []});
+        const earned = log(maya, "2027-01-06", 60);
+        assert.strictEqual(earned.goal, true);
+        assert.deepStrictEqual(earned.teams, ["4th Grade"], "Maya is alone on 4th Grade now, so her goal is the team's goal");
+        Readathon.set_goal(sqlite, maya.reader_id, 1200);
+        assert.deepStrictEqual(Prizes.raffle(sqlite, maya.reader_id).reasons, ["Reached your goal", "4th Grade reached its team goal"]);
+    });
+
+    test("one teammate's extra reading makes up for another's", () => {
+        // Committee: Josh (5 h goal) and Ava (5 h goal) need 10 hours together. They have 3.
+        const committee = Teams.list_public(sqlite, SETTINGS).find(t => t.name === "Committee");
+        log(josh, "2027-01-13", 180); // Josh: 4 hours, an hour short of his own goal
+        const earned = log(ava, "2027-01-14", 240); // Ava: 6 hours, an hour over hers
+        assert.deepStrictEqual(earned, {goal: true, teams: ["Committee"]});
+        assert.strictEqual(Prizes.raffle(sqlite, josh.reader_id).count, 1, "Josh missed his goal but his team made it");
+        assert.deepStrictEqual(Prizes.raffle(sqlite, josh.reader_id).reasons, ["Committee reached its team goal"]);
+        assert.strictEqual(Teams.progress(sqlite, Teams.get_team(sqlite, committee.team_id), null, SETTINGS).reached, true);
+    });
+
+    test("a newcomer makes the goal bigger; the team keeps its entries and the newcomer earns one when it's reached again", () => {
+        const committee = Teams.get_team(sqlite, Teams.list_public(sqlite, SETTINGS).find(t => t.name === "Committee").team_id);
+        Teams.join(sqlite, committee.team_id, [maya.reader_id]); // Maya's goal is now 20 hours
+        Prizes.update_team_awards(sqlite, committee.team_id);
+        const p = Teams.progress(sqlite, committee, null, SETTINGS);
+        assert.strictEqual(p.reached, false);
+        assert.strictEqual(p.reached_before, true);
+        assert.strictEqual(Prizes.raffle(sqlite, maya.reader_id).count, 2, "no Committee entry for Maya yet");
+        assert.strictEqual(Prizes.raffle(sqlite, josh.reader_id).count, 1, "Josh keeps his");
+        log(maya, "2027-01-15", 600);
+        log(maya, "2027-01-16", 480); // Committee: 600 + 120 + 1080 = 1800 of 300 + 300 + 1200
+        assert.strictEqual(Prizes.raffle(sqlite, maya.reader_id).count, 3);
+    });
+
+    test("leaving a team keeps the entry you earned there", () => {
+        const committee = Teams.list_public(sqlite, SETTINGS).find(t => t.name === "Committee");
+        Teams.leave(sqlite, committee.team_id, josh.reader_id);
+        assert.strictEqual(Prizes.raffle(sqlite, josh.reader_id).count, 1);
+        Teams.join(sqlite, committee.team_id, [josh.reader_id]);
+        assert.strictEqual(Prizes.raffle(sqlite, josh.reader_id).count, 1, "rejoining doesn't add a second");
+    });
+
+    test("any bingo earns a pin, a full card a tote bag, and the desk records pickups", () => {
+        const card = Readathon.bingo_card("adult");
+        const none = Prizes.bingo_prizes(Readathon.bingo_board(card, [], {}), []);
+        assert.deepStrictEqual(none, {pin: {earned: false, picked_up: false}, tote: {earned: false, picked_up: false}});
+        const row = Readathon.bingo_board(card, [10, 11, 13, 14], {});
+        assert.deepStrictEqual(Prizes.bingo_prizes(row, []).pin, {earned: true, picked_up: false});
+        const all = Readathon.bingo_board(card, Array.from({length: 25}, (_, i) => i), {});
+        assert.deepStrictEqual(Prizes.bingo_prizes(all, []).tote, {earned: true, picked_up: false});
+
+        Prizes.set_pickup(sqlite, ava.reader_id, "pin", true);
+        Prizes.set_pickup(sqlite, ava.reader_id, "pin", true);
+        assert.deepStrictEqual(Prizes.list_pickups(sqlite, ava.reader_id), ["pin"]);
+        Prizes.set_pickup(sqlite, ava.reader_id, "pin", false);
+        assert.deepStrictEqual(Prizes.list_pickups(sqlite, ava.reader_id), []);
+        assert.strictEqual(Prizes.set_pickup(sqlite, ava.reader_id, "trophy", true), false);
     });
 
     test("hidden teams and empty teams stay off the public list", () => {
         const names = () => Teams.list_public(sqlite, SETTINGS).map(t => t.name);
         assert.ok(names().includes("4th Grade"));
-        const team = Teams.get_by_code(sqlite, Teams.list_public(sqlite, SETTINGS).find(t => t.name === "4th Grade").code);
+        const team = Teams.list_public(sqlite, SETTINGS).find(t => t.name === "4th Grade");
         Teams.set_hidden(sqlite, team.team_id, true);
         assert.ok(!names().includes("4th Grade"));
-        Teams.create_team(sqlite, {name: "Ghost Team", goal_minutes: 600}, []);
+        Teams.create_team(sqlite, {name: "Ghost Team"}, []);
         assert.ok(!names().includes("Ghost Team"));
     });
 });
+

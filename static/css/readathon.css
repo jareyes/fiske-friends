@@ -973,8 +973,47 @@
     gap: 0.75rem;
     margin-top: 1.5rem;
 }
-.ra-total-card p {
-    margin: 0.35rem 0;
+.ra-prizes {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+.ra-prizes li {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 14px;
+    background: var(--ra-snow, #f3f5fc);
+}
+.ra-prizes li.is-earned {
+    background: var(--ra-lamp-soft);
+}
+.ra-prizes span {
+    color: var(--ra-muted);
+    font-size: 0.95rem;
+}
+.ra-prizes li.is-earned span {
+    color: var(--ra-ink);
+}
+.ra-desk-prizes {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.5rem 0;
+}
+.ra-desk-prizes form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.ra-desk-prizes form > span {
+    flex: 1 1 auto;
+}
+.ra-desk-prizes .ra-btn,
+.ra-desk-prizes .ra-text-btn {
+    flex: none;
 }
 .ra-next b {
     color: var(--ra-mitten-deep);

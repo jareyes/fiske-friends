@@ -33,25 +33,36 @@
 </section>
 {{/if}}
 
-<section class="ra-card ra-total-card" aria-labelledby="total-title">
-  <h2 id="total-title" class="ra-h2">My reading so far</h2>
-  {{#if pin_earned}}
-  <p class="ra-win">10 hours read! Pick up your pin at the library desk.</p>
-  {{else}}
-  <p class="ra-next">Read 10 hours to win an enamel pin. <b>{{pin_left_label}}</b> to go.</p>
-  {{/if}}
-  <ul class="ra-mini-stats">
-    <li><b>{{stats.days_read}}</b> {{#if (eq stats.days_read 1)}}day{{else}}days{{/if}}</li>
-    <li><b>{{stats.stickers}}</b> of 5 stickers</li>
+<section class="ra-card ra-prizes-card" aria-labelledby="prizes-title">
+  <h2 id="prizes-title" class="ra-h2">My prizes</h2>
+  <ul class="ra-prizes">
+    <li class="{{#if prizes.pin.earned}}is-earned{{/if}}">
+      <b>Enamel pin</b>
+      <span>{{#if prizes.pin.picked_up}}Picked up. Enjoy!{{else}}{{#if prizes.pin.earned}}You earned it! Pick it up at the library desk.{{else}}Get any bingo on <a href="{{reader_url}}/bingo">your bingo card</a>.{{/if}}{{/if}}</span>
+    </li>
+    <li class="{{#if prizes.tote.earned}}is-earned{{/if}}">
+      <b>Tote bag</b>
+      <span>{{#if prizes.tote.picked_up}}Picked up. Enjoy!{{else}}{{#if prizes.tote.earned}}You earned it! Pick it up at the library desk.{{else}}Fill your whole bingo card.{{/if}}{{/if}}</span>
+    </li>
+    <li class="{{#if raffle.count}}is-earned{{/if}}">
+      <b>Grand prize raffle{{#if raffle.count}}: {{raffle.count}} {{#if raffle.plural}}entries{{else}}entry{{/if}}{{/if}}</b>
+      {{#if raffle.count}}
+      <span>{{#each raffle.reasons}}{{this}}{{#unless @last}} &middot; {{/unless}}{{/each}}</span>
+      {{else}}
+      <span>Reach your goal for an entry, plus one more for each team you're on that reaches its goal.</span>
+      {{/if}}
+    </li>
   </ul>
 </section>
 
-{{#if team}}
-<a class="ra-team-card" href="{{base}}/teams/{{team.code}}">
-  <span class="ra-team-card-top"><span class="ra-kicker-dark">My team</span><strong>{{team.name}}</strong></span>
-  <span class="ra-meter ra-meter-sky" aria-hidden="true"><span style="width: {{team.percent}}%"></span></span>
-  <span class="ra-muted">{{team.total_hours}} of {{team.goal_label}} &middot; {{team.read_today}} of {{team.member_count}} read today</span>
+{{#if teams}}
+{{#each teams}}
+<a class="ra-team-card" href="{{@root.base}}/teams/{{code}}">
+  <span class="ra-team-card-top"><span class="ra-kicker-dark">My team</span><strong>{{name}}</strong></span>
+  <span class="ra-meter ra-meter-sky" aria-hidden="true"><span style="width: {{percent}}%"></span></span>
+  <span class="ra-muted">{{#if reached}}Team goal reached! {{total_hours}} of {{goal_label}}{{else}}{{total_hours}} of {{goal_label}} &middot; {{read_today}} of {{member_count}} read today{{/if}}</span>
 </a>
+{{/each}}
 {{else}}
 <div class="ra-team-card ra-team-card-empty">
   <span><strong>Read with a team</strong><span class="ra-muted">Coworkers, classmates, friends: reach a goal together.</span></span>
@@ -63,7 +74,7 @@
   <a class="ra-tile" href="{{reader_url}}/bingo">
     <span class="ra-tile-icon ra-icon-grid" aria-hidden="true"></span>
     <strong>Bingo card</strong>
-    <span>{{#if board.blackout}}Blackout!{{else}}{{#if board.bingos}}Bingo! Pick a prize{{else}}{{board.to_bingo}} more for a bingo{{/if}}{{/if}}</span>
+    <span>{{#if board.blackout}}Blackout!{{else}}{{#if board.bingos}}Bingo! You earned a pin{{else}}{{board.to_bingo}} more for a bingo{{/if}}{{/if}}</span>
   </a>
   <a class="ra-tile" href="{{reader_url}}/cheers">
     <span class="ra-tile-icon ra-icon-heart" aria-hidden="true"></span>

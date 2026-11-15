@@ -2,6 +2,7 @@
 const config = require("config");
 const content = require("../lib/readathon-content");
 const Gifts = require("../lib/readathon-gifts");
+const Prizes = require("../lib/readathon-prizes");
 const gift_routes = require("./readathon-gifts");
 const team_routes = require("./readathon-teams");
 const Teams = require("../lib/readathon-teams");
@@ -255,11 +256,11 @@ function reader_home(req, res, sqlite) {
         progress: Readathon.goal_progress(stats.total, reader.goal_minutes, Readathon.reader_start_day(reader, entries), today),
         today_plan: Readathon.today_plan(stats.total, stats.today_minutes, reader.goal_minutes, today),
         goals: Readathon.goal_choices(today, reader.goal_minutes),
-        pin_earned: stats.total >= Readathon.PIN_MINUTES,
-        pin_left_label: Readathon.duration_label(Math.max(0, Readathon.PIN_MINUTES - stats.total)),
         board,
+        prizes: Prizes.bingo_prizes(board, Prizes.list_pickups(sqlite, reader.reader_id)),
+        raffle: Prizes.raffle(sqlite, reader.reader_id),
         cheers: Gifts.reader_cheers(sqlite, reader.reader_id),
-        team: reader.team_id ? Teams.progress(sqlite, Teams.get_team(sqlite, reader.team_id), today) : null,
+        teams: Teams.for_reader(sqlite, reader.reader_id, today),
         recent: entries.slice(0, 8).map(entry => ({...entry, day_label: Readathon.label_day(entry.day, today)})),
     });
 }
@@ -267,6 +268,8 @@ function reader_home(req, res, sqlite) {
 function update_goal(req, res, sqlite) {
     const {reader} = res.locals;
     Readathon.set_goal(sqlite, reader.reader_id, Number.parseInt(req.body.goal, 10));
+    // A smaller goal might already be reached, for them or their teams
+    Prizes.update_awards(sqlite, reader.reader_id);
     res.redirect(`${BASE}/r/${reader.reader_id}`);
 }
 
@@ -315,7 +318,8 @@ function save_log(req, res, sqlite) {
     const before_stats = Readathon.stats(Readathon.list_entries(sqlite, reader.reader_id), today);
     const before_auto = Readathon.auto_squares(sqlite, reader, before_stats);
     Readathon.add_entry(sqlite, reader.reader_id, entry);
-    req.session.readathon_yay = {reader_id: reader.reader_id, added: entry.minutes, before: before_stats.total, before_auto};
+    const earned = Prizes.update_awards(sqlite, reader.reader_id);
+    req.session.readathon_yay = {reader_id: reader.reader_id, added: entry.minutes, before: before_stats.total, before_auto, earned};
     res.redirect(`${BASE}/r/${reader.reader_id}/yay`);
 }
 
@@ -327,7 +331,6 @@ function yay(req, res, sqlite) {
         return res.redirect(`${BASE}/r/${reader.reader_id}`);
     }
     const {stats} = reader_context(sqlite, reader);
-    const pin = flash.before < Readathon.PIN_MINUTES && stats.total >= Readathon.PIN_MINUTES;
     const goal = reader.goal_minutes;
     const goal_reached = flash.before < goal && stats.total >= goal;
     const halfway = !goal_reached && flash.before < goal / 2 && stats.total >= goal / 2;
@@ -337,21 +340,26 @@ function yay(req, res, sqlite) {
     const marks = Readathon.list_marks(sqlite, reader.reader_id);
     const card = Readathon.bingo_card(reader.age_group);
     const new_squares = Readathon.newly_earned_squares(card, before_auto, after_auto);
-    const new_bingo = Readathon.bingo_board(card, marks, after_auto).bingos > Readathon.bingo_board(card, marks, before_auto).bingos;
-    const team = reader.team_id ? Teams.progress(sqlite, Teams.get_team(sqlite, reader.team_id), Readathon.today()) : null;
+    const before_board = Readathon.bingo_board(card, marks, before_auto);
+    const after_board = Readathon.bingo_board(card, marks, after_auto);
+    const new_bingo = after_board.bingos > before_board.bingos;
+    const earned = flash.earned ?? {goal: false, teams: []};
     page(res, "yay", {
         title: "Nice reading!",
         added: flash.added,
         total_label: Readathon.duration_label(stats.total),
         new_squares,
         new_bingo,
-        pin,
+        first_bingo: before_board.bingos === 0 && after_board.bingos > 0,
+        new_blackout: !before_board.blackout && after_board.blackout,
+        raffle_goal: earned.goal,
+        raffle_teams: earned.teams,
         goal_reached,
         halfway,
         goal_label: Readathon.goal_label(goal),
         stats,
         confetti: Array.from({length: 20}),
-        team,
+        teams: Teams.for_reader(sqlite, reader.reader_id, Readathon.today()),
     });
 }
 
@@ -495,7 +503,12 @@ function desk(req, res, sqlite, message = null) {
         teams: Teams.list_all(sqlite),
         results: Readathon.search_readers(sqlite, query).map(reader => {
             const reader_stats = Readathon.stats(Readathon.list_entries(sqlite, reader.reader_id), today);
-            return {...reader, total: reader_stats.total, stickers: reader_stats.stickers};
+            const board = Readathon.bingo_board(
+                Readathon.bingo_card(reader.age_group),
+                Readathon.list_marks(sqlite, reader.reader_id),
+                Readathon.auto_squares(sqlite, reader, reader_stats),
+            );
+            return {...reader, total: reader_stats.total, prizes: Prizes.bingo_prizes(board, Prizes.list_pickups(sqlite, reader.reader_id))};
         }),
         days: Readathon.loggable_days(today).slice(0, 14).map(day => ({day, label: Readathon.label_day(day, today)})),
         ages: content.AGE_GROUPS,
@@ -521,7 +534,22 @@ function desk_add_minutes(req, res, sqlite) {
         return desk_back(req, res, errors[0], query);
     }
     Readathon.add_entry(sqlite, reader.reader_id, entry);
+    Prizes.update_awards(sqlite, reader.reader_id);
     desk_back(req, res, `Added ${entry.minutes} minutes for ${reader.name}.`, query);
+}
+
+// Record (or undo) a pin or tote bag handed over at the desk
+function desk_pickup(req, res, sqlite) {
+    const reader = Readathon.get_reader(sqlite, Number(req.body.reader_id));
+    const query = Readathon.clean(req.body.q, 60);
+    const prize = req.body.prize;
+    if(reader === null || !Prizes.PRIZES.includes(prize)) {
+        return desk_back(req, res, "Couldn't find that reader.", query);
+    }
+    const picked_up = req.body.picked_up === "1";
+    Prizes.set_pickup(sqlite, reader.reader_id, prize, picked_up);
+    const name = prize === "pin" ? "enamel pin" : "tote bag";
+    desk_back(req, res, picked_up ? `Marked ${reader.name}'s ${name} as picked up.` : `Undid ${reader.name}'s ${name} pickup.`, query);
 }
 
 function desk_add_reader(req, res, sqlite) {
@@ -647,6 +675,7 @@ function create(sqlite) {
     router.get("/desk", volunteer, wrap((req, res, db) => desk(req, res, db)));
     router.post("/desk/minutes", volunteer, wrap(desk_add_minutes));
     router.post("/desk/readers", volunteer, wrap(desk_add_reader));
+    router.post("/desk/pickups", volunteer, wrap(desk_pickup));
     router.post("/desk/teams/:team_id", volunteer, wrap(desk_team));
     router.post("/desk/recommendations/:recommendation_id", volunteer, wrap(desk_review));
     return router;

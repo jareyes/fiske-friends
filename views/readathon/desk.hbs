@@ -6,7 +6,7 @@
 {{#if message}}<p class="ra-flash" role="status">{{message}}</p>{{/if}}
 
 <section class="ra-card">
-  <h2 class="ra-h2">Add minutes from a paper log</h2>
+  <h2 class="ra-h2">Find a reader: paper logs and prizes</h2>
   <form class="ra-search" action="{{base}}/desk" method="get" role="search">
     <label class="ra-visually-hidden" for="desk-q">Find a reader</label>
     <input id="desk-q" name="q" type="search" value="{{query}}" placeholder="Reader's first name or email">
@@ -17,7 +17,23 @@
   <ul class="ra-desk-results">
     {{#each results}}
     <li>
-      <div><strong>{{name}}</strong> <span class="ra-muted">{{#if email}}{{email}}{{else}}paper only{{/if}} &middot; {{total}} min &middot; {{stickers}} of 5 stickers</span></div>
+      <div><strong>{{name}}</strong> <span class="ra-muted">{{#if email}}{{email}}{{else}}paper only{{/if}} &middot; {{total}} min</span></div>
+      <div class="ra-desk-prizes">
+        {{#with prizes.pin}}
+        <form action="{{@root.base}}/desk/pickups" method="post">
+          <input type="hidden" name="reader_id" value="{{../reader_id}}"><input type="hidden" name="q" value="{{@root.query}}"><input type="hidden" name="prize" value="pin">
+          <span><b>Pin</b> {{#if picked_up}}picked up{{else}}{{#if earned}}earned online{{else}}<span class="ra-muted">no bingo online (check a paper card)</span>{{/if}}{{/if}}</span>
+          {{#if picked_up}}<button class="ra-text-btn" name="picked_up" value="0" type="submit">Undo</button>{{else}}<button class="ra-btn ra-btn-ghost" name="picked_up" value="1" type="submit">Picked up</button>{{/if}}
+        </form>
+        {{/with}}
+        {{#with prizes.tote}}
+        <form action="{{@root.base}}/desk/pickups" method="post">
+          <input type="hidden" name="reader_id" value="{{../reader_id}}"><input type="hidden" name="q" value="{{@root.query}}"><input type="hidden" name="prize" value="tote">
+          <span><b>Tote bag</b> {{#if picked_up}}picked up{{else}}{{#if earned}}earned online{{else}}<span class="ra-muted">card not full online (check a paper card)</span>{{/if}}{{/if}}</span>
+          {{#if picked_up}}<button class="ra-text-btn" name="picked_up" value="0" type="submit">Undo</button>{{else}}<button class="ra-btn ra-btn-ghost" name="picked_up" value="1" type="submit">Picked up</button>{{/if}}
+        </form>
+        {{/with}}
+      </div>
       <form class="ra-desk-add" action="{{@root.base}}/desk/minutes" method="post">
         <input type="hidden" name="reader_id" value="{{reader_id}}">
         <input type="hidden" name="q" value="{{@root.query}}">

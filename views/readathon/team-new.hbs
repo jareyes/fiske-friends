@@ -1,6 +1,6 @@
 <header class="ra-page-head">
   <h1 class="ra-h1">Start a team</h1>
-  <p class="ra-lede-dark">You'll get a link to invite your teammates.</p>
+  <p class="ra-lede-dark">You'll get a link to invite your teammates. Your team goal is everyone's January goals added up, so it grows as people join.</p>
 </header>
 
 <form class="ra-form" action="{{base}}/teams/new" method="post" novalidate>
@@ -12,17 +12,7 @@
   </fieldset>
 
   <fieldset class="ra-step">
-    <legend><span class="ra-step-number">2</span> Team goal for January</legend>
-    <div class="ra-choices ra-choices-4">
-      {{#each goals}}
-      <label class="ra-choice ra-choice-tall"><input type="radio" name="goal_hours" value="{{hours}}"{{#if checked}} checked{{/if}}><span><b>{{hours}}</b><small>hours</small></span></label>
-      {{/each}}
-    </div>
-    <p class="ra-help">Rule of thumb: about 5 hours per teammate. You'll all add up fast!</p>
-  </fieldset>
-
-  <fieldset class="ra-step">
-    <legend><span class="ra-step-number">3</span> Who can join?</legend>
+    <legend><span class="ra-step-number">2</span> Who can join?</legend>
     <div class="ra-choices ra-choices-2">
       <label class="ra-choice ra-choice-tall"><input type="radio" name="is_open" value="0"{{#unless open_checked}} checked{{/unless}}><span><b>Invite only</b><small>People with your link</small></span></label>
       <label class="ra-choice ra-choice-tall"><input type="radio" name="is_open" value="1"{{#if open_checked}} checked{{/if}}><span><b>Anyone</b><small>From the teams page</small></span></label>
@@ -30,16 +20,16 @@
   </fieldset>
 
   <fieldset class="ra-step">
-    <legend><span class="ra-step-number">4</span> Who's on it from your home?</legend>
+    <legend><span class="ra-step-number">3</span> Who's on it from your home?</legend>
     <div class="ra-pick-readers">
       {{#each readers}}
       <label class="ra-pick-reader">
         <input type="checkbox" name="reader_ids" value="{{reader_id}}"{{#if checked}} checked{{/if}}>
-        <span><span class="ra-avatar a{{color}}" aria-hidden="true">{{initial}}</span><b>{{name}}</b>{{#if current_team}}<small>leaves {{current_team}}</small>{{/if}}</span>
+        <span><span class="ra-avatar a{{color}}" aria-hidden="true">{{initial}}</span><b>{{name}}</b></span>
       </label>
       {{/each}}
     </div>
-    <p class="ra-help">Each reader can be on one team. Kids can be on a different team from their grown-ups.</p>
+    <p class="ra-help">Readers can be on as many teams as they like, and kids don't have to be on the same teams as their grown-ups.</p>
   </fieldset>
 
   <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">Make our team</button>

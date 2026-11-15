@@ -27,6 +27,7 @@ const config = require("config");
 const {DatabaseSync} = require("node:sqlite");
 const Gifts = require("../lib/readathon-gifts");
 const Readathon = require("../lib/readathon");
+const Prizes = require("../lib/readathon-prizes");
 const Teams = require("../lib/readathon-teams");
 const User = require("../lib/user");
 const app = require("./app");
@@ -128,12 +129,15 @@ async function seed(sqlite) {
 
     // Teams: the demo family is split across two, like a real family might be
     const by_name = name => sqlite.prepare("SELECT reader_id FROM readathon_readers WHERE name = :name").get({name}).reader_id;
-    const team = (name, hours, is_open, names) => Teams.create_team(sqlite, {name, goal_minutes: hours * 60, is_open}, names.map(by_name));
-    team("Fiske Friends Committee", 50, 0, ["Renee", "Ava", "Ben", "Carmen", "Rosa"]);
-    team("Ms. Rivera's 4th Grade", 100, 0, ["Katie", "Dot", "Eli", "Fern", "Gus", "Sam", "Zoe"]);
-    team("Stevens High Book Club", 50, 0, ["Kai", "Lena", "Milo", "Nora"]);
-    team("The Night Owls", 25, 1, ["Hana", "Ike", "June"]);
-    team("Red River Diner Regulars", 10, 1, ["Otis", "Pia", "Bea", "Walt"]);
+    // Readers can be on more than one team: Renee reads with the committee and the Night Owls
+    const team = (name, is_open, names) => Teams.create_team(sqlite, {name, is_open}, names.map(by_name));
+    team("Fiske Friends Committee", 0, ["Renee", "Ava", "Ben", "Carmen", "Rosa"]);
+    team("Ms. Rivera's 4th Grade", 0, ["Katie", "Dot", "Eli", "Fern", "Gus", "Sam", "Zoe"]);
+    team("Stevens High Book Club", 0, ["Kai", "Lena", "Milo", "Nora"]);
+    team("The Night Owls", 1, ["Hana", "Ike", "June", "Renee"]);
+    team("Red River Diner Regulars", 1, ["Otis", "Pia", "Bea", "Walt"]);
+    // Work out raffle entries from the sample reading
+    Prizes.update_all_awards(sqlite);
 
     // Cheers for the demo family, and gifts to the whole read-a-thon
     const cheer = (reader, display_name, dollars, message, extra = {}) => Gifts.record_gift(sqlite, reader?.reader_id, {
