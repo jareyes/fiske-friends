@@ -20,6 +20,19 @@
     <div class="ra-meter ra-meter-lamp" role="img" aria-label="{{progress.percent}} percent of my January goal"><span style="width: {{progress.percent}}%"></span></div>
     <p class="ra-muted">{{progress.message}}</p>
     {{#if (eq phase "during")}}<p class="ra-today-plan{{#if today_plan.done}} is-done{{/if}}">{{#if today_plan.done}}<span aria-hidden="true">&check;</span> {{/if}}{{today_plan.text}}</p>{{/if}}
+    {{#if (eq phase "during")}}
+    <div class="ra-week" aria-label="This week">
+      <ol class="ra-week-days">
+        {{#each week}}
+        <li class="{{#if read}}is-read{{/if}}{{#if is_today}} is-today{{/if}}{{#if future}} is-future{{/if}}{{#if outside}} is-outside{{/if}}" aria-label="{{label}}{{#unless future}}{{#unless outside}}{{#unless read}}: not yet{{/unless}}{{/unless}}{{/unless}}">
+          <span class="ra-week-letter" aria-hidden="true">{{letter}}</span>
+          <span class="ra-week-dot" aria-hidden="true">{{#if read}}&check;{{else}}{{number}}{{/if}}</span>
+        </li>
+        {{/each}}
+      </ol>
+      {{#if streak_note}}<p class="ra-week-streak">{{streak_note}}</p>{{/if}}
+    </div>
+    {{/if}}
   </div>
   {{#if (eq phase "during")}}
   <div class="ra-actions">
@@ -32,6 +45,69 @@
   {{/if}}
 </section>
 {{/if}}
+
+<section class="ra-card ra-recent" id="log" aria-labelledby="recent-title">
+  <div class="ra-recent-head">
+    <h2 id="recent-title" class="ra-h2">Recent reading</h2>
+    {{#if entry_count}}<a class="ra-small-link" href="{{reader_url}}/reading-log">My reading log</a>{{/if}}
+  </div>
+  {{#if recent}}
+  <ul class="ra-log-rows">
+    {{#each recent}}
+    <li>
+      <a class="ra-log-row" href="{{@root.reader_url}}/entries/{{entry_id}}" aria-label="{{day_label}}, {{minutes}} minutes{{#if title}}, {{title}}{{/if}}. Change or remove">
+        <span class="ra-log-what"><b>{{day_label}}</b>{{#if title}}<span class="ra-log-title">{{title}}</span>{{/if}}</span>
+        <span class="ra-log-min">{{minutes}} min</span>
+        <span class="ra-log-edit" aria-hidden="true">Edit</span>
+      </a>
+    </li>
+    {{/each}}
+  </ul>
+  {{#if more_entries}}<a class="ra-btn ra-btn-ghost ra-btn-block" href="{{reader_url}}/reading-log">See all {{entry_count}} entries, your calendar and books</a>{{/if}}
+  {{else}}
+  <p class="ra-muted">Nothing yet. Any amount counts!</p>
+  {{/if}}
+</section>
+
+<section class="ra-tiles" aria-label="More">
+  <a class="ra-tile" href="{{reader_url}}/bingo">
+    <span class="ra-tile-icon ra-icon-grid" aria-hidden="true"></span>
+    <strong>Bingo card</strong>
+    <span>{{#if board.blackout}}Blackout!{{else}}{{#if board.bingos}}Bingo! You earned a pin{{else}}{{board.to_bingo}} more for a bingo{{/if}}{{/if}}</span>
+  </a>
+  <a class="ra-tile" href="{{reader_url}}/cheers">
+    <span class="ra-tile-icon ra-icon-heart" aria-hidden="true"></span>
+    <strong>Sponsors</strong>
+    <span>{{#if cheers.count}}{{cheers.count}} so far, {{cheers.total}}{{else}}Raise money for the library{{/if}}</span>
+  </a>
+  <a class="ra-tile" href="{{base}}/books">
+    <span class="ra-tile-icon ra-icon-book" aria-hidden="true"></span>
+    <strong>Find a book</strong>
+    <span>Lists for every reader</span>
+  </a>
+</section>
+
+<section class="ra-my-teams" aria-labelledby="my-teams-title">
+  <div class="ra-my-teams-head">
+    <h2 id="my-teams-title" class="ra-h2"><span class="ra-my-teams-icon" aria-hidden="true"></span>{{#if teams}}My teams{{else}}Read with a team{{/if}}</h2>
+    {{#if teams}}<a class="ra-small-link" href="{{base}}/teams">See all teams</a>{{/if}}
+  </div>
+  {{#if teams}}
+  <p class="ra-my-teams-note">Everyone's minutes add up toward each team's goal.</p>
+  {{#each teams}}
+  <a class="ra-team-card" href="{{@root.base}}/teams/{{code}}">
+    <span class="ra-team-card-top"><strong>{{name}}</strong><span class="ra-team-card-count">{{member_count}} {{#if (eq member_count 1)}}reader{{else}}readers{{/if}}</span></span>
+    <span class="ra-meter ra-meter-sky" aria-hidden="true"><span style="width: {{percent}}%"></span></span>
+    <span class="ra-muted">{{#if reached}}Team goal reached! {{total_hours}} of {{goal_label}}{{else}}{{total_hours}} of {{goal_label}} &middot; {{read_today}} of {{member_count}} read today{{/if}}</span>
+  </a>
+  {{/each}}
+  {{else}}
+  <div class="ra-team-card ra-team-card-empty">
+    <span class="ra-muted">Coworkers, classmates, friends: reach a goal together, and earn a raffle entry when you do.</span>
+    <a class="ra-btn ra-btn-ghost" href="{{base}}/teams">See teams</a>
+  </div>
+  {{/if}}
+</section>
 
 <section class="ra-card ra-prizes-card" aria-labelledby="prizes-title">
   <h2 id="prizes-title" class="ra-h2">My prizes</h2>
@@ -54,57 +130,6 @@
     </li>
   </ul>
 </section>
-
-{{#if teams}}
-{{#each teams}}
-<a class="ra-team-card" href="{{@root.base}}/teams/{{code}}">
-  <span class="ra-team-card-top"><span class="ra-kicker-dark">My team</span><strong>{{name}}</strong></span>
-  <span class="ra-meter ra-meter-sky" aria-hidden="true"><span style="width: {{percent}}%"></span></span>
-  <span class="ra-muted">{{#if reached}}Team goal reached! {{total_hours}} of {{goal_label}}{{else}}{{total_hours}} of {{goal_label}} &middot; {{read_today}} of {{member_count}} read today{{/if}}</span>
-</a>
-{{/each}}
-{{else}}
-<div class="ra-team-card ra-team-card-empty">
-  <span><strong>Read with a team</strong><span class="ra-muted">Coworkers, classmates, friends: reach a goal together.</span></span>
-  <a class="ra-btn ra-btn-ghost" href="{{base}}/teams">See teams</a>
-</div>
-{{/if}}
-
-<section class="ra-tiles" aria-label="More">
-  <a class="ra-tile" href="{{reader_url}}/bingo">
-    <span class="ra-tile-icon ra-icon-grid" aria-hidden="true"></span>
-    <strong>Bingo card</strong>
-    <span>{{#if board.blackout}}Blackout!{{else}}{{#if board.bingos}}Bingo! You earned a pin{{else}}{{board.to_bingo}} more for a bingo{{/if}}{{/if}}</span>
-  </a>
-  <a class="ra-tile" href="{{reader_url}}/cheers">
-    <span class="ra-tile-icon ra-icon-heart" aria-hidden="true"></span>
-    <strong>Cheers</strong>
-    <span>{{#if cheers.count}}{{cheers.count}} so far, {{cheers.total}}{{else}}Share your link{{/if}}</span>
-  </a>
-  <a class="ra-tile" href="{{base}}/books">
-    <span class="ra-tile-icon ra-icon-book" aria-hidden="true"></span>
-    <strong>Find a book</strong>
-    <span>Lists for every reader</span>
-  </a>
-</section>
-
-<details class="ra-details" id="log">
-  <summary>My reading log</summary>
-  {{#if recent}}
-  <ul class="ra-log">
-    {{#each recent}}
-    <li>
-      <span><b>{{day_label}}</b>{{#if title}} &middot; {{title}}{{/if}}</span>
-      <span class="ra-log-min">{{minutes}} min
-        <form action="{{@root.reader_url}}/entries/{{entry_id}}/delete" method="post"><button class="ra-text-btn" type="submit" aria-label="Remove {{minutes}} minutes from {{day_label}}">Remove</button></form>
-      </span>
-    </li>
-    {{/each}}
-  </ul>
-  {{else}}
-  <p class="ra-muted">Nothing yet. Any amount counts!</p>
-  {{/if}}
-</details>
 
 <details class="ra-details">
   <summary>Change my goal</summary>

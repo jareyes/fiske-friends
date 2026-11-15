@@ -74,7 +74,8 @@ async function seed(sqlite) {
     const katie_log = [15, 20, 15, 20, 15, 25, 20, 10, 30, 15, 20];
     days.forEach((day, i) => {
         if(renee_log[i]) {
-            Readathon.add_entry(sqlite, renee.reader_id, {day, minutes: renee_log[i], title: "The Lincoln Highway", format: "Book"});
+            const book = i < 6 ? {title: "The Lincoln Highway", format: "Book"} : {title: "Educated", format: "Audiobook"};
+            Readathon.add_entry(sqlite, renee.reader_id, {day, minutes: renee_log[i], ...book});
         }
         if(katie_log[i]) {
             Readathon.add_entry(sqlite, katie.reader_id, {day, minutes: katie_log[i], title: "Dog Man", format: "Comics"});

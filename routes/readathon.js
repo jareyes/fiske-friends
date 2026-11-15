@@ -261,7 +261,30 @@ function reader_home(req, res, sqlite) {
         raffle: Prizes.raffle(sqlite, reader.reader_id),
         cheers: Gifts.reader_cheers(sqlite, reader.reader_id),
         teams: Teams.for_reader(sqlite, reader.reader_id, today),
-        recent: entries.slice(0, 8).map(entry => ({...entry, day_label: Readathon.label_day(entry.day, today)})),
+        week: Readathon.week_strip(stats.by_day, today),
+        // Only shown for a run of two or more, so nobody sees a zero
+        streak_note: stats.streak >= 2 ? `${stats.streak} days in a row!` : null,
+        recent: entries.slice(0, 3).map(entry => ({...entry, day_label: Readathon.label_day(entry.day, today)})),
+        entry_count: entries.length,
+        more_entries: entries.length > 3,
+    });
+}
+
+// The whole reading log: a summary, a January calendar, every entry by week, and the books they named
+function reading_log(req, res, sqlite) {
+    const {reader} = res.locals;
+    const {today, entries, stats} = reader_context(sqlite, reader);
+    page(res, "reading-log", {
+        title: `${reader.name}'s reading log`,
+        nav: "me",
+        body_class: "theme-readathon ra-wide",
+        message: log_message(req),
+        phase: Readathon.phase(today),
+        stats,
+        total_label: Readathon.duration_short(stats.total),
+        calendar: Readathon.month_calendar(stats.by_day, today),
+        weeks: Readathon.log_by_week(entries, today),
+        books: Readathon.books_read(entries, today),
     });
 }
 
@@ -285,19 +308,34 @@ function timer(req, res, sqlite) {
     });
 }
 
-function show_log(req, res, sqlite, form = {}, errors = []) {
+const MINUTE_CHOICES = [10, 15, 20, 30, 45, 60];
+
+// A note shown once at the top of the reading log, after editing or removing an entry
+function log_message(req) {
+    const text = req.session.readathon_log_message ?? null;
+    delete req.session.readathon_log_message;
+    return text;
+}
+
+// The add-reading form, or the same form for changing an entry when entry is given
+function show_log(req, res, sqlite, form = {}, errors = [], entry = null) {
     const {reader} = res.locals;
     const today = Readathon.today();
     const minutes = String(form.minutes ?? "20");
+    // Adding offers the last two weeks; changing an entry offers every day so far
+    const days = Readathon.loggable_days(today).slice(0, entry ? undefined : 14);
     page(res, "log", {
-        title: "Add reading",
+        title: entry ? "Change reading" : "Add reading",
         nav: "me",
         errors,
+        entry,
+        action: entry ? `${BASE}/r/${reader.reader_id}/entries/${entry.entry_id}` : `${BASE}/r/${reader.reader_id}/log`,
         is_open: Readathon.phase(today) !== "before",
         form: {...form, minutes},
-        minute_choices: [10, 15, 20, 30, 45, 60].map(n => ({n, checked: String(n) === minutes})),
+        open_details: !!(form.title || form.format),
+        minute_choices: MINUTE_CHOICES.map(n => ({n, checked: String(n) === minutes})),
         other_checked: minutes === "other",
-        days: Readathon.loggable_days(today).slice(0, 14).map(day => ({
+        days: days.map(day => ({
             day,
             label: Readathon.label_day(day, today),
             selected: day === (form.day ?? today),
@@ -363,10 +401,59 @@ function yay(req, res, sqlite) {
     });
 }
 
+// "today", "yesterday", or "on Mon, Jan 11" (or "from ..." for removing)
+function on_day(day, today, preposition = "on") {
+    const label = Readathon.label_day(day, today);
+    return ["Today", "Yesterday"].includes(label) ? (preposition === "on" ? label.toLowerCase() : `from ${label.toLowerCase()}`) : `${preposition} ${label}`;
+}
+
+function load_entry(req, res, sqlite) {
+    return Readathon.get_entry(sqlite, res.locals.reader.reader_id, Number(req.params.entry_id));
+}
+
+function edit_entry(req, res, sqlite) {
+    const entry = load_entry(req, res, sqlite);
+    if(entry === null) {
+        return res.redirect(`${BASE}/r/${res.locals.reader.reader_id}/reading-log`);
+    }
+    const preset = MINUTE_CHOICES.includes(entry.minutes);
+    show_log(req, res, sqlite, {
+        minutes: preset ? String(entry.minutes) : "other",
+        minutes_other: preset ? "" : String(entry.minutes),
+        day: entry.day,
+        title: entry.title ?? "",
+        format: entry.format ?? "",
+    }, [], entry);
+}
+
+function save_entry(req, res, sqlite) {
+    const {reader} = res.locals;
+    const entry = load_entry(req, res, sqlite);
+    if(entry === null) {
+        return res.redirect(`${BASE}/r/${reader.reader_id}/reading-log`);
+    }
+    const today = Readathon.today();
+    // Changes are checked like typed-in reading, even for timer sessions (up to 10 hours)
+    const {errors, entry: changes} = Readathon.parse_log(req.body, today, "manual");
+    if(errors.length > 0) {
+        res.status(400);
+        return show_log(req, res, sqlite, req.body, errors, entry);
+    }
+    Readathon.update_entry(sqlite, reader.reader_id, entry.entry_id, changes);
+    // More minutes might reach a goal. Fewer never takes back a raffle entry.
+    Prizes.update_awards(sqlite, reader.reader_id);
+    req.session.readathon_log_message = `Updated: ${changes.minutes} min ${on_day(changes.day, today)}.`;
+    res.redirect(`${BASE}/r/${reader.reader_id}/reading-log`);
+}
+
 function remove_entry(req, res, sqlite) {
     const {reader} = res.locals;
-    Readathon.delete_entry(sqlite, reader.reader_id, Number(req.params.entry_id));
-    res.redirect(`${BASE}/r/${reader.reader_id}#log`);
+    const entry = load_entry(req, res, sqlite);
+    if(entry !== null) {
+        Readathon.delete_entry(sqlite, reader.reader_id, entry.entry_id);
+        req.session.readathon_log_message = `Removed ${entry.minutes} min ${on_day(entry.day, Readathon.today(), "from")}.`;
+    }
+    res.redirect(`${BASE}/r/${reader.reader_id}/reading-log`);
 }
 
 function bingo(req, res, sqlite, message = null) {
@@ -648,10 +735,13 @@ function create(sqlite) {
 
     router.get("/r/:reader_id", own, wrap(reader_home));
     router.post("/r/:reader_id/goal", own, wrap(update_goal));
+    router.get("/r/:reader_id/reading-log", own, wrap(reading_log));
     router.get("/r/:reader_id/timer", own, wrap(timer));
     router.get("/r/:reader_id/log", own, wrap((req, res, db) => show_log(req, res, db)));
     router.post("/r/:reader_id/log", own, wrap(save_log));
     router.get("/r/:reader_id/yay", own, wrap(yay));
+    router.get("/r/:reader_id/entries/:entry_id", own, wrap(edit_entry));
+    router.post("/r/:reader_id/entries/:entry_id", own, wrap(save_entry));
     router.post("/r/:reader_id/entries/:entry_id/delete", own, wrap(remove_entry));
     router.get("/r/:reader_id/bingo", own, wrap((req, res, db) => bingo(req, res, db)));
     router.post("/r/:reader_id/bingo", own, wrap(toggle_square));

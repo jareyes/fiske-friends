@@ -202,6 +202,52 @@ suite("lib/readathon.js duration_label", () => {
     });
 });
 
+suite("lib/readathon.js calendars and the reading log", () => {
+    const by_day = {"2027-01-10": 30, "2027-01-11": 10};
+
+    test("this week runs Sunday to Saturday, marking days read, today and days ahead", () => {
+        const week = Readathon.week_strip(by_day, "2027-01-12", SETTINGS);
+        assert.deepStrictEqual(week.map(d => d.number), [10, 11, 12, 13, 14, 15, 16]);
+        assert.deepStrictEqual(week.map(d => d.read), [true, true, false, false, false, false, false]);
+        assert.strictEqual(week[2].is_today, true);
+        assert.deepStrictEqual(week.map(d => d.future), [false, false, false, true, true, true, true]);
+        assert.strictEqual(week[0].label, "Sunday, January 10: 30 minutes");
+        // The first week of January starts in December
+        const first = Readathon.week_strip({}, "2027-01-01", SETTINGS);
+        assert.deepStrictEqual(first.map(d => d.outside), [true, true, true, true, true, false, false]);
+    });
+
+    test("the calendar covers January in whole weeks, shaded by minutes", () => {
+        const weeks = Readathon.month_calendar({...by_day, "2027-01-01": 75}, "2027-01-12", SETTINGS);
+        assert.strictEqual(weeks.length, 6);
+        assert.ok(weeks.every(week => week.length === 7));
+        const days = weeks.flat().filter(d => !d.outside);
+        assert.strictEqual(days.length, 31);
+        assert.deepStrictEqual([days[0].day, days[0].level], ["2027-01-01", 4]);
+        assert.deepStrictEqual([days[9].level, days[10].level, days[11].level], [3, 1, 0]);
+    });
+
+    test("entries are grouped by week with totals, and books add up across spellings", () => {
+        const log = [
+            {entry_id: 4, day: "2027-01-12", minutes: 20, title: "Hatchet"},
+            {entry_id: 3, day: "2027-01-10", minutes: 30, title: " hatchet ", format: "Book"},
+            {entry_id: 2, day: "2027-01-02", minutes: 45, title: null},
+            {entry_id: 1, day: "2027-01-01", minutes: 15, title: "Frog and Toad"},
+        ];
+        const weeks = Readathon.log_by_week(log, "2027-01-12", SETTINGS);
+        assert.deepStrictEqual(weeks.map(w => [w.label, w.total_label, w.entries.length, w.is_this_week]), [
+            ["Jan 10 to 16", "50 min", 2, true],
+            ["Jan 1 to 2", "1 hr", 2, false],
+        ]);
+        assert.strictEqual(weeks[0].entries[0].day_label, "Today");
+        const books = Readathon.books_read(log, "2027-01-12");
+        assert.deepStrictEqual(books.map(b => [b.title, b.minutes_label, b.sessions, b.last_label]), [
+            ["Hatchet", "50 min", 2, "today"],
+            ["Frog and Toad", "15 min", 1, "Fri, Jan 1"],
+        ]);
+    });
+});
+
 suite("lib/readathon.js duration_short", () => {
     test("keeps big numbers short", () => {
         assert.deepStrictEqual([0, 45, 60, 205, 1200].map(Readathon.duration_short), ["0 min", "45 min", "1 hr", "3 hr 25 min", "20 hr"]);
@@ -295,6 +341,25 @@ suite("lib/readathon.js database", () => {
         const totals = Readathon.community(sqlite, SETTINGS);
         assert.strictEqual(totals.minutes, 20, "reading before January 1 doesn't count");
         assert.strictEqual(totals.readers, 2);
+    });
+
+    test("a reader can change or remove their own entries, but not someone else's", () => {
+        const id = Readathon.create_household(sqlite, {email: "edit@example.com", readers: [{name: "Lou", age_group: "adult"}]});
+        const [lou] = Readathon.list_readers(sqlite, id);
+        Readathon.add_entry(sqlite, lou.reader_id, {day: "2027-01-03", minutes: 20, source: "timer"});
+        const [entry] = Readathon.list_entries(sqlite, lou.reader_id);
+        Readathon.update_entry(sqlite, lou.reader_id, entry.entry_id, {day: "2027-01-04", minutes: 35, title: "Hatchet", format: "Book"});
+        const changed = Readathon.get_entry(sqlite, lou.reader_id, entry.entry_id);
+        assert.deepStrictEqual([changed.day, changed.minutes, changed.title, changed.format, changed.source], ["2027-01-04", 35, "Hatchet", "Book", "timer"]);
+
+        const other_reader_id = lou.reader_id + 1000;
+        assert.strictEqual(Readathon.get_entry(sqlite, other_reader_id, entry.entry_id), null);
+        Readathon.update_entry(sqlite, other_reader_id, entry.entry_id, {day: "2027-01-05", minutes: 600});
+        Readathon.delete_entry(sqlite, other_reader_id, entry.entry_id);
+        assert.strictEqual(Readathon.get_entry(sqlite, lou.reader_id, entry.entry_id).minutes, 35, "untouched");
+
+        Readathon.delete_entry(sqlite, lou.reader_id, entry.entry_id);
+        assert.strictEqual(Readathon.get_entry(sqlite, lou.reader_id, entry.entry_id), null);
     });
 
     test("approved recommendations join the book lists; pending ones don't", () => {

@@ -1104,16 +1104,248 @@
 .ra-details[open] {
     padding-bottom: 1rem;
 }
-.ra-log li {
+/* ---------- reading log rows (reader page and log page) ---------- */
+.ra-log-rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.ra-log-rows li + li {
+    border-top: 1px solid var(--ra-line);
+}
+.ra-log-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--ra-line);
+    padding: 0.65rem 0.25rem;
+    color: var(--ra-ink) !important;
+    text-decoration: none;
+    border-radius: 10px;
 }
-.ra-log li:last-child {
-    border-bottom: 0;
+.ra-log-row:hover,
+.ra-log-row:focus-visible {
+    background: var(--ra-snow);
+}
+.ra-log-row .ra-log-what {
+    flex: 1 1 auto;
+}
+.ra-log-edit {
+    color: var(--ra-muted);
+    font-size: 0.85rem;
+    text-decoration: underline;
+}
+.ra-recent-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+}
+.ra-recent .ra-btn {
+    margin-top: 0.75rem;
+}
+
+/* ---------- this week, in the goal card ---------- */
+.ra-week {
+    margin-top: 0.85rem;
+}
+.ra-week-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: center;
+}
+.ra-week-letter {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: #c2c9f2;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+.ra-week-dot {
+    display: inline-grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e8ebff;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+.ra-week-days .is-read .ra-week-dot {
+    background: var(--ra-lamp);
+    color: var(--ra-ink);
+}
+.ra-week-days .is-today .ra-week-dot {
+    box-shadow: 0 0 0 2px var(--ra-lamp);
+}
+.ra-week-days .is-today .ra-week-letter {
+    color: var(--ra-lamp);
+}
+.ra-week-days .is-future .ra-week-dot {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    color: #8f97c9;
+}
+.ra-week-days .is-outside .ra-week-dot {
+    opacity: 0.35;
+}
+.ra-week-streak {
+    margin: 0.5rem 0 0;
+    color: var(--ra-lamp);
+    font-weight: 800;
+    text-align: center;
+}
+
+/* ---------- the reading log page ---------- */
+.ra-wide .ra-main {
+    max-width: 1040px;
+}
+.ra-log-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0 1.25rem;
+    grid-template-areas: "summary" "calendar" "weeks" "books";
+}
+.ra-log-summary { grid-area: summary; }
+.ra-log-calendar { grid-area: calendar; }
+.ra-log-weeks { grid-area: weeks; }
+.ra-log-books { grid-area: books; }
+@media (min-width: 860px) {
+    .ra-log-layout {
+        grid-template-columns: 21rem minmax(0, 1fr);
+        grid-template-rows: auto auto 1fr;
+        grid-template-areas: "summary weeks" "calendar weeks" "books weeks";
+        align-items: start;
+    }
+}
+.ra-log-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+    text-align: center;
+}
+.ra-log-stats b {
+    display: block;
+    font-family: var(--ra-display);
+    font-size: 1.6rem;
+    line-height: 1.1;
+    color: var(--ra-night-2);
+}
+.ra-log-stats li:first-child {
+    grid-column: 1 / -1;
+}
+.ra-log-stats li:first-child b {
+    font-size: 2rem;
+}
+.ra-log-stats span {
+    color: var(--ra-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.ra-log-week-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin: 0 0 0.35rem;
+    font-size: 1.15rem;
+}
+.ra-log-week-total {
+    color: var(--ra-mitten-deep);
+    font-family: var(--ra-body);
+    font-size: 1rem;
+    font-weight: 800;
+}
+.ra-calendar {
+    display: grid;
+    gap: 0.3rem;
+}
+.ra-calendar-row {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.3rem;
+}
+.ra-calendar-head span {
+    color: var(--ra-muted);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-align: center;
+}
+.ra-cal-day {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: var(--ra-snow);
+    color: var(--ra-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+.ra-cal-day.is-outside {
+    background: transparent;
+}
+.ra-cal-day.lv1 { background: #fff3d1; color: var(--ra-ink); }
+.ra-cal-day.lv2 { background: #ffe39a; color: var(--ra-ink); }
+.ra-cal-day.lv3 { background: var(--ra-lamp); color: var(--ra-ink); }
+.ra-cal-day.lv4 { background: #f2a922; color: var(--ra-ink); }
+.ra-cal-day.is-today {
+    box-shadow: inset 0 0 0 2px var(--ra-night-2);
+}
+.ra-cal-day.is-future {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--ra-line);
+}
+.ra-books-read {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.ra-books-read li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0;
+}
+.ra-books-read li + li {
+    border-top: 1px solid var(--ra-line);
+}
+.ra-books-read .ra-log-what {
+    flex: 1 1 auto;
+}
+.ra-books-read .ra-log-title {
+    white-space: normal;
+}
+.ra-log-what {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.ra-log-title {
+    overflow: hidden;
+    color: var(--ra-muted);
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ra-entry-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.ra-text-btn-danger {
+    color: var(--ra-mitten-deep);
 }
 .ra-log-min {
     display: flex;
@@ -1977,6 +2209,62 @@ button.ra-square:hover {
 .ra-pick-reader input:focus-visible + span {
     outline: 3px solid var(--ra-mitten);
     outline-offset: 2px;
+}
+/* ---------- my teams, on the reader page ---------- */
+.ra-my-teams {
+    margin: 0 0 1rem;
+    padding: 1rem 1rem 0.25rem;
+    border-radius: 26px;
+    background: #e6ecff;
+    box-shadow: inset 0 0 0 2px #d2dcff;
+}
+.ra-my-teams-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    margin-bottom: 0.6rem;
+    padding: 0 0.25rem;
+}
+.ra-my-teams-head .ra-h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+.ra-my-teams-icon {
+    display: inline-block;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 30% 38%, var(--ra-sky) 0 22%, transparent 23%),
+        radial-gradient(circle at 70% 38%, var(--ra-night-2) 0 22%, transparent 23%),
+        radial-gradient(ellipse at 30% 100%, var(--ra-sky) 0 38%, transparent 39%),
+        radial-gradient(ellipse at 70% 100%, var(--ra-night-2) 0 38%, transparent 39%);
+}
+.ra-my-teams-note {
+    margin: -0.35rem 0.25rem 0.75rem;
+    color: var(--ra-night-2);
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+.ra-my-teams .ra-team-card {
+    margin-bottom: 0.75rem;
+    box-shadow: 0 2px 0 #c6d2fb;
+}
+.ra-my-teams .ra-team-card-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0 0.75rem;
+}
+.ra-team-card-count {
+    color: var(--ra-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
 }
 .ra-team-card {
     display: grid;
