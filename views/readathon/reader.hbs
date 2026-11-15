@@ -32,22 +32,18 @@
 </section>
 {{/if}}
 
-<section class="ra-card ra-bookmark-card" aria-labelledby="bm-title">
-  <div class="ra-bookmark-wrap">{{> readathon-bookmark}}</div>
-  <div class="ra-bookmark-side">
-    <h2 id="bm-title" class="ra-h2">Your bookmark</h2>
-    <p>Every 30 minutes colors in a book. Fill all 20 to win an enamel pin.</p>
-    {{#if bookmark.full}}
-    <p class="ra-win">Bookmark full! Pick up your pin at the library desk.</p>
-    {{else}}
-    <p class="ra-next"><b>{{stats.minutes_to_next_book}} minutes</b> until your next book</p>
-    {{/if}}
-    <ul class="ra-mini-stats">
-      <li><b>{{stats.total}}</b> minutes</li>
-      <li><b>{{stats.days_read}}</b> days</li>
-      <li><b>{{stats.stickers}}</b> of 5 stickers</li>
-    </ul>
-  </div>
+<section class="ra-card ra-total-card" aria-labelledby="total-title">
+  <h2 id="total-title" class="ra-h2">My reading so far</h2>
+  <p class="ra-total-number">{{total_label}}</p>
+  {{#if pin_earned}}
+  <p class="ra-win">10 hours read! Pick up your pin at the library desk.</p>
+  {{else}}
+  <p class="ra-next">Read 10 hours to win an enamel pin. <b>{{pin_left_label}}</b> to go.</p>
+  {{/if}}
+  <ul class="ra-mini-stats">
+    <li><b>{{stats.days_read}}</b> {{#if (eq stats.days_read 1)}}day{{else}}days{{/if}}</li>
+    <li><b>{{stats.stickers}}</b> of 5 stickers</li>
+  </ul>
 </section>
 
 {{#if team}}

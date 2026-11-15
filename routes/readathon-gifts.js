@@ -42,8 +42,6 @@ function reader_summary(sqlite, reader) {
         color: reader.color,
         initial: reader.name.charAt(0).toUpperCase(),
         minutes: stats.total,
-        books: stats.books,
-        books_plural: stats.books !== 1,
         days: stats.days_read,
     };
 }

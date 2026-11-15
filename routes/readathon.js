@@ -226,7 +226,6 @@ function me(req, res, sqlite) {
                 ...reader,
                 initial: reader.name.charAt(0).toUpperCase(),
                 minutes_today: reader_stats.today_minutes,
-                books: reader_stats.books,
             };
         }),
     });
@@ -258,7 +257,9 @@ function reader_home(req, res, sqlite) {
         goal_percent: Math.min(100, Math.round(stats.today_minutes / reader.goal_minutes * 100)),
         goal_left: Math.max(0, reader.goal_minutes - stats.today_minutes),
         goals: content.GOALS.map(g => ({...g, current: g.minutes === reader.goal_minutes})),
-        bookmark: Readathon.bookmark(stats.total),
+        total_label: Readathon.duration_label(stats.total),
+        pin_earned: stats.total >= Readathon.PIN_MINUTES,
+        pin_left_label: Readathon.duration_label(Math.max(0, Readathon.PIN_MINUTES - stats.total)),
         board,
         cheers: Gifts.reader_cheers(sqlite, reader.reader_id),
         team: reader.team_id ? Teams.progress(sqlite, Teams.get_team(sqlite, reader.team_id), today) : null,
@@ -314,9 +315,10 @@ function save_log(req, res, sqlite) {
         res.status(400);
         return show_log(req, res, sqlite, req.body, errors);
     }
-    const before = Readathon.stats(Readathon.list_entries(sqlite, reader.reader_id), today).total;
+    const before_stats = Readathon.stats(Readathon.list_entries(sqlite, reader.reader_id), today);
+    const before_auto = Readathon.auto_squares(sqlite, reader, before_stats);
     Readathon.add_entry(sqlite, reader.reader_id, entry);
-    req.session.readathon_yay = {reader_id: reader.reader_id, added: entry.minutes, before};
+    req.session.readathon_yay = {reader_id: reader.reader_id, added: entry.minutes, before: before_stats.total, before_auto};
     res.redirect(`${BASE}/r/${reader.reader_id}/yay`);
 }
 
@@ -328,20 +330,24 @@ function yay(req, res, sqlite) {
         return res.redirect(`${BASE}/r/${reader.reader_id}`);
     }
     const {stats} = reader_context(sqlite, reader);
-    const mark = Readathon.bookmark(stats.total, flash.before);
-    const new_books = Math.floor(stats.total / Readathon.MINUTES_PER_BOOK)
-        - Math.floor(flash.before / Readathon.MINUTES_PER_BOOK);
-    const pin = Math.floor(stats.total / 600) > Math.floor(flash.before / 600);
+    const pin = flash.before < Readathon.PIN_MINUTES && stats.total >= Readathon.PIN_MINUTES;
+    // Bingo squares this reading just earned, and whether they finished a line
+    const before_auto = flash.before_auto ?? {};
+    const after_auto = Readathon.auto_squares(sqlite, reader, stats);
+    const marks = Readathon.list_marks(sqlite, reader.reader_id);
+    const new_squares = Readathon.newly_earned_squares(before_auto, after_auto);
+    const new_bingo = Readathon.bingo_board(marks, after_auto).bingos > Readathon.bingo_board(marks, before_auto).bingos;
     const team = reader.team_id ? Teams.progress(sqlite, Teams.get_team(sqlite, reader.team_id), Readathon.today()) : null;
     page(res, "yay", {
         title: "Nice reading!",
         added: flash.added,
-        new_books,
-        new_books_plural: new_books !== 1,
+        total_label: Readathon.duration_label(stats.total),
+        new_squares,
+        new_bingo,
         pin,
         goal_met: stats.today_minutes >= reader.goal_minutes,
         stats,
-        bookmark: mark,
+        confetti: Array.from({length: 20}),
         team,
     });
 }

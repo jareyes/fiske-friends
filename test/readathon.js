@@ -128,27 +128,27 @@ suite("lib/readathon.js stats", () => {
         assert.strictEqual(s.days_read, 6);
         assert.strictEqual(s.streak, 3, "today has no reading yet, so the streak counts back from yesterday");
         assert.strictEqual(s.best_streak, 3);
-        assert.strictEqual(s.books, 5);
-        assert.strictEqual(s.minutes_to_next_book, 15);
         assert.strictEqual(s.stickers, 2);
         assert.strictEqual(s.weeks.length, 5);
     });
 });
 
-suite("lib/readathon.js bookmark", () => {
-    test("colors one book per 30 minutes and marks the new ones", () => {
-        const mark = Readathon.bookmark(95, 40);
-        assert.strictEqual(mark.number, 1);
-        assert.strictEqual(mark.colored, 3);
-        assert.deepStrictEqual(mark.cells.slice(0, 4).map(c => [c.filled, c.fresh]), [[true, false], [true, true], [true, true], [false, false]]);
+suite("lib/readathon.js duration_label", () => {
+    test("says hours and minutes the way people do", () => {
+        assert.strictEqual(Readathon.duration_label(0), "0 minutes");
+        assert.strictEqual(Readathon.duration_label(1), "1 minute");
+        assert.strictEqual(Readathon.duration_label(45), "45 minutes");
+        assert.strictEqual(Readathon.duration_label(60), "1 hour");
+        assert.strictEqual(Readathon.duration_label(190), "3 hours, 10 minutes");
+        assert.strictEqual(Readathon.duration_label(61), "1 hour, 1 minute");
     });
+});
 
-    test("a full bookmark stays full until the next book starts a new one", () => {
-        assert.strictEqual(Readathon.bookmark(600).full, true);
-        assert.strictEqual(Readathon.bookmark(600).number, 1);
-        const second = Readathon.bookmark(630);
-        assert.strictEqual(second.number, 2);
-        assert.strictEqual(second.colored, 1);
+suite("lib/readathon.js newly_earned_squares", () => {
+    test("lists automatic squares that just turned on", () => {
+        const earned = Readathon.newly_earned_squares({streak7: true, hours5: false}, {streak7: true, hours5: true});
+        assert.deepStrictEqual(earned.map(square => square.label), ["Read for 5 hours in all"]);
+        assert.deepStrictEqual(Readathon.newly_earned_squares({hours5: true}, {hours5: true}), []);
     });
 });
 
