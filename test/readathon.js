@@ -37,7 +37,7 @@ suite("lib/readathon.js parse_join", () => {
                 {name: "Maya", age_group: "kid", birth_year: " 2017 "},
                 {name: "", age_group: "kid", birth_year: ""},
             ],
-            goal: "15",
+            goal: "300",
             email: "Josh@Example.com",
             city: "  West   Claremont ",
             state: "nh",
@@ -45,7 +45,7 @@ suite("lib/readathon.js parse_join", () => {
         assert.deepStrictEqual(errors, []);
         assert.deepStrictEqual(household.readers.map(r => [r.name, r.birth_year]), [["Josh", 1980], ["Maya", 2017]]);
         assert.strictEqual(household.email, "josh@example.com");
-        assert.strictEqual(household.goal_minutes, 15);
+        assert.strictEqual(household.goal_minutes, 300);
         assert.strictEqual(household.city, "West Claremont");
         assert.strictEqual(household.state, "NH");
     });
@@ -64,7 +64,7 @@ suite("lib/readathon.js parse_join", () => {
                 {name: "Old", birth_year: "1899"},
                 {name: "Ok", birth_year: "2026"},
             ],
-            goal: "15",
+            goal: "300",
             email: "a@b.co",
             ...place,
         }, today);
@@ -83,9 +83,68 @@ suite("lib/readathon.js parse_join", () => {
 
     test("treats an unknown age as a grown-up and caps at six readers", () => {
         const readers = Array.from({length: 8}, (_, i) => ({name: `R${i}`, age_group: "wizard", birth_year: "1990"}));
-        const {household} = Readathon.parse_join({readers, goal: "5", email: "a@b.co", ...place}, today);
+        const {household} = Readathon.parse_join({readers, goal: "120", email: "a@b.co", ...place}, today);
         assert.strictEqual(household.readers.length, 6);
         assert.strictEqual(household.readers[0].age_group, "adult");
+    });
+});
+
+suite("lib/readathon.js monthly goals", () => {
+    test("hints for the whole month match what the board approved", () => {
+        assert.deepStrictEqual(Readathon.goal_choices("2026-12-01", 300, SETTINGS).map(g => [g.label, g.hint, g.current]), [
+            ["2 hours", "about 5 minutes, most days", false],
+            ["5 hours", "about 15 minutes, most days", true],
+            ["10 hours", "about 30 minutes, most days", false],
+            ["20 hours", "about an hour, most days", false],
+        ]);
+    });
+
+    test("hints for late joiners show their real pace", () => {
+        // January 20: 12 days left, about 8 reading days
+        assert.deepStrictEqual(Readathon.goal_choices("2027-01-20", null, SETTINGS).map(g => g.hint), [
+            "about 15 minutes, most days",
+            "about 40 minutes, most days",
+            "about an hour and a half, most days",
+            "about 2½ hours, most days",
+        ]);
+        assert.strictEqual(Readathon.goal_choices("2027-01-31", null, SETTINGS)[0].hint, "about 2 hours, most days");
+    });
+
+    test("pace is measured from the day a reader joined, or the first day they logged", () => {
+        const joined_ms = Date.UTC(2027, 0, 15, 17); // January 15, midday in New Hampshire
+        assert.strictEqual(Readathon.reader_start_day({created_ms: joined_ms}, [], SETTINGS), "2027-01-15");
+        assert.strictEqual(Readathon.reader_start_day({created_ms: joined_ms}, entries([["2027-01-12", 20]]), SETTINGS), "2027-01-12");
+        assert.strictEqual(Readathon.reader_start_day({created_ms: Date.UTC(2026, 10, 15)}, [], SETTINGS), "2027-01-01");
+    });
+
+    test("on track compares against the days before today since they started", () => {
+        // 5 hours over January: 9.7 minutes a day. By January 11, ten days are done (97 minutes).
+        assert.strictEqual(Readathon.goal_progress(100, 300, "2027-01-01", "2027-01-11", SETTINGS).status, "on_track");
+        const behind = Readathon.goal_progress(60, 300, "2027-01-01", "2027-01-11", SETTINGS);
+        assert.strictEqual(behind.status, "keep_going");
+        assert.strictEqual(behind.message, "Keep going, there's still plenty of time!");
+        assert.doesNotMatch(behind.message, /behind/i);
+        // Someone who joined on January 11 with nothing yet is right on track
+        assert.strictEqual(Readathon.goal_progress(0, 300, "2027-01-11", "2027-01-11", SETTINGS).status, "on_track");
+    });
+
+    test("suggests how much to read today and notices when it's done", () => {
+        // January 11, 5-hour goal, 60 minutes read before today: 240 left over 21 days, about 14 reading days
+        assert.deepStrictEqual(Readathon.today_plan(60, 0, 300, "2027-01-11", SETTINGS), {done: false, text: "Today's Goal: 15 minutes"});
+        assert.deepStrictEqual(Readathon.today_plan(70, 10, 300, "2027-01-11", SETTINGS), {done: false, text: "Today's Goal: 10 minutes so far. 5 minutes left!"});
+        assert.deepStrictEqual(Readathon.today_plan(80, 20, 300, "2027-01-11", SETTINGS), {done: true, text: "Today's Goal: 20 minutes. Nice job!"});
+        assert.strictEqual(Readathon.today_plan(68, 8, 300, "2027-01-11", SETTINGS).text, "Today's Goal: 8 minutes so far. 7 minutes left!");
+        // A 20-hour goal late in the month
+        assert.strictEqual(Readathon.today_plan(0, 0, 1200, "2027-01-25", SETTINGS).text, "Today's Goal: 4 hours");
+        // Goal already reached before today
+        assert.deepStrictEqual(Readathon.today_plan(320, 0, 300, "2027-01-20", SETTINGS), {done: false, text: "Not yet today."});
+        assert.deepStrictEqual(Readathon.today_plan(330, 10, 300, "2027-01-20", SETTINGS), {done: true, text: "Today: 10 minutes read."});
+    });
+
+    test("reports a reached goal, the end of the month, and labels", () => {
+        const done = Readathon.goal_progress(310, 300, "2027-01-01", "2027-01-20", SETTINGS);
+        assert.deepStrictEqual([done.status, done.percent, done.total_label, done.goal_label], ["reached", 100, "5 hours, 10 minutes", "5 hours"]);
+        assert.strictEqual(Readathon.goal_progress(100, 300, "2027-01-01", "2027-02-03", SETTINGS).status, "over");
     });
 });
 
@@ -144,6 +203,12 @@ suite("lib/readathon.js duration_label", () => {
     });
 });
 
+suite("lib/readathon.js duration_short", () => {
+    test("keeps big numbers short", () => {
+        assert.deepStrictEqual([0, 45, 60, 205, 1200].map(Readathon.duration_short), ["0 min", "45 min", "1 hr", "3 hr 25 min", "20 hr"]);
+    });
+});
+
 suite("lib/readathon.js newly_earned_squares", () => {
     test("lists automatic squares that just turned on", () => {
         const earned = Readathon.newly_earned_squares({streak7: true, hours5: false}, {streak7: true, hours5: true});
@@ -186,7 +251,7 @@ suite("lib/readathon.js database", () => {
             email: "family@example.com",
             city: "Claremont",
             state: "NH",
-            goal_minutes: 15,
+            goal_minutes: 300,
             readers: [{name: "Josh", age_group: "adult", birth_year: 1980}, {name: "Maya", age_group: "kid", birth_year: 2017}],
         });
         const readers = Readathon.list_readers(sqlite, id);

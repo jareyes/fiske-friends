@@ -1,9 +1,12 @@
 -- January 2027 Read-a-thon
 -- A household is one sign-up (one grown-up email) with one or more readers.
 -- Paper-only households entered at the desk may have no email.
+-- City, state and birth year are required on the web sign-up but optional at the desk, so they allow NULL.
 CREATE TABLE IF NOT EXISTS readathon_households (
   household_id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT UNIQUE COLLATE NOCASE,
+  city TEXT,
+  state TEXT,
   wants_updates INTEGER NOT NULL DEFAULT 0,
   source TEXT NOT NULL DEFAULT 'web',
   created_ms INTEGER NOT NULL
@@ -14,6 +17,7 @@ CREATE TABLE IF NOT EXISTS readathon_readers (
   household_id INTEGER NOT NULL REFERENCES readathon_households(household_id),
   name TEXT NOT NULL,
   age_group TEXT NOT NULL CHECK (age_group IN ('kid', 'teen', 'adult')),
+  birth_year INTEGER CHECK (birth_year BETWEEN 1900 AND 2100),
   goal_minutes INTEGER NOT NULL DEFAULT 15,
   color INTEGER NOT NULL DEFAULT 0,
   created_ms INTEGER NOT NULL

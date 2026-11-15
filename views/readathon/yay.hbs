@@ -1,9 +1,9 @@
 <section class="ra-yay">
   <div class="ra-confetti" aria-hidden="true">{{#each confetti}}<i></i>{{/each}}</div>
   <p class="ra-yay-plus">+{{added}} <small>minutes</small></p>
-  <h1 class="ra-h1">{{#if pin}}You've read 10 hours!{{else}}{{#if new_bingo}}Bingo!{{else}}Nice reading, {{reader.name}}!{{/if}}{{/if}}</h1>
+  <h1 class="ra-h1">{{#if pin}}You've read 10 hours!{{else}}{{#if goal_reached}}You reached your goal!{{else}}{{#if new_bingo}}Bingo!{{else}}Nice reading, {{reader.name}}!{{/if}}{{/if}}{{/if}}</h1>
   {{#if pin}}<p class="ra-win">Pick up your enamel pin at the library desk.</p>{{/if}}
-  <p class="ra-lede-dark"><b>{{total_label}}</b> read so far.{{#unless pin}}{{#if goal_met}} That's today's goal done.{{/if}}{{/unless}}</p>
+  <p class="ra-lede-dark"><b>{{total_label}}</b> read so far.{{#if goal_reached}}{{#if pin}} That's your {{goal_label}} goal, too!{{/if}}{{/if}}{{#if halfway}} You're halfway to your {{goal_label}} goal!{{/if}}</p>
 </section>
 
 {{#if new_squares}}

@@ -105,7 +105,7 @@ function home(req, res, sqlite) {
     });
 }
 
-const BLANK_JOIN_FORM = {goal: "15", city: SETTINGS.default_city, state: SETTINGS.default_state};
+const BLANK_JOIN_FORM = {goal: String(content.DEFAULT_GOAL_MINUTES), city: SETTINGS.default_city, state: SETTINGS.default_state};
 
 function show_join(req, res, rows = [{name: "", age_group: "adult", birth_year: ""}], form = BLANK_JOIN_FORM, errors = [], sqlite = null) {
     const team_code = Readathon.clean(req.body?.team ?? req.query.team, 16);
@@ -117,7 +117,7 @@ function show_join(req, res, rows = [{name: "", age_group: "adult", birth_year: 
         form,
         rows: rows.map((row, i) => ({...row, i, number: i + 1, removable: i > 0})),
         can_add: rows.length < Readathon.MAX_READERS,
-        goals: content.GOALS,
+        goals: Readathon.goal_choices(Readathon.today()),
         ages: content.AGE_GROUPS,
         states: content.STATES,
         latest_birth_year: Readathon.today().slice(0, 4),
@@ -242,7 +242,6 @@ function reader_home(req, res, sqlite) {
         Readathon.list_marks(sqlite, reader.reader_id),
         Readathon.auto_squares(sqlite, reader, stats),
     );
-    const goal = content.GOALS.find(g => g.minutes === reader.goal_minutes) ?? content.GOALS[1];
     page(res, "reader", {
         title: reader.name,
         nav: "me",
@@ -252,12 +251,9 @@ function reader_home(req, res, sqlite) {
         initial: reader.name.charAt(0).toUpperCase(),
         several_readers: res.locals.readers.length > 1,
         stats,
-        goal,
-        goal_met: stats.today_minutes >= reader.goal_minutes,
-        goal_percent: Math.min(100, Math.round(stats.today_minutes / reader.goal_minutes * 100)),
-        goal_left: Math.max(0, reader.goal_minutes - stats.today_minutes),
-        goals: content.GOALS.map(g => ({...g, current: g.minutes === reader.goal_minutes})),
-        total_label: Readathon.duration_label(stats.total),
+        progress: Readathon.goal_progress(stats.total, reader.goal_minutes, Readathon.reader_start_day(reader, entries), today),
+        today_plan: Readathon.today_plan(stats.total, stats.today_minutes, reader.goal_minutes, today),
+        goals: Readathon.goal_choices(today, reader.goal_minutes),
         pin_earned: stats.total >= Readathon.PIN_MINUTES,
         pin_left_label: Readathon.duration_label(Math.max(0, Readathon.PIN_MINUTES - stats.total)),
         board,
@@ -331,6 +327,9 @@ function yay(req, res, sqlite) {
     }
     const {stats} = reader_context(sqlite, reader);
     const pin = flash.before < Readathon.PIN_MINUTES && stats.total >= Readathon.PIN_MINUTES;
+    const goal = reader.goal_minutes;
+    const goal_reached = flash.before < goal && stats.total >= goal;
+    const halfway = !goal_reached && flash.before < goal / 2 && stats.total >= goal / 2;
     // Bingo squares this reading just earned, and whether they finished a line
     const before_auto = flash.before_auto ?? {};
     const after_auto = Readathon.auto_squares(sqlite, reader, stats);
@@ -345,7 +344,9 @@ function yay(req, res, sqlite) {
         new_squares,
         new_bingo,
         pin,
-        goal_met: stats.today_minutes >= reader.goal_minutes,
+        goal_reached,
+        halfway,
+        goal_label: Readathon.goal_label(goal),
         stats,
         confetti: Array.from({length: 20}),
         team,
@@ -534,7 +535,7 @@ function desk_add_reader(req, res, sqlite) {
         city: Readathon.clean(req.body.city, 60) || null,
         state: Readathon.parse_state(req.body.state),
         source: "desk",
-        goal_minutes: 15,
+        goal_minutes: content.DEFAULT_GOAL_MINUTES,
         readers: [{name, age_group, birth_year}],
     });
     desk_back(req, res, `Signed up ${name}. Give them a paper kit!`, name);

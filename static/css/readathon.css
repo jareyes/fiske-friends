@@ -578,6 +578,25 @@
 .ra-page-head {
     margin: 0 0 1.25rem;
 }
+.ra-join-signin {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin: -0.25rem 0 1.25rem;
+    padding: 0.75rem 0.75rem 0.75rem 1.1rem;
+    border-radius: 18px;
+    background: var(--ra-paper);
+    box-shadow: 0 2px 0 var(--ra-line);
+}
+.ra-join-signin p {
+    flex: 1 1 auto;
+    margin: 0;
+    line-height: 1.35;
+}
+.ra-join-signin .ra-btn {
+    flex: none;
+}
 .ra-card {
     margin: 0 0 1rem;
     padding: 1.25rem;
@@ -789,12 +808,18 @@
     font-size: 1.1rem;
 }
 .ra-choice small {
+    text-wrap: balance;
     font-size: 0.82rem;
     font-weight: 600;
     color: var(--ra-muted);
 }
 .ra-choice-tall span {
     min-height: 4.2rem;
+}
+.ra-choice-goal {
+    margin-bottom: 0.4rem;
+    font-weight: 800;
+    font-size: 0.95rem;
 }
 .ra-choice-small span {
     min-height: 2.5rem;
@@ -912,9 +937,24 @@
     font-size: 1.5rem;
     color: #fff;
 }
+.ra-goal-number span {
+    white-space: nowrap;
+}
 .ra-goal-number b {
-    font-size: 2.6rem;
+    font-size: 2.2rem;
     font-weight: 700;
+    color: var(--ra-lamp);
+}
+.ra-today-plan {
+    margin: 0.6rem 0 0;
+    padding: 0.55rem 0.8rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-weight: 700;
+}
+.ra-today-plan.is-done {
+    background: rgba(255, 200, 61, 0.16);
     color: var(--ra-lamp);
 }
 .ra-actions {
@@ -935,12 +975,6 @@
 }
 .ra-total-card p {
     margin: 0.35rem 0;
-}
-.ra-total-number {
-    font-family: var(--ra-display);
-    font-size: 1.8rem;
-    font-weight: 700;
-    line-height: 1.2;
 }
 .ra-next b {
     color: var(--ra-mitten-deep);

@@ -62,10 +62,10 @@ async function seed(sqlite) {
         city: "Claremont",
         state: "NH",
         wants_updates: 1,
-        goal_minutes: 30,
+        goal_minutes: 600,
         readers: [
-            {name: "Renee", age_group: "adult", birth_year: 1984, goal_minutes: 30},
-            {name: "Katie", age_group: "kid", birth_year: 2018, goal_minutes: 15},
+            {name: "Renee", age_group: "adult", birth_year: 1984, goal_minutes: 600},
+            {name: "Katie", age_group: "kid", birth_year: 2018, goal_minutes: 300},
         ],
     });
     const [renee, katie] = Readathon.list_readers(sqlite, household_id);
@@ -95,7 +95,7 @@ async function seed(sqlite) {
             email: `reader${n}@example.org`,
             city,
             state,
-            goal_minutes: 15,
+            goal_minutes: 300,
             readers: [{name, age_group, birth_year: birth_years[age_group] - (n % 4)}],
         });
         const [reader] = Readathon.list_readers(sqlite, id);

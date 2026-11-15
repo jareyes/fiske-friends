@@ -15,10 +15,11 @@
 {{else}}
 <section class="ra-today" aria-label="Today">
   <div class="ra-goal">
-    <p class="ra-goal-label">{{#if goal_met}}Goal met today!{{else}}Today's goal{{/if}}</p>
-    <p class="ra-goal-number"><b>{{stats.today_minutes}}</b> of {{reader.goal_minutes}} min</p>
-    <div class="ra-meter ra-meter-lamp" role="img" aria-label="{{goal_percent}} percent of today's goal"><span style="width: {{goal_percent}}%"></span></div>
-    {{#unless goal_met}}<p class="ra-muted">{{goal_left}} minutes to go</p>{{/unless}}
+    <p class="ra-goal-label">{{#if progress.reached}}Goal reached!{{else}}My January goal{{/if}}</p>
+    <p class="ra-goal-number"><b>{{progress.total_short}}</b> <span>of {{progress.goal_label}}</span></p>
+    <div class="ra-meter ra-meter-lamp" role="img" aria-label="{{progress.percent}} percent of my January goal"><span style="width: {{progress.percent}}%"></span></div>
+    <p class="ra-muted">{{progress.message}}</p>
+    {{#if (eq phase "during")}}<p class="ra-today-plan{{#if today_plan.done}} is-done{{/if}}">{{#if today_plan.done}}<span aria-hidden="true">&check;</span> {{/if}}{{today_plan.text}}</p>{{/if}}
   </div>
   {{#if (eq phase "during")}}
   <div class="ra-actions">
@@ -34,7 +35,6 @@
 
 <section class="ra-card ra-total-card" aria-labelledby="total-title">
   <h2 id="total-title" class="ra-h2">My reading so far</h2>
-  <p class="ra-total-number">{{total_label}}</p>
   {{#if pin_earned}}
   <p class="ra-win">10 hours read! Pick up your pin at the library desk.</p>
   {{else}}
@@ -96,13 +96,13 @@
 </details>
 
 <details class="ra-details">
-  <summary>Change my daily goal</summary>
+  <summary>Change my goal</summary>
   <form class="ra-goal-form" action="{{reader_url}}/goal" method="post">
     <div class="ra-choices ra-choices-2">
       {{#each goals}}
       <label class="ra-choice ra-choice-tall">
         <input type="radio" name="goal" value="{{minutes}}"{{#if current}} checked{{/if}}>
-        <span><b>{{name}}</b><small>{{hint}}</small></span>
+        <span><b>{{name}}</b><strong class="ra-choice-goal">{{label}} total</strong><small>{{hint}}</small></span>
       </label>
       {{/each}}
     </div>
