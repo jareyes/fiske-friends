@@ -5,6 +5,7 @@
 
 <form class="ra-form" action="{{base}}/books/recommend" method="post" novalidate>
   {{> readathon-errors}}
+  {{> readathon-form-guard}}
   <fieldset class="ra-step">
     <legend><span class="ra-step-number">1</span> The book</legend>
     <label class="ra-field"><span>Title</span><input name="title" type="text" maxlength="150" required value="{{form.title}}" placeholder="e.g. Ox-Cart Man"></label>

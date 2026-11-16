@@ -238,6 +238,25 @@
     font-size: 0.85rem;
     text-align: center;
 }
+.ra-demo a {
+    color: var(--ra-ink) !important;
+    font-weight: 700;
+}
+.ra-desk-results .ra-desk-report {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.ra-desk-report .ra-fine {
+    margin: 0.25rem 0 0;
+    text-align: left;
+    word-break: break-word;
+}
+.ra-desk-report-message {
+    margin: 0 0 0.25rem;
+    white-space: pre-line;
+}
 .ra-nav {
     margin: 0 -0.3rem;
 }
@@ -597,6 +616,15 @@
 .ra-join-signin .ra-btn {
     flex: none;
 }
+/* The honeypot field on public forms: off-screen for people, still there for bots */
+.ra-hp {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 /* ---------- long-form pages like Privacy ---------- */
 .ra-prose .ra-card > :last-child {
     margin-bottom: 0;

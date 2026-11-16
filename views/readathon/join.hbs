@@ -10,6 +10,7 @@
 
 <form class="ra-form" action="{{base}}/join" method="post" novalidate data-join>
   {{> readathon-errors}}
+  {{> readathon-form-guard}}
   {{#if team}}<input type="hidden" name="team" value="{{team.code}}">{{/if}}
 
   <fieldset class="ra-step">

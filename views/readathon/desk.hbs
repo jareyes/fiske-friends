@@ -103,6 +103,24 @@
   {{/if}}
 </section>
 
+{{#if reports}}
+<section class="ra-card">
+  <h2 class="ra-h2">Problem reports ({{reports.length}})</h2>
+  <ul class="ra-desk-results">
+    {{#each reports}}
+    <li class="ra-desk-report">
+      <div>
+        <p class="ra-desk-report-message">{{message}}</p>
+        <p class="ra-muted">{{when}}{{#if page}} &middot; <a href="{{page}}">{{page}}</a>{{/if}}{{#if contact}} &middot; {{contact}}{{/if}}{{#if household_email}} &middot; signed in as {{household_email}}{{/if}}</p>
+        {{#if device}}<p class="ra-fine">{{device}}</p>{{/if}}
+      </div>
+      <form action="{{@root.base}}/desk/reports/{{report_id}}" method="post"><button class="ra-btn ra-btn-ghost" type="submit">Done</button></form>
+    </li>
+    {{/each}}
+  </ul>
+</section>
+{{/if}}
+
 <section class="ra-card">
   <h2 class="ra-h2">Book recommendations to check ({{pending.length}})</h2>
   {{#if pending}}

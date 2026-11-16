@@ -31,6 +31,11 @@ function fake_payments() {
     return !!SETTINGS.fake_payments;
 }
 
+// Gifts made with Stripe test keys (the demo, the dry run) are marked as test gifts
+function test_payments() {
+    return fake_payments() || String(config.get("stripe.secret_key") ?? "").startsWith("sk_test_");
+}
+
 function site_origin(req) {
     return `${req.protocol}://${req.get("host")}`;
 }
@@ -149,8 +154,8 @@ function create(sqlite, {page, own}) {
             }
         }
 
-        Gifts.record_gift(sqlite, reader?.reader_id, gift, payment_intent_id, fake_payments());
-        console.log({event: "Readathon.GIFT", reader_id: reader?.reader_id ?? null, amount_cents: gift.amount_cents, demo: fake_payments()});
+        Gifts.record_gift(sqlite, reader?.reader_id, gift, payment_intent_id, test_payments());
+        console.log({event: "Readathon.GIFT", reader_id: reader?.reader_id ?? null, amount_cents: gift.amount_cents, demo: test_payments()});
         req.session.readathon_gift = {
             to: reader ? reader.name : null,
             amount: Gifts.format_cents(gift.amount_cents),

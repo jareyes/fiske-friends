@@ -6,6 +6,7 @@ const middleware = require("../lib/middleware");
 const path = require("node:path");
 const routes = require("../routes");
 const session = require("express-session");
+const SqliteStore = require("../lib/session-store");
 const template = require("../lib/template");
 const {DatabaseSync} = require("node:sqlite");
 
@@ -35,7 +36,8 @@ function create(sqlite) {
 
     // Session middleware
     app.set("trust proxy", 1);
-    app.use(session(SESSION_CONFIG));
+    // Sign-ins are kept in the database (sessions table), so restarts don't sign people out
+    app.use(session({...SESSION_CONFIG, store: new SqliteStore(sqlite)}));
 
     // Template context middleware
     app.use(middleware.template_mounts);

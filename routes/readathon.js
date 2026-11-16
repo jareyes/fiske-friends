@@ -1,14 +1,17 @@
 // January 2027 Read-a-thon pages. Mounted at /readathon.
 const config = require("config");
 const content = require("../lib/readathon-content");
+const FormGuard = require("../lib/form-guard");
 const Gifts = require("../lib/readathon-gifts");
 const Prizes = require("../lib/readathon-prizes");
+const Reports = require("../lib/readathon-reports");
 const gift_routes = require("./readathon-gifts");
 const team_routes = require("./readathon-teams");
 const Teams = require("../lib/readathon-teams");
 const middleware = require("../lib/middleware");
 const Readathon = require("../lib/readathon");
 const {Router} = require("express");
+const Throttle = require("../lib/throttle");
 const Token = require("../lib/token");
 const User = require("../lib/user");
 
@@ -22,15 +25,31 @@ const SIGN_IN_LINK_DAYS = 7;
 
 const DATE_RANGE_LABEL = "January 1 to 31, 2027";
 
+// At most one sign-in email per address every few minutes, and a handful a day, so nobody can use
+// the sign-in form to flood someone's inbox. Settings: readathon.sign_in_email_limits.
+const SIGN_IN_LIMITS = SETTINGS.sign_in_email_limits ?? {};
+const sign_in_throttle = new Throttle({
+    min_gap_ms: (SIGN_IN_LIMITS.minutes_between ?? 0) * 60 * 1000,
+    per_day: SIGN_IN_LIMITS.per_day ?? 0,
+});
+
 function page(res, view, locals = {}) {
     res.render(`readathon/${view}`, {
         layout: "readathon",
         body_class: "theme-readathon",
         base: BASE,
         friends_url: SITE_URL,
+        // For the bot check on public forms (partials/readathon-form-guard)
+        form_stamp: FormGuard.stamp(),
         date_range: DATE_RANGE_LABEL,
         demo_today: SETTINGS.today_override
-            ? Readathon.label_day(SETTINGS.today_override)
+            ? `${Readathon.label_day(SETTINGS.today_override)}, ${SETTINGS.today_override.slice(0, 4)}`
+            : null,
+        // A banner for test sites, like the dry run
+        banner: SETTINGS.banner ?? null,
+        // "Report a problem" in the footer, with the page it was on
+        report_url: SETTINGS.show_report_link
+            ? `${BASE}/report?from=${encodeURIComponent(res.req?.originalUrl ?? "")}`
             : null,
         og: {
             title: "Resolve to Read: the Fiske Free Library Read-a-thon",
@@ -138,6 +157,16 @@ function join(req, res, sqlite) {
     if(req.body.add_reader !== undefined) {
         return show_join(req, res, [...rows, {name: "", age_group: "kid", birth_year: ""}].slice(0, Readathon.MAX_READERS), form, [], sqlite);
     }
+    const guard = FormGuard.check(req.body);
+    if(guard === "honeypot") {
+        // A bot: act as if it worked, but save nothing
+        console.log({event: "Readathon.BOT_BLOCKED", form: "join"});
+        return res.redirect(BASE);
+    }
+    if(guard === "too_fast") {
+        res.status(400);
+        return show_join(req, res, rows, form, [FormGuard.TOO_FAST_MESSAGE], sqlite);
+    }
     if(errors.length > 0) {
         res.status(400);
         return show_join(req, res, rows, form, errors, sqlite);
@@ -163,9 +192,21 @@ function show_sign_in(req, res, locals = {}) {
 
 function sign_in(req, res, sqlite) {
     const email = Readathon.clean(req.body.email, 200).toLowerCase();
-    const household = Readathon.find_household_by_email(sqlite, email);
+    const guard = FormGuard.check(req.body);
+    if(guard === "too_fast") {
+        res.status(400);
+        return show_sign_in(req, res, {error: FormGuard.TOO_FAST_MESSAGE, email});
+    }
+    const household = guard === "honeypot" ? null : Readathon.find_household_by_email(sqlite, email);
+    if(guard === "honeypot") {
+        console.log({event: "Readathon.BOT_BLOCKED", form: "sign-in"});
+    }
     let link = null;
-    if(household !== null) {
+    if(household !== null && !sign_in_throttle.attempt(email)) {
+        // Too many links for this address lately. Say the same thing, but don't send another.
+        console.log({event: "Readathon.SIGN_IN_THROTTLED", household_id: household.household_id});
+    }
+    else if(household !== null) {
         const token = Token.sign(`readathon:${household.household_id}`, SIGN_IN_LINK_DAYS * 24 * 60 * 60 * 1000);
         link = `${BASE}/sign-in/${token}`;
         // TODO: email this link. Until a mailer is set up it is logged for volunteers.
@@ -552,6 +593,15 @@ function show_recommend(req, res, form = {}, errors = []) {
 
 function recommend(req, res, sqlite) {
     const {errors, recommendation} = Readathon.parse_recommendation(req.body);
+    const guard = FormGuard.check(req.body);
+    if(guard === "honeypot") {
+        console.log({event: "Readathon.BOT_BLOCKED", form: "recommend"});
+        return res.redirect(`${BASE}/books`);
+    }
+    if(guard === "too_fast") {
+        res.status(400);
+        return show_recommend(req, res, {...req.body, read_during: !!req.body.read_during}, [FormGuard.TOO_FAST_MESSAGE]);
+    }
     if(errors.length > 0) {
         res.status(400);
         return show_recommend(req, res, {...req.body, read_during: !!req.body.read_during}, errors);
@@ -586,6 +636,42 @@ function privacy(req, res) {
     page(res, "privacy", {title: "Privacy", contact_email: SETTINGS.contact_email ?? null});
 }
 
+// ---------- report a problem ----------
+
+function show_report(req, res, form = {}, errors = []) {
+    page(res, "report", {
+        title: "Report a problem",
+        errors,
+        form,
+        from: Reports.clean_page(form.from ?? req.query.from),
+        report_url: null,
+    });
+}
+
+function report(req, res, sqlite) {
+    const guard = FormGuard.check(req.body);
+    if(guard === "honeypot") {
+        console.log({event: "Readathon.BOT_BLOCKED", form: "report"});
+        return res.redirect(BASE);
+    }
+    const {errors, report: details} = Reports.parse_report(req.body);
+    if(guard === "too_fast") {
+        errors.unshift(FormGuard.TOO_FAST_MESSAGE);
+    }
+    if(errors.length > 0) {
+        res.status(400);
+        return show_report(req, res, req.body, errors);
+    }
+    Reports.create_report(sqlite, details, household_id(req), req.get("user-agent"));
+    console.log({event: "Readathon.REPORT", page: details.page});
+    page(res, "report", {title: "Thank you", sent: true, from: details.page, report_url: null});
+}
+
+function desk_resolve_report(req, res, sqlite) {
+    Reports.resolve(sqlite, Number(req.params.report_id));
+    desk_back(req, res, "Marked that report as done.");
+}
+
 // ---------- volunteer desk (admins only) ----------
 
 function desk(req, res, sqlite, message = null) {
@@ -598,6 +684,10 @@ function desk(req, res, sqlite, message = null) {
         query,
         totals: {...totals, minutes_label: format_number(totals.minutes)},
         pending: Readathon.list_recommendations(sqlite, "pending"),
+        reports: Reports.list_open(sqlite).map(report => ({
+            ...report,
+            when: new Date(report.created_ms).toLocaleString("en-US", {timeZone: APP.timezone, month: "short", day: "numeric", hour: "numeric", minute: "2-digit"}),
+        })),
         fundraising: Gifts.totals(sqlite, totals.minutes),
         gifts: Gifts.recent_gifts(sqlite),
         teams: Teams.list_all(sqlite),
@@ -765,6 +855,8 @@ function create(sqlite) {
     router.post("/books/recommend", wrap(recommend));
     router.get("/books/recommend/thanks", recommend_thanks);
     router.get("/how", how);
+    router.get("/report", (req, res) => show_report(req, res));
+    router.post("/report", wrap(report));
     router.get("/privacy", privacy);
 
     router.get("/volunteer", (req, res) => show_volunteer(req, res));
@@ -780,6 +872,7 @@ function create(sqlite) {
     router.post("/desk/minutes", volunteer, wrap(desk_add_minutes));
     router.post("/desk/readers", volunteer, wrap(desk_add_reader));
     router.post("/desk/pickups", volunteer, wrap(desk_pickup));
+    router.post("/desk/reports/:report_id", volunteer, wrap(desk_resolve_report));
     router.post("/desk/teams/:team_id", volunteer, wrap(desk_team));
     router.post("/desk/recommendations/:recommendation_id", volunteer, wrap(desk_review));
     return router;

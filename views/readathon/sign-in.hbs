@@ -17,11 +17,13 @@
 <div class="ra-errors" role="alert"><strong>That link has expired or isn't right.</strong> Enter your email and we'll send a new one.</div>
 {{/if}}
 <form class="ra-form" action="{{base}}/sign-in" method="post">
+  {{#if error}}<div class="ra-errors" role="alert">{{error}}</div>{{/if}}
+  {{> readathon-form-guard}}
   <div class="ra-step">
     <p class="ra-help">Enter the email you used to join and we'll send you a link. No password needed.</p>
     <label class="ra-field">
       <span>Email</span>
-      <input name="email" type="email" inputmode="email" autocomplete="email" required placeholder="you@example.com">
+      <input name="email" type="email" inputmode="email" autocomplete="email" required placeholder="you@example.com" value="{{email}}">
     </label>
   </div>
   <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">Send my link</button>

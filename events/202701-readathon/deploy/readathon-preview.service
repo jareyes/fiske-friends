@@ -1,5 +1,6 @@
 # systemd service for the read-a-thon preview at read.fiskefriends.org
 # Runs bin/readathon-demo.js: sample data in memory, fake payments, pretend date.
+# Or, with READATHON_MODE=dry-run in the env file, the board's dry run (see the README).
 #
 # Install:
 #   sudo cp readathon-preview.service /etc/systemd/system/
@@ -21,7 +22,7 @@ WorkingDirectory=/srv/fiske-friends
 ExecStart=/usr/bin/node bin/readathon-demo.js
 Environment=PORT=3001
 Environment=HOST=127.0.0.1
-# Holds READATHON_DEMO_PASSWORD, readable only by root
+# Holds READATHON_DEMO_PASSWORD (and the dry-run settings), readable only by root
 EnvironmentFile=/etc/fiske-friends/readathon-preview.env
 Restart=on-failure
 RestartSec=5

@@ -1,0 +1,30 @@
+<header class="ra-page-head">
+  <h1 class="ra-h1">Report a problem</h1>
+  <p class="ra-lede-dark">Something broken, confusing, or not quite right? Tell us and a volunteer will take a look.</p>
+</header>
+
+{{#if sent}}
+<div class="ra-card ra-center">
+  <h2 class="ra-h2">Thank you!</h2>
+  <p>We got your note. Reports like yours are how we make the site better.</p>
+  {{#if from}}<a class="ra-btn ra-btn-lamp" href="{{from}}">Back to where you were</a>{{else}}<a class="ra-btn ra-btn-lamp" href="{{base}}">Back to the read-a-thon</a>{{/if}}
+</div>
+{{else}}
+<form class="ra-form" action="{{base}}/report" method="post" novalidate>
+  {{> readathon-errors}}
+  {{> readathon-form-guard}}
+  <input type="hidden" name="from" value="{{from}}">
+  <div class="ra-step">
+    <label class="ra-field">
+      <span>What happened?</span>
+      <textarea name="message" rows="5" maxlength="2000" required placeholder="e.g. I pressed Save and nothing happened">{{form.message}}</textarea>
+    </label>
+    {{#if from}}<p class="ra-help">We'll include the page you came from: <code>{{from}}</code></p>{{/if}}
+    <label class="ra-field">
+      <span>Your name or email <small>(optional, in case we have a question)</small></span>
+      <input name="contact" type="text" maxlength="200" value="{{form.contact}}">
+    </label>
+  </div>
+  <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">Send report</button>
+</form>
+{{/if}}

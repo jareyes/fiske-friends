@@ -1,24 +1,75 @@
 #!/usr/bin/env node
-// Runs the site with a throwaway in-memory database full of sample read-a-thon data,
-// pretending today is January 12, 2027. Nothing is written to disk.
+// Runs the read-a-thon on its own, away from the real site's data. Two ways:
 //
+// MEETING DEMO (the default)
 //   node bin/readathon-demo.js          then open http://localhost:3000/readathon
+//   A throwaway in-memory database full of sample readers, pretending today is January 12, 2027.
+//   Nothing is written to disk, and payments are pretend.
+//   Sample family:   demo@example.com  (Renee and Katie). Use "Sign in"; the link appears on screen.
+//   Volunteer desk:  volunteer@example.com at /readathon/volunteer (or the "Volunteers" footer link)
+//                    password "readathon", or whatever READATHON_DEMO_PASSWORD is set to
 //
-// Sample family:   demo@example.com  (Renee and Katie). Use "Sign in"; the link appears on screen.
-// Volunteer desk:  volunteer@example.com at /readathon/volunteer (or the "Volunteers" footer link)
-//                  password "readathon", or whatever READATHON_DEMO_PASSWORD is set to
+// DRY RUN (READATHON_MODE=dry-run)
+//   For the board to use the site for real for a week before launch. Starts empty, keeps everything in
+//   a database file across restarts, uses today's real date with short read-a-thon dates so logging is
+//   open, takes Stripe TEST payments, and shows a "Report a problem" link on every page. Needs:
+//     READATHON_DB              database file, e.g. /var/lib/fiske-friends/readathon-dry-run.sqlite
+//     READATHON_STARTS / _ENDS  the dry run's dates, e.g. 2026-11-23 and 2026-11-29
+//     STRIPE_SECRET_KEY / STRIPE_PUBLISHABLE_KEY   Stripe test keys (sk_test_... / pk_test_...)
+//     READATHON_DEMO_PASSWORD   the volunteer desk password (volunteer@example.com)
+//     SESSION_SECRET            any long random text, so sign-ins survive restarts safely
 //
-// To share it as a preview on the server, see events/202701-readathon/README.md.
+// To run either on the server at read.fiskefriends.org, see events/202701-readathon/README.md.
 const path = require("node:path");
 const fs = require("node:fs");
 const process = require("node:process");
 
+const DRY_RUN = process.env.READATHON_MODE === "dry-run";
+
+function dry_run_settings() {
+    const env = process.env;
+    const missing = ["READATHON_DB", "READATHON_STARTS", "READATHON_ENDS", "STRIPE_SECRET_KEY", "STRIPE_PUBLISHABLE_KEY", "READATHON_DEMO_PASSWORD", "SESSION_SECRET"]
+        .filter(name => !env[name]);
+    if(missing.length > 0) {
+        console.error(`Dry run needs these settings: ${missing.join(", ")}`);
+        process.exit(1);
+    }
+    // Never take real money in a dry run
+    if(!env.STRIPE_SECRET_KEY.startsWith("sk_test_") || !env.STRIPE_PUBLISHABLE_KEY.startsWith("pk_test_")) {
+        console.error("Dry run only works with Stripe TEST keys (sk_test_... and pk_test_...).");
+        process.exit(1);
+    }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(env.READATHON_STARTS) || !/^\d{4}-\d{2}-\d{2}$/.test(env.READATHON_ENDS)) {
+        console.error("READATHON_STARTS and READATHON_ENDS should look like 2026-11-23.");
+        process.exit(1);
+    }
+    return {
+        session: {secret: env.SESSION_SECRET, cookie: {secure: env.HTTPS !== "0", domain: null, sameSite: "lax"}},
+        stripe: {secret_key: env.STRIPE_SECRET_KEY, publishable_key: env.STRIPE_PUBLISHABLE_KEY},
+        sqlite: {filepath: env.READATHON_DB},
+        readathon: {
+            starts: env.READATHON_STARTS,
+            ends: env.READATHON_ENDS,
+            today_override: null,
+            // Email isn't set up yet, so sign-in links show on screen, with no limits
+            show_sign_in_links: true,
+            sign_in_email_limits: {minutes_between: 0, per_day: 0},
+            fake_payments: false,
+            show_report_link: true,
+            banner: "Dry run: a test of the read-a-thon site before it opens. Cards are never charged.",
+        },
+    };
+}
+
 // Settings for running on a laptop: no HTTPS, no real domain, demo date and visible sign-in links
 process.env.NODE_CONFIG = JSON.stringify({
-    session: {secret: "readathon-demo-only", cookie: {secure: false, domain: null, sameSite: "lax"}},
-    // Placeholder keys so no real payment can ever happen from the demo
-    stripe: {secret_key: "sk_test_readathon_demo", publishable_key: "pk_test_readathon_demo"},
-    readathon: {today_override: process.env.READATHON_TODAY ?? "2027-01-12", show_sign_in_links: true, fake_payments: true},
+    ...(DRY_RUN ? dry_run_settings() : {
+        session: {secret: "readathon-demo-only", cookie: {secure: false, domain: null, sameSite: "lax"}},
+        // Placeholder keys so no real payment can ever happen from the demo
+        stripe: {secret_key: "sk_test_readathon_demo", publishable_key: "pk_test_readathon_demo"},
+        // No sign-in email limits: the demo shows the link on screen, and people sign in over and over
+        readathon: {today_override: process.env.READATHON_TODAY ?? "2027-01-12", show_sign_in_links: true, fake_payments: true, sign_in_email_limits: {minutes_between: 0, per_day: 0}},
+    }),
     ...JSON.parse(process.env.NODE_CONFIG ?? "{}"),
 });
 process.chdir(path.join(__dirname, ".."));
@@ -37,11 +88,43 @@ const VOLUNTEER_PASSWORD = process.env.READATHON_DEMO_PASSWORD || "readathon";
 
 const MIGRATIONS_DIRPATH = path.join(__dirname, "..", "migrations");
 
+// Runs any migrations the database hasn't had yet, and records them (like bin/migrate.js),
+// so a dry-run database file can be reopened after a restart or an update
 function migrate(sqlite) {
+    sqlite.exec(`CREATE TABLE IF NOT EXISTS migrations (
+        migration_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT NOT NULL UNIQUE,
+        applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) STRICT`);
+    const applied = new Set(sqlite.prepare("SELECT filename FROM migrations").all().map(row => row.filename));
     const files = fs.readdirSync(MIGRATIONS_DIRPATH).filter(f => f.endsWith(".sql")).sort();
-    for(const file of files) {
-        sqlite.exec(fs.readFileSync(path.join(MIGRATIONS_DIRPATH, file), "utf8"));
+    for(const file of files.filter(f => !applied.has(f))) {
+        sqlite.exec("BEGIN");
+        try {
+            sqlite.exec(fs.readFileSync(path.join(MIGRATIONS_DIRPATH, file), "utf8"));
+            sqlite.prepare("INSERT INTO migrations (filename) VALUES (:filename)").run({filename: file});
+            sqlite.exec("COMMIT");
+        }
+        catch(err) {
+            sqlite.exec("ROLLBACK");
+            throw err;
+        }
     }
+}
+
+// A volunteer who can open the desk page, made once
+async function ensure_volunteer(sqlite) {
+    if(User.get_by_email(sqlite, "volunteer@example.com")) {
+        return;
+    }
+    const user = User.create(sqlite, {
+        first_name: "Desk",
+        last_name: "Volunteer",
+        email: "volunteer@example.com",
+        password_hash: await User.hash_password(VOLUNTEER_PASSWORD),
+    });
+    const {group_id} = sqlite.prepare("SELECT group_id FROM groups WHERE name = 'admin'").get();
+    sqlite.prepare("INSERT INTO permissions (user_id, group_id) VALUES (:user_id, :group_id)").run({user_id: user.user_id, group_id});
 }
 
 // Small deterministic random numbers so the demo looks the same every time
@@ -159,21 +242,16 @@ async function seed(sqlite) {
     cheer(katie, "Grandpa Ray", 20, "One more chapter!");
     [250, 100, 500, 75, 50, 150, 40, 300, 25, 60].forEach((dollars, i) => cheer(null, null, dollars, null, {first_name: `Donor${i}`}));
 
-    // A volunteer who can open the desk page
-    const user = User.create(sqlite, {
-        first_name: "Desk",
-        last_name: "Volunteer",
-        email: "volunteer@example.com",
-        password_hash: await User.hash_password(VOLUNTEER_PASSWORD),
-    });
-    const {group_id} = sqlite.prepare("SELECT group_id FROM groups WHERE name = 'admin'").get();
-    sqlite.prepare("INSERT INTO permissions (user_id, group_id) VALUES (:user_id, :group_id)").run({user_id: user.user_id, group_id});
 }
 
 async function main() {
-    const sqlite = new DatabaseSync(":memory:");
+    // The dry run keeps its data in a file and starts empty; the meeting demo starts fresh with samples
+    const sqlite = new DatabaseSync(DRY_RUN ? config.get("sqlite.filepath") : ":memory:");
     migrate(sqlite);
-    await seed(sqlite);
+    if(!DRY_RUN) {
+        await seed(sqlite);
+    }
+    await ensure_volunteer(sqlite);
     const port = Number(process.env.PORT ?? config.get("app.port"));
     // Keep the preview out of search results
     const preview = express();
@@ -187,6 +265,14 @@ async function main() {
     // HOST=127.0.0.1 keeps it reachable only through nginx on a server
     const host = process.env.HOST || undefined;
     preview.listen(port, host, () => {
+        if(DRY_RUN) {
+            const settings = config.get("readathon");
+            console.log(`\nRead-a-thon DRY RUN running: ${settings.starts} to ${settings.ends}, data in ${config.get("sqlite.filepath")}.`);
+            console.log(`  Open:      http://localhost:${port}/readathon`);
+            console.log("  Volunteer: volunteer@example.com / your READATHON_DEMO_PASSWORD");
+            console.log("  Payments:  Stripe test mode. Use card 4242 4242 4242 4242, any future date, any CVC.\n");
+            return;
+        }
         console.log(`\nRead-a-thon demo running (pretending today is ${Readathon.today()}).`);
         console.log(`  Open:      http://localhost:${port}/readathon`);
         console.log("  Family:    sign in as demo@example.com (the link shows on screen)");
