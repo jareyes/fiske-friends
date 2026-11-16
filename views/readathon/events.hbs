@@ -1,0 +1,36 @@
+<header class="ra-page-head">
+  <h1 class="ra-h1">Events</h1>
+  <p class="ra-lede-dark">Read together at the Fiske Free Library. Everything is free{{#if audience_name}}. Showing events for {{lowercase audience_name}} and all ages{{/if}}.</p>
+</header>
+
+{{#if audiences}}
+<nav class="ra-filter" aria-label="Who it's for">
+  <a href="{{base}}/events"{{#unless audience_name}} aria-current="page"{{/unless}}>Everything</a>
+  {{#each audiences}}<a href="{{@root.base}}/events?for={{slug}}"{{#if current}} aria-current="page"{{/if}}>For {{name}}</a>{{/each}}
+</nav>
+{{/if}}
+
+{{#if weeks}}
+{{#each weeks}}
+<section class="ra-event-week" aria-label="{{label}}">
+  <h2 class="ra-h2">{{label}}</h2>
+  <ul class="ra-events">
+    {{#each events}}
+    <li>
+      <a class="ra-event-row" href="{{@root.base}}/events/{{slug}}">
+        {{> readathon-date-badge badge}}
+        <span class="ra-event-text">
+          <strong>{{title}}</strong>
+          <span>{{time_label}}{{#if location}} &middot; {{location}}{{/if}}</span>
+          {{#if summary}}<span class="ra-muted">{{summary}}</span>{{/if}}
+          <span class="ra-tags">{{#each audiences}}<span class="ra-tag">{{name}}</span>{{/each}}{{#if on_bingo}}<span class="ra-tag ra-tag-win">Bingo square</span>{{/if}}</span>
+        </span>
+      </a>
+    </li>
+    {{/each}}
+  </ul>
+</section>
+{{/each}}
+{{else}}
+<p class="ra-card ra-center">No upcoming events{{#if audience_name}} for {{lowercase audience_name}}{{/if}} yet. Check back soon!</p>
+{{/if}}

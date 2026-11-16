@@ -1,0 +1,32 @@
+<header class="ra-page-head">
+  <a class="ra-small-link" href="{{base}}/events">&larr; All events</a>
+</header>
+
+<article class="ra-card ra-event-page">
+  <div class="ra-event-head">
+    {{> readathon-date-badge event.badge}}
+    <div>
+      <h1 class="ra-h1">{{event.title}}</h1>
+      <p class="ra-event-when"><b>{{event.long_day}}</b><br>{{event.time_label}}</p>
+    </div>
+  </div>
+
+  {{#if event.audiences}}<p class="ra-tags">{{#each event.audiences}}<span class="ra-tag">{{name}}</span>{{/each}}</p>{{/if}}
+
+  {{#if event.summary}}<p class="ra-event-summary">{{event.summary}}</p>{{/if}}
+  {{#if event.description}}<div class="ra-event-description">{{event.description}}</div>{{/if}}
+
+  {{#if event.on_bingo}}
+  <p class="ra-event-bingo"><b>It's on your bingo card!</b> Come to this event and get the code there to mark the square.</p>
+  {{/if}}
+
+  <dl class="ra-event-facts">
+    <div><dt>Where</dt><dd>{{#if event.location}}{{event.location}}, {{/if}}{{#if event.at_library}}Fiske Free Library, 108 Broad Street, Claremont{{else}}{{event.address}}{{/if}}<br><a href="{{event.map_url}}">Map and directions</a></dd></div>
+    <div><dt>Cost</dt><dd>Free</dd></div>
+  </dl>
+
+  <div class="ra-event-actions">
+    <a class="ra-btn ra-btn-lamp" href="{{event.google_calendar_url}}">Add to Google Calendar</a>
+    <a class="ra-btn ra-btn-ghost" href="{{ics_url}}">Add to Apple or Outlook</a>
+  </div>
+</article>

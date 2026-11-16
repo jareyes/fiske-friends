@@ -81,11 +81,14 @@
   <ul class="ra-events">
     {{#each upcoming}}
     <li>
-      {{> readathon-date-badge badge}}
-      <span><strong>{{title}}</strong><br>{{at}} &middot; {{where}}<br><span class="ra-muted">{{blurb}}</span></span>
+      <a class="ra-event-row" href="{{@root.base}}/events/{{slug}}">
+        {{> readathon-date-badge badge}}
+        <span class="ra-event-text"><strong>{{title}}</strong><span>{{time_label}}{{#if location}} &middot; {{location}}{{/if}}</span>{{#if summary}}<span class="ra-muted">{{summary}}</span>{{/if}}</span>
+      </a>
     </li>
     {{/each}}
   </ul>
+  <p class="ra-center"><a class="ra-btn ra-btn-ghost" href="{{base}}/events">See all events</a></p>
 </section>
 {{/if}}
 

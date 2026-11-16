@@ -1,0 +1,279 @@
+/* The planning admin (/plan): events and their tags. Builds on style.css. */
+.admin {
+    --admin-line: #d6deea;
+    --admin-soft: #eef3fa;
+    --admin-muted: #5b6577;
+    padding-bottom: 3rem;
+}
+.admin h1 {
+    margin: 0;
+    font-size: 2.25rem;
+}
+.admin-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 1rem;
+}
+.admin a {
+    color: var(--ff-color-blue);
+}
+.admin-button {
+    display: inline-block;
+    padding: 0.6rem 1.1rem;
+    border: 0;
+    border-radius: 6px;
+    background: var(--ff-color-blue);
+    color: #fff !important;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+.admin-button:hover {
+    filter: brightness(1.1);
+}
+.admin-flash {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    background: #e3f4ea;
+    color: #164b2c;
+    font-weight: 600;
+}
+.admin-errors {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    border: 2px solid #c0392b;
+    border-radius: 6px;
+    background: #fdecea;
+    color: #6b1a12;
+}
+.admin-errors p,
+.admin-errors ul {
+    margin: 0.25rem 0;
+}
+.admin-errors ul {
+    padding-left: 1.2rem;
+    list-style: disc;
+}
+.admin-warning {
+    margin: 0.25rem 0 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    background: #fff4d6;
+    color: #6b4e00;
+    font-size: 0.9rem;
+}
+.admin-muted,
+.admin-help {
+    color: var(--admin-muted);
+    font-size: 0.9rem;
+}
+.admin-empty {
+    padding: 1.5rem;
+    border-radius: 8px;
+    background: var(--admin-soft);
+    text-align: center;
+}
+
+/* ---------- the events list ---------- */
+.admin-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+.admin-segments {
+    display: inline-flex;
+    border: 1px solid var(--admin-line);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.admin-segments a {
+    padding: 0.35rem 0.9rem;
+    color: var(--ff-color-blue);
+    font-weight: 600;
+    text-decoration: none;
+}
+.admin-segments a + a {
+    border-left: 1px solid var(--admin-line);
+}
+.admin-segments a[aria-current] {
+    background: var(--ff-color-blue);
+    color: #fff;
+}
+.admin-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-weight: 600;
+}
+.admin select,
+.admin input[type=text],
+.admin input[type=date],
+.admin input[type=time],
+.admin textarea {
+    box-sizing: border-box;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid #b9c4d6;
+    border-radius: 6px;
+    background: #fff;
+    font: inherit;
+}
+.admin select:focus,
+.admin input:focus,
+.admin textarea:focus {
+    outline: 2px solid var(--ff-color-blue);
+    outline-offset: 1px;
+}
+.admin-events {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--admin-line);
+}
+.admin-events li {
+    border-bottom: 1px solid var(--admin-line);
+}
+.admin-event {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: 0.25rem 1rem;
+    padding: 0.85rem 0.5rem;
+    color: inherit !important;
+    text-decoration: none;
+}
+.admin-event:hover,
+.admin-event:focus-visible {
+    background: var(--admin-soft);
+}
+.admin-event-when {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.35;
+}
+.admin-event-when span {
+    color: var(--admin-muted);
+    font-size: 0.85rem;
+}
+.admin-event-what {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    line-height: 1.35;
+}
+.admin-event-what strong {
+    color: var(--ff-color-blue);
+    font-size: 1.05rem;
+}
+.admin-events .is-draft .admin-event-what strong {
+    color: var(--admin-muted);
+}
+.admin-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.2rem;
+}
+.admin-chip {
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    background: var(--admin-soft);
+    color: #2c3a52;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.admin-chip-series {
+    background: #dbe7fb;
+    color: #0b3a73;
+}
+.admin-chip-draft {
+    background: #fff1c7;
+    color: #6b4e00;
+}
+.admin-chip-bingo {
+    background: #fde3df;
+    color: #7a2318;
+}
+@media (max-width: 560px) {
+    .admin-event {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- the event form ---------- */
+.admin-form fieldset {
+    margin: 0 0 1.25rem;
+    padding: 1rem 1.1rem 0.5rem;
+    border: 1px solid var(--admin-line);
+    border-radius: 8px;
+}
+.admin-form legend {
+    padding: 0 0.4rem;
+    font-family: "Cormorant", serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+}
+.admin-field {
+    display: block;
+    margin: 0 0 0.9rem;
+}
+.admin-field > span {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+    font-size: 0.92rem;
+}
+.admin-field > span small {
+    color: var(--admin-muted);
+    font-weight: 400;
+}
+.admin-field input,
+.admin-field textarea {
+    width: 100%;
+}
+.admin-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 0 0.75rem;
+}
+@media (max-width: 560px) {
+    .admin-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    .admin-row .admin-field:first-child {
+        grid-column: 1 / -1;
+    }
+}
+.admin-checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    margin: 0.25rem 0 1rem;
+}
+.admin-checks label,
+.admin-check-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    cursor: pointer;
+}
+.admin-check-row {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+.admin-advanced {
+    margin: 0.25rem 0 0.75rem;
+}
+.admin-advanced summary {
+    cursor: pointer;
+    color: var(--ff-color-blue);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}

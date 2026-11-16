@@ -19,6 +19,10 @@
     starts: "2027-01-01",
     ends: "2027-01-31",
     community_goal_minutes: 100000,
+    // This read-a-thon's events are the main site's events with this series tag (see /plan/events)
+    event_tag: "readathon-2027-01",
+    // For map links and calendar files; events elsewhere have their own address
+    library_address: "Fiske Free Library, 108 Broad Street, Claremont, NH 03743",
     // Shown on the privacy page for questions and requests to correct or remove information.
     // Leave null to point people to the Friends' website instead.
     contact_email: null,

@@ -2,6 +2,7 @@
 const config = require("config");
 const content = require("../lib/readathon-content");
 const FormGuard = require("../lib/form-guard");
+const Events = require("../lib/readathon-events");
 const Gifts = require("../lib/readathon-gifts");
 const Prizes = require("../lib/readathon-prizes");
 const Reports = require("../lib/readathon-reports");
@@ -100,11 +101,7 @@ function reader_context(sqlite, reader) {
 function home(req, res, sqlite) {
     const today = Readathon.today();
     const totals = Readathon.community(sqlite);
-    const upcoming = content.EVENTS.filter(e => e.day >= today).slice(0, 3).map(e => ({
-        ...e,
-        label: Readathon.label_day(e.day, today),
-        badge: Readathon.event_date(e.day),
-    }));
+    const upcoming = Events.upcoming(sqlite, today, 3);
     const phase = Readathon.phase(today);
     page(res, "home", {
         body_class: "theme-readathon ra-home",
@@ -462,7 +459,7 @@ function get_ready(sqlite, reader, {readers, teams, cheers, today}) {
     const days = Readathon.days_between(today, SETTINGS.starts);
     const goal = Readathon.goal_choices(today, reader.goal_minutes).find(g => g.current);
     const team_names = teams.map(team => team.name);
-    const next_event = content.EVENTS.find(event => event.day >= today) ?? null;
+    const [next_event = null] = Events.upcoming(sqlite, today, 1);
     return {
         days_to_go: days,
         countdown: days === 1 ? "Starts tomorrow!" : `Starts in ${days} days`,
@@ -494,7 +491,7 @@ function get_ready(sqlite, reader, {readers, teams, cheers, today}) {
                 done: false,
             },
         ],
-        next_event: next_event ? {...next_event, label: Readathon.label_day(next_event.day, today), badge: Readathon.event_date(next_event.day)} : null,
+        next_event,
     };
 }
 
@@ -874,6 +871,55 @@ function privacy(req, res) {
     page(res, "privacy", {title: "Privacy", contact_email: SETTINGS.contact_email ?? null});
 }
 
+// ---------- events ----------
+
+function events_page(req, res, sqlite) {
+    const today = Readathon.today();
+    const audience = Readathon.clean(req.query.for, 40);
+    const all = Events.upcoming(sqlite, today);
+    const audiences = [...new Map(all.flatMap(e => e.audiences).map(t => [t.slug, t])).values()]
+        .sort((a, b) => a.sort - b.sort);
+    // "All ages" events are for everyone, so they show under every audience
+    const shown = audience ? all.filter(e => e.audiences.some(t => t.slug === audience || t.slug === "all-ages")) : all;
+    page(res, "events", {
+        title: "Events",
+        nav: "events",
+        weeks: Events.by_week(shown, today),
+        audiences: audiences.filter(t => t.slug !== "all-ages").map(t => ({...t, current: t.slug === audience})),
+        audience_name: audiences.find(t => t.slug === audience)?.name ?? null,
+    });
+}
+
+function event_page(req, res, sqlite) {
+    const event = Events.get(sqlite, req.params.slug);
+    if(event === null) {
+        return res.redirect(`${BASE}/events`);
+    }
+    const view = Events.view(sqlite, event);
+    page(res, "event", {
+        title: view.title,
+        nav: "events",
+        event: view,
+        ics_url: `${BASE}/events/${view.slug}.ics`,
+        og: {
+            title: `${view.title}: ${view.long_day} at the Fiske Free Library`,
+            description: view.summary || `Part of the Fiske Free Library read-a-thon, ${DATE_RANGE_LABEL}.`,
+            url: `${SITE_URL}${BASE}/events/${view.slug}`,
+        },
+    });
+}
+
+function event_calendar_file(req, res, sqlite) {
+    const event = Events.get(sqlite, req.params.slug);
+    if(event === null) {
+        return res.sendStatus(404);
+    }
+    const view = Events.view(sqlite, event);
+    res.set("Content-Type", "text/calendar; charset=utf-8");
+    res.set("Content-Disposition", `attachment; filename="${view.slug}.ics"`);
+    res.send(Events.ics(view, view.address, `${req.protocol}://${req.get("host")}${BASE}/events/${view.slug}`));
+}
+
 // ---------- report a problem ----------
 
 function show_report(req, res, form = {}, errors = []) {
@@ -1102,6 +1148,9 @@ function create(sqlite) {
     router.post("/books/recommend", wrap(recommend));
     router.get("/books/recommend/thanks", recommend_thanks);
     router.get("/how", how);
+    router.get("/events", wrap(events_page));
+    router.get("/events/:slug.ics", wrap(event_calendar_file));
+    router.get("/events/:slug", wrap(event_page));
     router.get("/report", (req, res) => show_report(req, res));
     router.post("/report", wrap(report));
     router.get("/privacy", privacy);

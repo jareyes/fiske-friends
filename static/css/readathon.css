@@ -553,14 +553,110 @@
     gap: 0.6rem;
 }
 .ra-events li {
+    border-radius: 18px;
+    background: var(--ra-paper);
+    box-shadow: 0 2px 0 var(--ra-line);
+    line-height: 1.45;
+}
+.ra-event-row {
     display: flex;
     gap: 0.9rem;
     align-items: flex-start;
     padding: 0.9rem;
     border-radius: 18px;
+    color: var(--ra-ink) !important;
+    text-decoration: none;
+}
+.ra-event-row:hover strong,
+.ra-event-row:focus-visible strong {
+    text-decoration: underline;
+}
+.ra-event-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+.ra-event-text .ra-tags {
+    margin-top: 0.3rem;
+}
+
+/* ---------- events calendar and event pages ---------- */
+.ra-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.25rem;
+}
+.ra-filter a {
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
     background: var(--ra-paper);
-    box-shadow: 0 2px 0 var(--ra-line);
-    line-height: 1.45;
+    box-shadow: inset 0 0 0 2px var(--ra-line);
+    color: var(--ra-ink) !important;
+    font-weight: 700;
+    font-size: 0.92rem;
+    text-decoration: none;
+}
+.ra-filter a[aria-current] {
+    background: var(--ra-night);
+    box-shadow: none;
+    color: #fff !important;
+}
+.ra-event-week {
+    margin: 0 0 1.5rem;
+}
+.ra-event-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.ra-event-head .ra-h1 {
+    margin: 0;
+    font-size: 1.9rem;
+    line-height: 1.15;
+}
+.ra-event-when {
+    margin: 0.4rem 0 0;
+    line-height: 1.4;
+}
+.ra-event-page .ra-tags {
+    margin: 1rem 0 0;
+}
+.ra-event-summary {
+    margin: 1rem 0 0;
+    font-size: 1.1rem;
+}
+.ra-event-description {
+    margin: 0.75rem 0 0;
+    white-space: pre-line;
+}
+.ra-event-bingo {
+    margin: 1rem 0 0;
+    padding: 0.75rem 0.9rem;
+    border-radius: 14px;
+    background: var(--ra-lamp-soft);
+}
+.ra-event-facts {
+    display: grid;
+    gap: 0.6rem;
+    margin: 1.25rem 0 0;
+}
+.ra-event-facts dt {
+    color: var(--ra-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.ra-event-facts dd {
+    margin: 0;
+}
+.ra-event-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
 }
 .ra-date {
     flex: none;
@@ -683,6 +779,13 @@
 }
 .ra-checklist .is-done b {
     color: var(--ra-lamp);
+}
+a.ra-get-ready-event {
+    text-decoration: none;
+}
+a.ra-get-ready-event:hover b,
+a.ra-get-ready-event:focus-visible b {
+    text-decoration: underline;
 }
 .ra-get-ready-event {
     display: flex;

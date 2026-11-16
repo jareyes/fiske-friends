@@ -23,10 +23,10 @@
     {{/each}}
   </ol>
   {{#if get_ready.next_event}}
-  <div class="ra-get-ready-event">
+  <a class="ra-get-ready-event" href="{{base}}/events/{{get_ready.next_event.slug}}">
     {{> readathon-date-badge get_ready.next_event.badge light=true}}
-    <p><span class="ra-goal-label">Mark your calendar</span><b>{{get_ready.next_event.title}}</b><span>{{get_ready.next_event.at}} &middot; {{get_ready.next_event.where}}</span><small>{{get_ready.next_event.blurb}}</small></p>
-  </div>
+    <p><span class="ra-goal-label">Mark your calendar</span><b>{{get_ready.next_event.title}}</b><span>{{get_ready.next_event.time_label}}{{#if get_ready.next_event.location}} &middot; {{get_ready.next_event.location}}{{/if}}</span>{{#if get_ready.next_event.summary}}<small>{{get_ready.next_event.summary}}</small>{{/if}}</p>
+  </a>
   {{/if}}
 </section>
 {{else}}

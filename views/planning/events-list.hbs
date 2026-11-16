@@ -1,42 +1,47 @@
-{{#block "style"}}
-table {
-    width: 700px;
-    margin-top: 2rem;
-    border-spacing: 0.5rem;
-}
-th {
-    font-size: 0.8rem;
-    font-variant: small-caps;
-    font-weight: bold;
-    text-align: left;
-}
-thead {
-    border-bottom: 1px solid black;
-}
-tr {
-    margin-bottom: 0.25rem;
-}
-{{/block}}
+<div class="admin">
+  <div class="admin-head">
+    <h1>Events</h1>
+    <a class="admin-button" href="/{{mounts.planning}}/events/create{{#if series}}?series={{series}}{{/if}}">+ New event</a>
+  </div>
 
-<h1>Events</h1>
-<p>
-  <a href="/{{ mounts.planning }}/events/create">Create new event</a>
-</p>
-<table>
-  <thead>
-    <tr>
-      <th>Title</th>
-      <th>Date</th>
-      <th>Time</th>
-    </tr>
-  </thead>
-  <tbody>
+  {{#if message}}<p class="admin-flash" role="status">{{message}}</p>{{/if}}
+
+  <form class="admin-filters" method="get" action="/{{mounts.planning}}/events">
+    <div class="admin-segments" role="group" aria-label="When">
+      {{#each whens}}<a href="?when={{id}}{{#if ../series}}&series={{../series}}{{/if}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
+    </div>
+    <label class="admin-inline">
+      <span>Series</span>
+      <select name="series" onchange="this.form.submit()">
+        <option value="">All events</option>
+        {{#each series_tags}}<option value="{{slug}}"{{#if current}} selected{{/if}}>{{name}}</option>{{/each}}
+      </select>
+    </label>
+    <input type="hidden" name="when" value="{{when}}">
+    <noscript><button type="submit">Filter</button></noscript>
+  </form>
+
+  {{#if events}}
+  <ul class="admin-events">
     {{#each events}}
-    <tr>
-      <td><a href="/{{ ../mounts.planning }}/event/{{ slug }}">{{ title }}</a></td>
-      <td>{{ date start }}</td>
-      <td>{{ time start }}&ndash;{{ time end}}</td>
-    </tr>
+    <li class="{{#unless is_published}}is-draft{{/unless}}">
+      <a class="admin-event" href="/{{../mounts.planning}}/event/{{slug}}">
+        <span class="admin-event-when"><b>{{date start}}</b><span>{{weekday start}} &middot; {{time_label}}</span></span>
+        <span class="admin-event-what">
+          <strong>{{title}}</strong>
+          {{#if location}}<span class="admin-muted">{{location}}</span>{{/if}}
+          <span class="admin-chips">
+            {{#unless is_published}}<span class="admin-chip admin-chip-draft">Draft</span>{{/unless}}
+            {{#each series_tags}}<span class="admin-chip admin-chip-series">{{name}}</span>{{/each}}
+            {{#each audience_tags}}<span class="admin-chip">{{name}}</span>{{/each}}
+            {{#if bingo_code}}<span class="admin-chip admin-chip-bingo">Bingo: {{bingo_code}}</span>{{/if}}
+          </span>
+        </span>
+      </a>
+    </li>
     {{/each}}
-  </tbody>
-</table>
+  </ul>
+  {{else}}
+  <p class="admin-empty">No {{#if (eq when "all")}}{{else}}{{when}} {{/if}}events{{#if series}} in this series{{/if}}.</p>
+  {{/if}}
+</div>
