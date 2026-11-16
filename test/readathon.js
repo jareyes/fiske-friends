@@ -571,3 +571,10 @@ suite("lib/readathon-teams.js and lib/readathon-prizes.js", () => {
     });
 });
 
+
+suite("lib/readathon.js event_date", () => {
+    test("gives the pieces of a calendar badge for any month", () => {
+        assert.deepStrictEqual(Readathon.event_date("2027-01-02"), {day_name: "Sat", day_number: 2, month: "Jan"});
+        assert.deepStrictEqual(Readathon.event_date("2026-11-23"), {day_name: "Mon", day_number: 23, month: "Nov"});
+    });
+});

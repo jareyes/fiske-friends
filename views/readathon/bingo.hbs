@@ -6,11 +6,15 @@
 
 {{#if message}}<p class="ra-flash{{#if message.bad}} ra-flash-bad{{/if}}" role="status">{{message.text}}</p>{{/if}}
 
+{{#if locked}}
+<p class="ra-bingo-status" role="status"><b>Squares open {{start_label}}.</b> Have a look and plan ahead!</p>
+{{else}}
 <p class="ra-bingo-status{{#if board.bingos}} is-win{{/if}}" role="status">
   {{#if board.blackout}}<b>Full card!</b> You earned a tote bag and an enamel pin. Pick them up at the library desk.
   {{else}}{{#if board.bingos}}<b>Bingo!</b> You earned an enamel pin. Pick it up at the library desk. Fill the whole card for a tote bag!
   {{else}}<b>{{board.to_bingo}} more</b> in a row for a bingo{{/if}}{{/if}}
 </p>
+{{/if}}
 
 <form class="ra-bingo" action="{{reader_url}}/bingo" method="post">
   <div class="ra-bingo-head" aria-hidden="true"><span>R</span><span>E</span><span>A</span><span>D</span><span>!</span></div>
@@ -21,7 +25,7 @@
       <span>{{label}}</span>{{#if (eq kind "event")}}<small>event</small>{{/if}}
     </button>
     {{else}}
-    <div class="ra-square is-marked{{#if (eq kind "free")}} is-free{{/if}}{{#if (eq kind "auto")}}{{#unless marked}} is-auto-off{{/unless}}{{/if}}{{#if in_win}} is-win{{/if}}" {{#if (eq kind "auto")}}{{#unless marked}}data-off{{/unless}}{{/if}}>
+    <div class="ra-square{{#if marked}} is-marked{{/if}}{{#if (eq kind "free")}} is-free{{/if}}{{#if (eq kind "auto")}}{{#unless marked}} is-auto-off{{/unless}}{{/if}}{{#if in_win}} is-win{{/if}}" {{#if (eq kind "auto")}}{{#unless marked}}data-off{{/unless}}{{/if}}>
       <span>{{label}}</span>{{#if (eq kind "auto")}}<small>{{#if marked}}done!{{else}}automatic{{/if}}</small>{{/if}}
     </div>
     {{/if}}
@@ -29,6 +33,7 @@
   </div>
 </form>
 
+{{#unless locked}}
 <details class="ra-details" open>
   <summary>At an event? Enter the code</summary>
   <form class="ra-code-form" action="{{reader_url}}/bingo/code" method="post">
@@ -39,4 +44,5 @@
     <button class="ra-btn ra-btn-ghost" type="submit">Check in</button>
   </form>
 </details>
+{{/unless}}
 <p class="ra-fine">Squares marked <b>automatic</b> fill in by themselves from your reading log. Using a paper card? Show it at the desk.</p>

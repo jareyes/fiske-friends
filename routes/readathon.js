@@ -103,9 +103,7 @@ function home(req, res, sqlite) {
     const upcoming = content.EVENTS.filter(e => e.day >= today).slice(0, 3).map(e => ({
         ...e,
         label: Readathon.label_day(e.day, today),
-        day_number: Number(e.day.slice(8)),
-        day_name: Readathon.label_day(e.day).split(",")[0],
-        is_feb: e.day.slice(5, 7) === "02",
+        badge: Readathon.event_date(e.day),
     }));
     const phase = Readathon.phase(today);
     page(res, "home", {
@@ -115,6 +113,8 @@ function home(req, res, sqlite) {
         phase,
         days_to_go: Readathon.days_between(today, SETTINGS.starts),
         signed_in: household_id(req) !== null,
+        get_ready: phase === "before" ? get_ready_home(sqlite, household_id(req)) : null,
+        start_label: Readathon.long_day(SETTINGS.starts),
         totals: {
             ...totals,
             minutes_label: format_number(totals.minutes),
@@ -418,6 +418,86 @@ function me(req, res, sqlite) {
 
 // ---------- a reader's pages ----------
 
+// Before the read-a-thon starts, the landing page shows ways to get a head start instead of totals
+// that are still near zero. A signed-in household sees what it has already done.
+function get_ready_home(sqlite, id) {
+    const readers = id === null ? [] : Readathon.list_readers(sqlite, id);
+    const on_team = readers.some(r => Teams.team_ids_for_reader(sqlite, r.reader_id).length > 0);
+    const sponsors = readers.reduce((sum, r) => sum + Gifts.reader_cheers(sqlite, r.reader_id).count, 0);
+    const signed_up = readers.length > 0;
+    // One reader: straight to their sponsor page. Several: pick who first.
+    const sponsor_href = !signed_up ? `${BASE}/join` : (readers.length === 1 ? `${BASE}/r/${readers[0].reader_id}/cheers` : `${BASE}/me`);
+    return {
+        checklist: [
+            {
+                label: signed_up ? "You're signed up!" : "Sign up your household",
+                note: signed_up ? `${readers.length} ${readers.length === 1 ? "reader" : "readers"}. Add more any time.` : "It's free and takes a minute. Add everyone who wants to read.",
+                href: signed_up ? `${BASE}/household` : `${BASE}/join`,
+                done: signed_up,
+            },
+            {
+                label: "Start or join a team",
+                note: on_team ? "You're on a team." : "Classmates, coworkers, friends: read toward a goal together.",
+                href: `${BASE}/teams`,
+                done: on_team,
+            },
+            {
+                label: "Ask family to sponsor you",
+                note: sponsors > 0 ? `${sponsors} ${sponsors === 1 ? "sponsor" : "sponsors"} so far. Thank you!` : (signed_up ? "Share your link. Every gift supports the library." : "Once you've signed up, share your link. Every gift supports the library."),
+                href: sponsor_href,
+                done: sponsors > 0,
+            },
+            {
+                label: "Find your first book",
+                note: "Lists for every age, picked by library staff.",
+                href: `${BASE}/books`,
+                done: false,
+            },
+        ],
+    };
+}
+
+// Before the read-a-thon starts: a countdown, the reader's goal, and things to do now
+function get_ready(sqlite, reader, {readers, teams, cheers, today}) {
+    const days = Readathon.days_between(today, SETTINGS.starts);
+    const goal = Readathon.goal_choices(today, reader.goal_minutes).find(g => g.current);
+    const team_names = teams.map(team => team.name);
+    const next_event = content.EVENTS.find(event => event.day >= today) ?? null;
+    return {
+        days_to_go: days,
+        countdown: days === 1 ? "Starts tomorrow!" : `Starts in ${days} days`,
+        start_label: Readathon.long_day(SETTINGS.starts),
+        goal: goal ? {name: goal.name, label: goal.label, hint: goal.hint} : null,
+        checklist: [
+            {
+                label: "Add everyone in your home",
+                note: readers.length > 1 ? `${readers.length} readers so far` : "Grown-ups, kids, grandparents: everyone can join in.",
+                href: `${BASE}/household`,
+                done: readers.length > 1,
+            },
+            {
+                label: "Join or start a team",
+                note: team_names.length > 0 ? `On ${team_names.join(", ")}` : "Classmates, coworkers, friends: read toward a goal together.",
+                href: `${BASE}/teams`,
+                done: team_names.length > 0,
+            },
+            {
+                label: "Ask family to sponsor you",
+                note: cheers.count > 0 ? `${cheers.count} ${cheers.count === 1 ? "sponsor" : "sponsors"} so far, ${cheers.total}` : "Share your link. Every gift supports the library.",
+                href: `${BASE}/r/${reader.reader_id}/cheers`,
+                done: cheers.count > 0,
+            },
+            {
+                label: "Find your first book",
+                note: "Lists for every age, picked by library staff.",
+                href: `${BASE}/books`,
+                done: false,
+            },
+        ],
+        next_event: next_event ? {...next_event, label: Readathon.label_day(next_event.day, today), badge: Readathon.event_date(next_event.day)} : null,
+    };
+}
+
 function reader_home(req, res, sqlite) {
     const {reader} = res.locals;
     const {today, entries, stats} = reader_context(sqlite, reader);
@@ -428,11 +508,16 @@ function reader_home(req, res, sqlite) {
         Readathon.list_marks(sqlite, reader.reader_id),
         Readathon.auto_squares(sqlite, reader, stats),
     );
+    const phase = Readathon.phase(today);
+    const cheers = Gifts.reader_cheers(sqlite, reader.reader_id);
+    const teams = Teams.for_reader(sqlite, reader.reader_id, today);
     page(res, "reader", {
         title: reader.name,
         nav: "me",
         welcome,
-        phase: Readathon.phase(today),
+        phase,
+        get_ready: phase === "before" ? get_ready(sqlite, reader, {readers: res.locals.readers, teams, cheers, today}) : null,
+        start_short: Readathon.label_day(SETTINGS.starts).replace(/^\w+, /, ""),
         today_label: Readathon.label_day(today),
         initial: reader.name.charAt(0).toUpperCase(),
         several_readers: res.locals.readers.length > 1,
@@ -443,8 +528,8 @@ function reader_home(req, res, sqlite) {
         board,
         prizes: Prizes.bingo_prizes(board, Prizes.list_pickups(sqlite, reader.reader_id)),
         raffle: Prizes.raffle(sqlite, reader.reader_id),
-        cheers: Gifts.reader_cheers(sqlite, reader.reader_id),
-        teams: Teams.for_reader(sqlite, reader.reader_id, today),
+        cheers,
+        teams,
         week: Readathon.week_strip(stats.by_day, today),
         // Only shown for a run of two or more, so nobody sees a zero
         streak_note: stats.streak >= 2 ? `${stats.streak} days in a row!` : null,
@@ -657,10 +742,14 @@ function bingo(req, res, sqlite, message = null) {
         Readathon.list_marks(sqlite, reader.reader_id),
         Readathon.auto_squares(sqlite, reader, stats),
     );
+    // Before the start, the card can be seen but not marked
+    const locked = Readathon.phase(Readathon.today()) === "before";
     page(res, "bingo", {
         title: "Bingo",
         nav: "bingo",
-        board,
+        locked,
+        start_label: Readathon.long_day(SETTINGS.starts),
+        board: locked ? {...board, squares: board.squares.map(square => ({...square, tappable: false}))} : board,
         message: message ?? req.session.readathon_bingo_message ?? null,
         rows: [0, 1, 2, 3, 4].map(r => board.squares.slice(r * 5, r * 5 + 5)),
     });
@@ -671,6 +760,9 @@ function toggle_square(req, res, sqlite) {
     const {reader} = res.locals;
     const square = Number.parseInt(req.body.square, 10);
     const definition = Readathon.bingo_card(reader.age_group).squares[square];
+    if(Readathon.phase(Readathon.today()) === "before") {
+        return res.redirect(`${BASE}/r/${reader.reader_id}/bingo`);
+    }
     if(definition && definition.kind !== "free" && definition.kind !== "auto") {
         const marked = Readathon.list_marks(sqlite, reader.reader_id).includes(square);
         Readathon.set_mark(sqlite, reader.reader_id, square, !marked);
@@ -682,7 +774,10 @@ function bingo_code(req, res, sqlite) {
     const {reader} = res.locals;
     const card = Readathon.bingo_card(reader.age_group);
     const square = Readathon.event_code_square(card, req.body.code);
-    if(square < 0 && Readathon.is_event_code(req.body.code)) {
+    if(Readathon.phase(Readathon.today()) === "before") {
+        req.session.readathon_bingo_message = {text: `Event codes work once the read-a-thon starts on ${Readathon.long_day(SETTINGS.starts)}.`};
+    }
+    else if(square < 0 && Readathon.is_event_code(req.body.code)) {
         // A real event, just not one on this reader's card (say, teen night on a kid's card)
         req.session.readathon_bingo_message = {
             text: `Thanks for coming! That event isn't on ${reader.name}'s card, but every minute you read there still counts.`,

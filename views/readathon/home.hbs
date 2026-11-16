@@ -35,6 +35,27 @@
   </ol>
 </section>
 
+{{#if get_ready}}
+<section class="ra-section" aria-labelledby="head-start-title">
+  <div class="ra-today ra-get-ready">
+    <p class="ra-goal-label">Get ready</p>
+    <h2 id="head-start-title" class="ra-get-ready-count">Get a head start</h2>
+    <p class="ra-muted">A few things you can do now, before the read-a-thon begins on {{start_label}}.</p>
+    <ol class="ra-checklist">
+      {{#each get_ready.checklist}}
+      <li class="{{#if done}}is-done{{/if}}">
+        <a href="{{href}}">
+          <span class="ra-check-mark" aria-hidden="true">{{#if done}}&check;{{/if}}</span>
+          <span class="ra-check-text"><b>{{label}}</b><small>{{note}}</small></span>
+          <span class="ra-visually-hidden">{{#if done}}(done){{/if}}</span>
+        </a>
+      </li>
+      {{/each}}
+    </ol>
+  </div>
+  <p class="ra-fine ra-center">Not reading along? You can still <a href="{{base}}/give">donate to the read-a-thon</a>. Gifts support {{purpose}}.</p>
+</section>
+{{else}}
 <section class="ra-section ra-community" aria-labelledby="total-title">
   <h2 id="total-title" class="ra-h2">Claremont is reading</h2>
   <p class="ra-big-number">{{totals.minutes_label}} <small>minutes</small></p>
@@ -52,6 +73,7 @@
   <a class="ra-btn ra-btn-ghost" href="{{base}}/give">Donate</a>
   <p class="ra-fine">Readers: giving is optional. Everyone gets the same prizes.</p>
 </section>
+{{/if}}
 
 {{#if upcoming}}
 <section class="ra-section" aria-labelledby="events-title">
@@ -59,7 +81,7 @@
   <ul class="ra-events">
     {{#each upcoming}}
     <li>
-      <span class="ra-date"><small>{{day_name}}</small><b>{{day_number}}</b><small>{{#if is_feb}}Feb{{else}}Jan{{/if}}</small></span>
+      {{> readathon-date-badge badge}}
       <span><strong>{{title}}</strong><br>{{at}} &middot; {{where}}<br><span class="ra-muted">{{blurb}}</span></span>
     </li>
     {{/each}}

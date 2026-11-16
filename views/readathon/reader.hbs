@@ -6,11 +6,28 @@
   </div>
 </header>
 
-{{#if (eq phase "before")}}
-<section class="ra-card ra-center">
-  <h2 class="ra-h2">See you January 1!</h2>
-  <p>The read-a-thon hasn't started yet. Pick out your first book while you wait.</p>
-  <a class="ra-btn ra-btn-lamp" href="{{base}}/books">Browse book lists</a>
+{{#if get_ready}}
+<section class="ra-today ra-get-ready" aria-labelledby="get-ready-title">
+  <p class="ra-goal-label">Get ready</p>
+  <h2 id="get-ready-title" class="ra-get-ready-count">{{get_ready.countdown}}</h2>
+  <p class="ra-muted">The read-a-thon starts {{get_ready.start_label}}.{{#if get_ready.goal}} Your goal: <b>{{get_ready.goal.label}}</b>, {{get_ready.goal.hint}}.{{/if}}</p>
+  <ol class="ra-checklist">
+    {{#each get_ready.checklist}}
+    <li class="{{#if done}}is-done{{/if}}">
+      <a href="{{href}}">
+        <span class="ra-check-mark" aria-hidden="true">{{#if done}}&check;{{/if}}</span>
+        <span class="ra-check-text"><b>{{label}}</b><small>{{note}}</small></span>
+        <span class="ra-visually-hidden">{{#if done}}(done){{/if}}</span>
+      </a>
+    </li>
+    {{/each}}
+  </ol>
+  {{#if get_ready.next_event}}
+  <div class="ra-get-ready-event">
+    {{> readathon-date-badge get_ready.next_event.badge light=true}}
+    <p><span class="ra-goal-label">Mark your calendar</span><b>{{get_ready.next_event.title}}</b><span>{{get_ready.next_event.at}} &middot; {{get_ready.next_event.where}}</span><small>{{get_ready.next_event.blurb}}</small></p>
+  </div>
+  {{/if}}
 </section>
 {{else}}
 <section class="ra-today" aria-label="Today">
@@ -46,6 +63,7 @@
 </section>
 {{/if}}
 
+{{#unless get_ready}}
 <section class="ra-card ra-recent" id="log" aria-labelledby="recent-title">
   <div class="ra-recent-head">
     <h2 id="recent-title" class="ra-h2">Recent reading</h2>
@@ -68,12 +86,13 @@
   <p class="ra-muted">Nothing yet. Any amount counts!</p>
   {{/if}}
 </section>
+{{/unless}}
 
 <section class="ra-tiles" aria-label="More">
   <a class="ra-tile" href="{{reader_url}}/bingo">
     <span class="ra-tile-icon ra-icon-grid" aria-hidden="true"></span>
     <strong>Bingo card</strong>
-    <span>{{#if board.blackout}}Blackout!{{else}}{{#if board.bingos}}Bingo! You earned a pin{{else}}{{board.to_bingo}} more for a bingo{{/if}}{{/if}}</span>
+    <span>{{#if get_ready}}Have a look; squares open {{start_short}}{{else}}{{#if board.blackout}}Blackout!{{else}}{{#if board.bingos}}Bingo! You earned a pin{{else}}{{board.to_bingo}} more for a bingo{{/if}}{{/if}}{{/if}}</span>
   </a>
   <a class="ra-tile" href="{{reader_url}}/cheers">
     <span class="ra-tile-icon ra-icon-heart" aria-hidden="true"></span>
