@@ -582,6 +582,10 @@ function how(req, res) {
     page(res, "how", {title: "How it works", nav: "how", signed_in: household_id(req) !== null});
 }
 
+function privacy(req, res) {
+    page(res, "privacy", {title: "Privacy", contact_email: SETTINGS.contact_email ?? null});
+}
+
 // ---------- volunteer desk (admins only) ----------
 
 function desk(req, res, sqlite, message = null) {
@@ -761,6 +765,7 @@ function create(sqlite) {
     router.post("/books/recommend", wrap(recommend));
     router.get("/books/recommend/thanks", recommend_thanks);
     router.get("/how", how);
+    router.get("/privacy", privacy);
 
     router.get("/volunteer", (req, res) => show_volunteer(req, res));
     router.post("/volunteer", (req, res, next) => volunteer_sign_in(req, res, next, sqlite));

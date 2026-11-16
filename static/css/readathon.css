@@ -597,6 +597,23 @@
 .ra-join-signin .ra-btn {
     flex: none;
 }
+/* ---------- long-form pages like Privacy ---------- */
+.ra-prose .ra-card > :last-child {
+    margin-bottom: 0;
+}
+.ra-h3 {
+    margin: 1rem 0 0.35rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+.ra-prose ul {
+    list-style: disc;
+    margin: 0 0 0.75rem;
+    padding-left: 1.2rem;
+}
+.ra-prose li + li {
+    margin-top: 0.35rem;
+}
 .ra-card {
     margin: 0 0 1rem;
     padding: 1.25rem;

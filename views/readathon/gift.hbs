@@ -72,7 +72,7 @@
 
   <noscript><p class="ra-errors">Card payments need JavaScript turned on. Sorry about that!</p></noscript>
   <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit" data-gift-submit>{{#if reader}}Cheer on {{reader.name}}{{else}}Give to the read-a-thon{{/if}}</button>
-  <p class="ra-fine">Payments are processed securely by Stripe. The Friends of the Fiske Free Library is a nonprofit and your gift is tax-deductible. Giving is optional for readers: everyone gets the same prizes.</p>
+  <p class="ra-fine">Payments are processed securely by Stripe. The Friends of the Fiske Free Library is a nonprofit and your gift is tax-deductible. Giving is optional for readers: everyone gets the same prizes. <a href="{{base}}/privacy">Privacy</a></p>
 </form>
 
 {{#unless fake_payments}}<script src="https://js.stripe.com/v3/"></script>{{/unless}}
