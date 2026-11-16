@@ -1,0 +1,62 @@
+<header class="ra-page-head">
+  <a class="ra-small-link" href="{{base}}/household">&larr; My household</a>
+  <h1 class="ra-h1">{{#if reader}}Change {{reader.name}}{{else}}Add a reader{{/if}}</h1>
+  {{#unless reader}}<p class="ra-lede-dark">Someone new joining in? Kids only need a first name and the year they were born.</p>{{/unless}}
+</header>
+
+<form class="ra-form" action="{{base}}/household/readers/{{#if reader}}{{reader.reader_id}}{{else}}new{{/if}}" method="post" novalidate>
+  {{> readathon-errors}}
+  {{#if confirm_age}}
+  <div class="ra-errors" role="alert">
+    <p><strong>Changing to {{confirm_age.age_name}} gives {{confirm_age.name}} the {{confirm_age.card_name}} bingo card.</strong>
+      The {{confirm_age.marked}} {{#if confirm_age.plural}}squares{{else}}square{{/if}} {{confirm_age.name}} marked will be cleared. Automatic squares, like reading 5 hours, fill back in on their own.</p>
+    <input type="hidden" name="confirm_age" value="1">
+    <button class="ra-btn ra-btn-lamp" type="submit">Yes, change it</button>
+    <a class="ra-btn ra-btn-ghost" href="{{base}}/household/readers/{{reader.reader_id}}">Keep it as it was</a>
+  </div>
+  {{/if}}
+  <div class="ra-step">
+    <div class="ra-reader-fields">
+      <label class="ra-field">
+        <span>First name</span>
+        <input name="name" type="text" maxlength="40" autocomplete="off" required value="{{form.name}}">
+      </label>
+      <label class="ra-field">
+        <span>Birth year</span>
+        <input name="birth_year" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" value="{{form.birth_year}}" placeholder="e.g. 2017">
+      </label>
+    </div>
+    <div class="ra-choices ra-choices-3" role="radiogroup" aria-label="This reader is a">
+      {{#each ages}}<label class="ra-choice"><input type="radio" name="age_group" value="{{id}}"{{#if checked}} checked{{/if}}><span>{{name}}</span></label>{{/each}}
+    </div>
+    {{#if reader}}<p class="ra-help">Kids, teens and grown-ups each have their own bingo card.</p>{{/if}}
+  </div>
+  {{#if goals}}
+  <fieldset class="ra-step">
+    <legend>Goal for January</legend>
+    <div class="ra-choices ra-choices-2">
+      {{#each goals}}
+      <label class="ra-choice ra-choice-tall">
+        <input type="radio" name="goal" value="{{minutes}}"{{#if current}} checked{{/if}}>
+        <span><b>{{name}}</b><strong class="ra-choice-goal">{{label}} total</strong><small>{{hint}}</small></span>
+      </label>
+      {{/each}}
+    </div>
+  </fieldset>
+  {{/if}}
+  {{#unless confirm_age}}<button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">{{#if reader}}Save changes{{else}}Add reader{{/if}}</button>{{/unless}}
+</form>
+
+{{#if reader}}
+<section class="ra-card ra-remove-reader">
+  <h2 class="ra-h2">Remove {{reader.name}}</h2>
+  {{#if cannot_remove}}
+  <p class="ra-muted">{{cannot_remove}}</p>
+  {{else}}
+  <p>For a reader added by mistake. This can't be undone.</p>
+  <form action="{{base}}/household/readers/{{reader.reader_id}}/remove" method="post">
+    <button class="ra-text-btn ra-text-btn-danger" type="submit">Remove {{reader.name}} from the household</button>
+  </form>
+  {{/if}}
+</section>
+{{/if}}

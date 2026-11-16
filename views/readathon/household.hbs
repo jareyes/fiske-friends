@@ -1,0 +1,53 @@
+<header class="ra-page-head">
+  <a class="ra-small-link" href="{{base}}/me">&larr; Who's reading?</a>
+  <h1 class="ra-h1">My household</h1>
+</header>
+
+{{#if message}}<p class="ra-flash" role="status">{{message}}</p>{{/if}}
+
+<section class="ra-card" aria-labelledby="readers-title">
+  <h2 id="readers-title" class="ra-h2">Readers</h2>
+  <ul class="ra-household-readers">
+    {{#each household_readers}}
+    <li>
+      <a class="ra-household-reader" href="{{@root.base}}/household/readers/{{reader_id}}" aria-label="Change {{name}}">
+        <span class="ra-avatar a{{color}}" aria-hidden="true">{{initial}}</span>
+        <span class="ra-log-what"><b>{{name}}</b><span class="ra-log-title">{{age_name}}{{#if birth_year}} &middot; born {{birth_year}}{{/if}}</span></span>
+        <span class="ra-log-edit" aria-hidden="true">Edit</span>
+      </a>
+    </li>
+    {{/each}}
+  </ul>
+  {{#if can_add}}
+  <a class="ra-btn ra-btn-ghost ra-btn-block" href="{{base}}/household/readers/new">+ Add a reader</a>
+  {{else}}
+  <p class="ra-muted">A household can have up to {{max_readers}} readers. Need more? Ask at the library desk.</p>
+  {{/if}}
+</section>
+
+<form class="ra-form ra-card" action="{{base}}/household" method="post" novalidate>
+  <h2 class="ra-h2">Household details</h2>
+  {{> readathon-errors}}
+  <label class="ra-field">
+    <span>Grown-up's email</span>
+    <input name="email" type="email" inputmode="email" autocomplete="email" required value="{{form.email}}" aria-describedby="email-help">
+    <small id="email-help" class="ra-field-help">This is how you sign in. If you change it, use the new address next time.</small>
+  </label>
+  <div class="ra-place">
+    <label class="ra-field">
+      <span>Town or city</span>
+      <input name="city" type="text" maxlength="60" autocomplete="address-level2" required value="{{form.city}}">
+    </label>
+    <label class="ra-field">
+      <span>State</span>
+      <select name="state" autocomplete="address-level1" required>
+        {{#each states}}<option value="{{id}}"{{#if (eq id @root.form.state)}} selected{{/if}}>{{name}}</option>{{/each}}
+      </select>
+    </label>
+  </div>
+  <label class="ra-check">
+    <input type="checkbox" name="wants_updates" value="1"{{#if form.wants_updates}} checked{{/if}}>
+    <span>Send me weekly updates about the read-a-thon</span>
+  </label>
+  <button class="ra-btn ra-btn-lamp ra-btn-block" type="submit">Save details</button>
+</form>

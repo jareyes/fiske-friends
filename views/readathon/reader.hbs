@@ -2,7 +2,7 @@
   <span class="ra-avatar a{{reader.color}}" aria-hidden="true">{{initial}}</span>
   <div>
     <h1 class="ra-h1">{{#if welcome}}Welcome, {{reader.name}}!{{else}}Hi, {{reader.name}}!{{/if}}</h1>
-    {{#if several_readers}}<a class="ra-small-link" href="{{base}}/me">Not {{reader.name}}? Switch reader</a>{{/if}}
+    <p class="ra-hello-links">{{#if several_readers}}<a class="ra-small-link" href="{{base}}/me">Not {{reader.name}}? Switch reader</a> &middot; {{/if}}<a class="ra-small-link" href="{{base}}/household">My household</a></p>
   </div>
 </header>
 

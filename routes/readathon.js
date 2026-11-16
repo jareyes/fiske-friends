@@ -186,6 +186,149 @@ function join(req, res, sqlite) {
     res.redirect(team ? `${BASE}/teams/${team.code}` : `${BASE}/me`);
 }
 
+// ---------- my household: details and readers, after joining ----------
+
+const AGE_NAMES = Object.fromEntries(content.AGE_GROUPS.map(age => [age.id, age.name]));
+
+// Household pages need someone signed in
+function signed_in_household(sqlite) {
+    return (req, res, next) => {
+        const id = household_id(req);
+        const household = id === null ? null : Readathon.get_household(sqlite, id);
+        if(household === null) {
+            return res.redirect(`${BASE}/sign-in`);
+        }
+        res.locals.household = household;
+        res.locals.readers = Readathon.list_readers(sqlite, id);
+        next();
+    };
+}
+
+function household_message(req) {
+    const text = req.session.readathon_household_message ?? null;
+    delete req.session.readathon_household_message;
+    return text;
+}
+
+function household_back(req, res, text) {
+    req.session.readathon_household_message = text;
+    res.redirect(`${BASE}/household`);
+}
+
+function show_household(req, res, sqlite, form = null, errors = []) {
+    const {household, readers} = res.locals;
+    page(res, "household", {
+        title: "My household",
+        nav: "me",
+        errors,
+        message: household_message(req),
+        form: form ?? {email: household.email ?? "", city: household.city ?? "", state: household.state ?? "", wants_updates: !!household.wants_updates},
+        states: content.STATES,
+        household_readers: readers.map(r => ({
+            ...r,
+            initial: r.name.charAt(0).toUpperCase(),
+            age_name: AGE_NAMES[r.age_group] ?? r.age_group,
+        })),
+        can_add: readers.length < Readathon.MAX_READERS,
+        max_readers: Readathon.MAX_READERS,
+    });
+}
+
+function save_household(req, res, sqlite) {
+    const {household} = res.locals;
+    const {errors, form, household: changes} = Readathon.parse_household(sqlite, household.household_id, req.body);
+    if(errors.length > 0) {
+        res.status(400);
+        return show_household(req, res, sqlite, form, errors);
+    }
+    Readathon.update_household(sqlite, household.household_id, changes);
+    const new_email = changes.email !== (household.email ?? "").toLowerCase();
+    household_back(req, res, new_email ? `Saved. From now on, sign in with ${changes.email}.` : "Saved.");
+}
+
+// The add-a-reader form, or the edit form when reader is given
+function show_reader_form(req, res, sqlite, form = {}, errors = [], reader = null, confirm_age = null) {
+    page(res, "household-reader", {
+        title: reader ? `Change ${reader.name}` : "Add a reader",
+        nav: "me",
+        errors,
+        reader,
+        form,
+        confirm_age,
+        ages: content.AGE_GROUPS.map(age => ({...age, checked: age.id === (form.age_group ?? (reader ? reader.age_group : "kid"))})),
+        goals: reader ? null : Readathon.goal_choices(Readathon.today(), Number(form.goal ?? content.DEFAULT_GOAL_MINUTES)),
+        cannot_remove: reader ? Readathon.why_not_remove(sqlite, reader) : null,
+        latest_birth_year: Readathon.today().slice(0, 4),
+    });
+}
+
+function household_reader(req, res, sqlite) {
+    const reader = Readathon.get_reader(sqlite, Number(req.params.reader_id));
+    return reader !== null && reader.household_id === res.locals.household.household_id ? reader : null;
+}
+
+function add_household_reader(req, res, sqlite) {
+    const {household, readers} = res.locals;
+    if(readers.length >= Readathon.MAX_READERS) {
+        return household_back(req, res, `A household can have up to ${Readathon.MAX_READERS} readers.`);
+    }
+    const {errors, form, reader} = Readathon.parse_reader(req.body);
+    if(errors.length > 0) {
+        res.status(400);
+        return show_reader_form(req, res, sqlite, form, errors);
+    }
+    const reader_id = Readathon.add_reader(sqlite, household.household_id, reader);
+    console.log({event: "Readathon.READER_ADDED", household_id: household.household_id, reader_id});
+    household_back(req, res, `Added ${reader.name}!`);
+}
+
+function edit_household_reader(req, res, sqlite) {
+    const reader = household_reader(req, res, sqlite);
+    if(reader === null) {
+        return res.redirect(`${BASE}/household`);
+    }
+    show_reader_form(req, res, sqlite, {name: reader.name, age_group: reader.age_group, birth_year: reader.birth_year ? String(reader.birth_year) : ""}, [], reader);
+}
+
+function save_household_reader(req, res, sqlite) {
+    const reader = household_reader(req, res, sqlite);
+    if(reader === null) {
+        return res.redirect(`${BASE}/household`);
+    }
+    const {errors, form, reader: changes} = Readathon.parse_reader(req.body);
+    if(errors.length > 0) {
+        res.status(400);
+        return show_reader_form(req, res, sqlite, form, errors, reader);
+    }
+    // A new age group means a new bingo card: check before clearing any squares they marked
+    const marked = Readathon.list_marks(sqlite, reader.reader_id).length;
+    if(changes.age_group !== reader.age_group && marked > 0 && req.body.confirm_age !== "1") {
+        return show_reader_form(req, res, sqlite, form, [], reader, {
+            name: changes.name,
+            age_name: AGE_NAMES[changes.age_group],
+            card_name: AGE_NAMES[changes.age_group].toLowerCase(),
+            marked,
+            plural: marked !== 1,
+        });
+    }
+    Readathon.update_reader(sqlite, reader.reader_id, changes);
+    household_back(req, res, `Saved ${changes.name}.`);
+}
+
+function remove_household_reader(req, res, sqlite) {
+    const reader = household_reader(req, res, sqlite);
+    if(reader === null) {
+        return res.redirect(`${BASE}/household`);
+    }
+    const reason = Readathon.why_not_remove(sqlite, reader);
+    if(reason !== null) {
+        return household_back(req, res, reason);
+    }
+    Readathon.remove_reader(sqlite, reader);
+    console.log({event: "Readathon.READER_REMOVED", household_id: reader.household_id, reader_id: reader.reader_id});
+    household_back(req, res, `Removed ${reader.name}.`);
+}
+
 function show_sign_in(req, res, locals = {}) {
     page(res, "sign-in", {title: "Sign in", ...locals});
 }
@@ -835,6 +978,15 @@ function create(sqlite) {
     router.get("/sign-in/:token", sign_in_with_token);
     router.get("/sign-out", sign_out);
     router.get("/me", wrap(me));
+
+    const household = signed_in_household(sqlite);
+    router.get("/household", household, wrap((req, res, db) => show_household(req, res, db)));
+    router.post("/household", household, wrap(save_household));
+    router.get("/household/readers/new", household, wrap((req, res, db) => show_reader_form(req, res, db)));
+    router.post("/household/readers/new", household, wrap(add_household_reader));
+    router.get("/household/readers/:reader_id", household, wrap(edit_household_reader));
+    router.post("/household/readers/:reader_id", household, wrap(save_household_reader));
+    router.post("/household/readers/:reader_id/remove", household, wrap(remove_household_reader));
 
     router.get("/r/:reader_id", own, wrap(reader_home));
     router.post("/r/:reader_id/goal", own, wrap(update_goal));

@@ -625,6 +625,44 @@
     overflow: hidden;
 }
 
+/* ---------- my household ---------- */
+.ra-field-help {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--ra-muted);
+    font-size: 0.9rem;
+}
+.ra-hello-links {
+    margin: 0;
+}
+.ra-household-readers {
+    margin: 0 0 0.75rem;
+    padding: 0;
+    list-style: none;
+}
+.ra-household-readers li + li {
+    border-top: 1px solid var(--ra-line);
+}
+.ra-household-reader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.25rem;
+    border-radius: 10px;
+    color: var(--ra-ink) !important;
+    text-decoration: none;
+}
+.ra-household-reader:hover,
+.ra-household-reader:focus-visible {
+    background: var(--ra-snow);
+}
+.ra-household-reader .ra-log-what {
+    flex: 1 1 auto;
+}
+.ra-remove-reader p {
+    margin: 0.35rem 0;
+}
+
 /* ---------- long-form pages like Privacy ---------- */
 .ra-prose .ra-card > :last-child {
     margin-bottom: 0;
@@ -785,6 +823,17 @@
 }
 .ra-field textarea {
     resize: vertical;
+}
+/* Safari draws its own dropdowns unless told not to; this makes them match the text fields */
+.ra-field select,
+.ra-desk-add select {
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 2.6rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%231f2559' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.95rem center;
+    background-size: 0.75rem;
 }
 .ra-field input:focus,
 .ra-field select:focus,
