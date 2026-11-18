@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
+  <!-- Resolve to Read: an open book with a ribbon, on a snowy winter night.
+       Adapted from the jareyes/retro logo in the winter colors: night, lamplight, snow and mitten red. -->
+  <circle cx="21" cy="21" r="20" fill="#1f2559"/>
+  <circle cx="21" cy="21" r="19.25" fill="none" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1.5"/>
+  <g fill="#ffffff" fill-opacity="0.85">
+    <circle cx="11.5" cy="10" r="1.2"/>
+    <circle cx="30" cy="8.5" r="0.9"/>
+    <circle cx="33.5" cy="15" r="1"/>
+    <circle cx="8" cy="17.5" r="0.8"/>
+  </g>
+  <g transform="translate(0 1.5)">
+    <path d="M21 15.5 C17.5 13 13.5 12.5 10 13.5 V27.5 C13.5 26.5 17.5 27 21 29.5 Z" fill="#ffc83d"/>
+    <path d="M21 15.5 C24.5 13 28.5 12.5 32 13.5 V27.5 C28.5 26.5 24.5 27 21 29.5 Z" fill="#fff3d1"/>
+    <path d="M21 15.5 V29.5" stroke="#1f2559" stroke-width="1.5"/>
+    <path d="M25.5 14 H28.5 V31.5 L27 30 L25.5 31.5 Z" fill="#e5483f"/>
+  </g>
+</svg>

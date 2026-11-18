@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Resolve to Read tab icon: the logo's open book, simplified to read at 16px.
+       No snow or ring, and a rounded square so the book can fill the space. -->
+  <rect width="32" height="32" rx="7" fill="#1f2559"/>
+  <path d="M16 9 C12.5 6.5 8 6 3.5 7 V24 C8 23 12.5 23.5 16 26 Z" fill="#ffc83d"/>
+  <path d="M16 9 C19.5 6.5 24 6 28.5 7 V24 C24 23 19.5 23.5 16 26 Z" fill="#fff3d1"/>
+  <path d="M16 9 V26" stroke="#1f2559" stroke-width="1.5"/>
+  <path d="M21 7.5 H24.5 V29 L22.75 27.25 L21 29 Z" fill="#e5483f"/>
+</svg>
