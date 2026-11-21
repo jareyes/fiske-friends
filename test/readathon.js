@@ -388,11 +388,13 @@ suite("lib/readathon.js database", () => {
     });
 
     test("approved recommendations join the book lists; pending ones don't", () => {
+        const Books = require("../lib/readathon-books");
+        const listed = () => Books.browse(sqlite, {list: "community"}).filter(b => b.title === "Ox-Cart Man Two").length;
         Readathon.create_recommendation(sqlite, null, {title: "Ox-Cart Man Two", author: null, list: "community", audience: "Kids", why: null, recommended_by: "Ana", read_during: 1});
-        assert.strictEqual(Readathon.books(sqlite, "community", "ox-cart man two").length, 0);
+        assert.strictEqual(listed(), 0);
         const [pending] = Readathon.list_recommendations(sqlite, "pending");
         Readathon.review_recommendation(sqlite, pending.recommendation_id, "approved");
-        assert.strictEqual(Readathon.books(sqlite, "community", "ox-cart man two").length, 1);
+        assert.strictEqual(listed(), 1);
     });
 });
 

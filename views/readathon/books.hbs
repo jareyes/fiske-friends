@@ -1,19 +1,33 @@
 <header class="ra-page-head">
   <h1 class="ra-h1">Find something to read</h1>
-  <p class="ra-lede-dark">{{#if list}}{{list.blurb}}{{else}}Lists from library staff, kids, and readers like you.{{/if}}</p>
+  <p class="ra-lede-dark">{{#if mine}}Books you starred to read later.{{else}}{{#if list}}{{list.blurb}}{{else}}Lists from library staff, kids, and readers like you.{{/if}}{{/if}}</p>
 </header>
 
+{{#if readers}}
+<nav class="ra-browsing" aria-label="Who's browsing">
+  <span>Browsing as</span>
+  {{#each readers}}<a href="{{url}}"{{#if current}} aria-current="true"{{/if}}>{{name}}</a>{{/each}}
+</nav>
+{{/if}}
+
 <nav class="ra-list-chips" aria-label="Book lists">
-  <a href="{{base}}/books"{{#if all_current}} aria-current="page"{{/if}}>All</a>
-  {{#each lists}}<a href="{{@root.base}}/books?list={{id}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
+  <a href="{{all.url}}"{{#if all.current}} aria-current="page"{{/if}}>All</a>
+  {{#if my_list}}<a class="ra-chip-mine" href="{{my_list.url}}"{{#if my_list.current}} aria-current="page"{{/if}}><span aria-hidden="true">&#9733;</span> My list{{#if my_list.count}} ({{my_list.count}}){{/if}}</a>{{/if}}
+  {{#each lists}}<a href="{{url}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
 </nav>
 
-<form class="ra-search" action="{{base}}/books" method="get" role="search">
-  {{#if list}}<input type="hidden" name="list" value="{{list.id}}">{{/if}}
-  <label class="ra-visually-hidden" for="book-q">Search books</label>
-  <input id="book-q" name="q" type="search" value="{{query}}" placeholder="Search by title or author">
-  <button class="ra-btn ra-btn-ghost" type="submit">Search</button>
-</form>
+<div class="ra-book-filters">
+  <nav class="ra-mini-chips" aria-label="Ages">
+    {{#each ages}}<a href="{{url}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
+  </nav>
+  <nav class="ra-mini-chips ra-sort" aria-label="Sort">
+    {{#each sorts}}<a href="{{url}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
+  </nav>
+</div>
+
+{{#unless signed_in}}
+<p class="ra-books-join"><a href="{{base}}/join">Join</a> or <a href="{{base}}/sign-in">sign in</a> to star books for your reading list and recommend the ones you love.</p>
+{{/unless}}
 
 {{#if books}}
 <ul class="ra-books-list">
@@ -25,18 +39,43 @@
       {{#if author}}<p class="ra-by">{{author}}</p>{{/if}}
       {{#if why}}<p class="ra-why">&ldquo;{{why}}&rdquo;</p>{{/if}}
       <p class="ra-picked">Picked by {{recommended_by}}{{#if audience}} &middot; {{audience}}{{/if}}{{#if read_during}} &middot; read in January{{/if}}</p>
-      {{#if catalog_url}}<a class="ra-catalog-link" href="{{catalog_url}}" target="_blank" rel="noopener">Find it at the Fiske<span class="ra-visually-hidden"> (library catalog, opens in a new tab)</span></a>{{/if}}
+      <p class="ra-recommend-count" data-recommend-count{{#unless recommend_label}} hidden{{/unless}}><span aria-hidden="true">&#9829;</span> <span>{{recommend_label}}</span></p>
+      <div class="ra-book-actions">
+        {{#if @root.reader}}
+        <form method="post" action="{{@root.base}}/books/save" data-book-action>
+          <input type="hidden" name="key" value="{{key}}">
+          <input type="hidden" name="reader_id" value="{{@root.reader.reader_id}}">
+          <input type="hidden" name="back" value="{{@root.back}}">
+          <input type="hidden" name="on" value="{{#if saved}}0{{else}}1{{/if}}">
+          <button class="ra-book-btn ra-book-save" type="submit" aria-pressed="{{#if saved}}true{{else}}false{{/if}}"
+                  data-on="On my list" data-off="Save for later">
+            <span class="ra-book-icon" aria-hidden="true"></span><span data-label>{{#if saved}}On my list{{else}}Save for later{{/if}}</span>
+          </button>
+        </form>
+        <form method="post" action="{{@root.base}}/books/vote" data-book-action>
+          <input type="hidden" name="key" value="{{key}}">
+          <input type="hidden" name="reader_id" value="{{@root.reader.reader_id}}">
+          <input type="hidden" name="back" value="{{@root.back}}">
+          <input type="hidden" name="on" value="{{#if voted}}0{{else}}1{{/if}}">
+          <button class="ra-book-btn ra-book-vote" type="submit" aria-pressed="{{#if voted}}true{{else}}false{{/if}}"
+                  data-on="You recommend it" data-off="Recommend">
+            <span class="ra-book-icon" aria-hidden="true"></span><span data-label>{{#if voted}}You recommend it{{else}}Recommend{{/if}}</span>
+          </button>
+        </form>
+        {{/if}}
+        {{#if catalog_url}}<a class="ra-catalog-link" href="{{catalog_url}}" target="_blank" rel="noopener">Find it at the Fiske<span class="ra-visually-hidden"> (library catalog, opens in a new tab)</span></a>{{/if}}
+      </div>
     </div>
   </li>
   {{/each}}
 </ul>
 {{else}}
-<p class="ra-card ra-center">No books match that yet. Try another list, or recommend one!</p>
+<p class="ra-card ra-center">{{#if mine}}Nothing on your list yet. Tap <b>Save for later</b> on any book to add it.{{else}}No books here yet. Try another list or age, or recommend one!{{/if}}</p>
 {{/if}}
 
 <aside class="ra-cta-card">
   <div>
-    <h2 class="ra-h2">Loved a book?</h2>
+    <h2 class="ra-h2">Loved a book that isn't here?</h2>
     <p>Tell your neighbors about it. Kids can recommend too!</p>
   </div>
   <a class="ra-btn ra-btn-lamp" href="{{base}}/books/recommend">Recommend a book</a>

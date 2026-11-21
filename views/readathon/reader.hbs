@@ -150,6 +150,18 @@
   </ul>
 </section>
 
+<section class="ra-card ra-reading-list" aria-labelledby="reading-list-title">
+  <h2 id="reading-list-title" class="ra-h2"><span aria-hidden="true">&#9733;</span> My reading list</h2>
+  {{#if reading_list.books}}
+  <ul>
+    {{#each reading_list.books}}<li><b>{{title}}</b>{{#if author}} <span class="ra-muted">by {{author}}</span>{{/if}}</li>{{/each}}
+  </ul>
+  <a href="{{reading_list.url}}">{{#if reading_list.more}}See all {{reading_list.count}}{{else}}See my list{{/if}}</a>
+  {{else}}
+  <p class="ra-muted">Star books on the <a href="{{reading_list.browse_url}}">book lists</a> to save them for later.</p>
+  {{/if}}
+</section>
+
 <details class="ra-details" id="change-goal"{{#if goal_error}} open{{/if}}>
   <summary>Change my goal</summary>
   <form class="ra-goal-form" action="{{reader_url}}/goal" method="post">

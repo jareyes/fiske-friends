@@ -423,6 +423,49 @@
         update();
     }
 
+    // ---------- book lists: save for later and recommend, without reloading ----------
+    function setup_book_action(form) {
+        const button = form.querySelector("button");
+        const label = form.querySelector("[data-label]");
+        const on_field = form.querySelector("input[name=on]");
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            if(button.getAttribute("aria-busy") === "true") {
+                return;
+            }
+            button.setAttribute("aria-busy", "true");
+            try {
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    headers: {"Accept": "application/json"},
+                    body: new URLSearchParams(new FormData(form)),
+                    credentials: "same-origin",
+                });
+                if(!response.ok) {
+                    throw new Error(String(response.status));
+                }
+                const result = await response.json();
+                const is_save = form.action.endsWith("/save");
+                const on = is_save ? result.saved : result.voted;
+                button.setAttribute("aria-pressed", on ? "true" : "false");
+                label.textContent = on ? button.dataset.on : button.dataset.off;
+                on_field.value = on ? "0" : "1";
+                const count = form.closest(".ra-book-card")?.querySelector("[data-recommend-count]");
+                if(count && !is_save) {
+                    count.hidden = !result.recommend_label;
+                    count.lastElementChild.textContent = result.recommend_label ?? "";
+                }
+            }
+            catch(err) {
+                // Fall back to the plain form, which reloads the page
+                form.submit();
+            }
+            finally {
+                button.removeAttribute("aria-busy");
+            }
+        });
+    }
+
     // ---------- copy the cheer link ----------
     function setup_copy(button) {
         const input = document.querySelector("[data-share-url]");
@@ -446,5 +489,6 @@
         document.querySelectorAll("form").forEach(setup_other_minutes);
         document.querySelectorAll("[data-timer]").forEach(setup_timer);
         document.querySelectorAll("[data-goal-choices]").forEach(setup_goal_choices);
+        document.querySelectorAll("form[data-book-action]").forEach(setup_book_action);
     });
 })();

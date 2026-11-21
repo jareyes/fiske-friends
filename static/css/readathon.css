@@ -2019,13 +2019,13 @@ button.ra-square:hover {
 }
 
 /* ---------- books ---------- */
+/* All the lists at once, wrapping onto more lines as needed (people missed ones hidden off to the side) */
 .ra-list-chips {
     display: flex;
-    gap: 0.4rem;
-    margin: 0 -1rem 0.9rem;
-    padding: 0.2rem 1rem 0.5rem;
-    overflow-x: auto;
-    scrollbar-width: thin;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0 0 0.9rem;
+    padding: 0.2rem 0 0.3rem;
 }
 .ra-list-chips a {
     flex: none;
@@ -2041,6 +2041,70 @@ button.ra-square:hover {
 .ra-list-chips a[aria-current="page"] {
     background: var(--ra-lamp);
     box-shadow: 0 3px 0 var(--ra-lamp-deep);
+}
+.ra-chip-mine span {
+    color: var(--ra-lamp-deep);
+}
+.ra-chip-mine[aria-current="page"] span {
+    color: var(--ra-ink);
+}
+
+/* Who's browsing, when a home has more than one reader */
+.ra-browsing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+    margin: 0 0 0.9rem;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--ra-muted);
+}
+.ra-browsing a {
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    color: var(--ra-ink) !important;
+    text-decoration: none;
+    box-shadow: inset 0 0 0 2px var(--ra-line);
+}
+.ra-browsing a[aria-current] {
+    background: var(--ra-night);
+    color: #fff !important;
+    box-shadow: none;
+}
+
+/* Ages and sorting: smaller, quieter chips */
+.ra-book-filters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.6rem 1rem;
+    margin: 0 0 1.1rem;
+}
+.ra-mini-chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.2rem;
+    border-radius: 999px;
+    background: var(--ra-line);
+}
+.ra-mini-chips a {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    color: var(--ra-ink) !important;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+.ra-mini-chips a[aria-current="page"] {
+    background: var(--ra-paper);
+    box-shadow: 0 1px 3px rgba(28, 31, 63, 0.15);
+}
+.ra-books-join {
+    margin: 0 0 1rem;
+    color: var(--ra-muted);
+    font-size: 0.95rem;
 }
 .ra-search {
     display: flex;
@@ -2105,12 +2169,64 @@ button.ra-square:hover {
     font-size: 0.85rem;
     color: var(--ra-muted);
 }
+.ra-recommend-count {
+    margin: 0.35rem 0 0;
+    color: var(--ra-mitten-deep);
+    font-size: 0.88rem;
+    font-weight: 800;
+}
+.ra-recommend-count[hidden] {
+    display: none;
+}
+.ra-book-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.7rem;
+}
+.ra-book-actions form {
+    margin: 0;
+}
+/* Save for later (a star) and Recommend (a heart). Filled in when they're on. */
+.ra-book-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.8rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--ra-paper);
+    box-shadow: inset 0 0 0 2px var(--ra-line);
+    color: var(--ra-ink);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+.ra-book-btn:hover,
+.ra-book-btn:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--ra-sky);
+}
+.ra-book-icon::before {
+    font-size: 1rem;
+    line-height: 1;
+}
+.ra-book-save .ra-book-icon::before { content: "\2606"; }
+.ra-book-save[aria-pressed="true"] { background: var(--ra-lamp-soft); box-shadow: inset 0 0 0 2px var(--ra-lamp); }
+.ra-book-save[aria-pressed="true"] .ra-book-icon::before { content: "\2605"; color: var(--ra-lamp-deep); }
+.ra-book-vote .ra-book-icon::before { content: "\2661"; }
+.ra-book-vote[aria-pressed="true"] { background: #fde8e6; box-shadow: inset 0 0 0 2px var(--ra-mitten); }
+.ra-book-vote[aria-pressed="true"] .ra-book-icon::before { content: "\2665"; color: var(--ra-mitten); }
+.ra-book-btn[aria-busy="true"] {
+    opacity: 0.6;
+}
+
 /* "Find it at the Fiske": the book's search in the library catalog */
 .ra-catalog-link {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    margin-top: 0.6rem;
     padding: 0.3rem 0.8rem;
     border-radius: 999px;
     background: var(--ra-lamp-soft);
@@ -2797,4 +2913,21 @@ a.ra-team-card:hover {
 .ra-tag-win {
     background: var(--ra-mitten);
     color: #fff;
+}
+
+/* The reader's page: their starred books */
+.ra-reading-list h2 span {
+    color: var(--ra-lamp-deep);
+}
+.ra-reading-list ul {
+    margin: 0.5rem 0 0.75rem;
+    padding: 0;
+    list-style: none;
+}
+.ra-reading-list li {
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--ra-line);
+}
+.ra-reading-list li:last-child {
+    border-bottom: 0;
 }

@@ -1,5 +1,6 @@
 // January 2027 Read-a-thon pages. Mounted at /readathon.
 const config = require("config");
+const Books = require("../lib/readathon-books");
 const Catalog = require("../lib/catalog");
 const content = require("../lib/readathon-content");
 const FormGuard = require("../lib/form-guard");
@@ -541,6 +542,16 @@ function reader_home(req, res, sqlite) {
         today_plan: Readathon.today_plan(stats.total, stats.today_minutes, reader.goal_minutes, today),
         goals: Readathon.goal_choices(today, reader.goal_minutes, undefined, goal_message?.form ?? {}),
         goal_error: goal_message?.error ?? null,
+        reading_list: (() => {
+            const saved = Books.reading_list(sqlite, reader.reader_id);
+            return {
+                books: saved.slice(0, 5),
+                count: saved.length,
+                more: saved.length > 5,
+                url: `${BASE}/books?mine=1&reader=${reader.reader_id}`,
+                browse_url: `${BASE}/books?reader=${reader.reader_id}`,
+            };
+        })(),
         board,
         prizes: Prizes.bingo_prizes(board, Prizes.list_pickups(sqlite, reader.reader_id)),
         raffle: Prizes.raffle(sqlite, reader.reader_id),
@@ -822,20 +833,97 @@ function bingo_code(req, res, sqlite) {
 
 // ---------- books ----------
 
+// Which of the household's readers is browsing the book lists: ?reader= picks one (and it's remembered),
+// otherwise the last one picked, otherwise the first
+function browsing_reader(req, sqlite) {
+    const id = household_id(req);
+    if(id === null) {
+        return {readers: [], reader: null};
+    }
+    const readers = Readathon.list_readers(sqlite, id);
+    const wanted = Number(req.query.reader ?? req.session.readathon_books_reader);
+    const reader = readers.find(r => r.reader_id === wanted) ?? readers[0] ?? null;
+    if(reader && req.query.reader) {
+        req.session.readathon_books_reader = reader.reader_id;
+    }
+    return {readers, reader};
+}
+
+// The book lists address for these filters
+function books_url({list = null, age = null, sort = "popular", mine = false} = {}) {
+    const params = new URLSearchParams();
+    if(mine) {
+        params.set("mine", "1");
+    }
+    if(list) {
+        params.set("list", list);
+    }
+    if(age) {
+        params.set("for", age);
+    }
+    if(sort === "title") {
+        params.set("sort", "title");
+    }
+    const query = params.toString();
+    return `${BASE}/books${query ? `?${query}` : ""}`;
+}
+
 function books(req, res, sqlite) {
-    const list_id = content.LISTS.some(l => l.id === req.query.list) ? req.query.list : null;
-    const query = Readathon.clean(req.query.q, 80);
-    const list = content.LISTS.find(l => l.id === list_id);
+    const {readers, reader} = browsing_reader(req, sqlite);
+    const filters = {
+        list: content.LISTS.some(l => l.id === req.query.list) ? req.query.list : null,
+        age: Books.AGES.includes(req.query.for) ? req.query.for : null,
+        sort: req.query.sort === "title" ? "title" : "popular",
+        mine: reader !== null && req.query.mine === "1",
+    };
+    const url = changes => books_url({...filters, ...changes});
+    const here = url({});
     page(res, "books", {
         title: "Book lists",
         nav: "books",
         signed_in: household_id(req) !== null,
-        lists: content.LISTS.map(l => ({...l, current: l.id === list_id})),
-        all_current: list_id === null,
-        list,
-        query,
-        books: Readathon.books(sqlite, list_id, query),
+        reader,
+        // Only asked when there's more than one reader in the home
+        readers: readers.length > 1 ? readers.map(r => ({
+            name: r.name,
+            url: `${here}${here.includes("?") ? "&" : "?"}reader=${r.reader_id}`,
+            current: r.reader_id === reader?.reader_id,
+        })) : null,
+        list: content.LISTS.find(l => l.id === filters.list) ?? null,
+        mine: filters.mine,
+        all: {url: url({list: null, mine: false}), current: !filters.list && !filters.mine},
+        my_list: reader ? {url: url({mine: true, list: null}), current: filters.mine, count: Books.reading_list(sqlite, reader.reader_id).length} : null,
+        lists: content.LISTS.map(l => ({...l, url: url({list: l.id, mine: false}), current: l.id === filters.list})),
+        ages: [{name: "All ages", url: url({age: null}), current: !filters.age},
+            ...Books.AGES.map(age => ({name: age, url: url({age}), current: age === filters.age}))],
+        sorts: [{name: "Most recommended", url: url({sort: "popular"}), current: filters.sort === "popular"},
+            {name: "A to Z", url: url({sort: "title"}), current: filters.sort === "title"}],
+        back: here,
+        books: Books.browse(sqlite, {...filters, reader_id: reader?.reader_id ?? null}),
     });
+}
+
+// Star a book for a reader's list, or recommend it too. The page's script asks for JSON so the button
+// changes in place; without JavaScript it's a form, and this goes back to the list.
+function book_mark(kind) {
+    return (req, res, sqlite) => {
+        const id = household_id(req);
+        const reader = Readathon.get_reader(sqlite, Number(req.body.reader_id));
+        const wants_json = String(req.get("Accept") ?? "").includes("application/json");
+        if(id === null || reader === null || reader.household_id !== id) {
+            return wants_json ? res.status(403).json({error: "Sign in first."}) : res.redirect(`${BASE}/sign-in`);
+        }
+        const key = String(req.body.key ?? "").slice(0, 200);
+        if(Books.find(sqlite, key)) {
+            (kind === "save" ? Books.save : Books.vote)(sqlite, reader.reader_id, key, req.body.on === "1");
+        }
+        if(wants_json) {
+            const book = Books.browse(sqlite, {reader_id: reader.reader_id}).find(b => b.key === key);
+            return res.json({saved: book?.saved ?? false, voted: book?.voted ?? false, recommend_label: book?.recommend_label ?? null});
+        }
+        const back = String(req.body.back ?? "");
+        res.redirect(back.startsWith(`${BASE}/books`) && !back.startsWith("//") ? back : `${BASE}/books`);
+    };
 }
 
 function show_recommend(req, res, form = {}, errors = []) {
@@ -1190,6 +1278,8 @@ function create(sqlite) {
     router.post("/r/:reader_id/bingo/code", own, wrap(bingo_code));
 
     router.get("/books", wrap(books));
+    router.post("/books/save", wrap(book_mark("save")));
+    router.post("/books/vote", wrap(book_mark("vote")));
     router.get("/books/recommend", (req, res) => show_recommend(req, res));
     router.post("/books/recommend", wrap(recommend));
     router.get("/books/recommend/thanks", recommend_thanks);
