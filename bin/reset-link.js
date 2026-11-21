@@ -3,19 +3,19 @@ const config = require("config");
 const process = require("node:process");
 const {DatabaseSync} = require("node:sqlite");
 const User = require("../lib/user");
-const Token = require("../lib/token");
 
 const DOMAIN = config.get("app.domain");
 const MOUNTS = config.get("app.mounts");
 const PROTOCOL = config.get("app.protocol");
 const SQLITE_FILEPATH = config.get("sqlite.filepath");
 
+// A link that lets this person choose a new password. It works for a day, and only once.
 function generate_link(sqlite, email) {
-    const user = User.get(sqlite, email);
-    const payload = Token.assemble(user.user_id);
-    const token = Token.sign(payload);
-    const link = `${PROTOCOL}://${DOMAIN}/${MOUNTS.auth}/reset/${token}`;
-    return link;
+    const user = User.get_by_email(sqlite, email);
+    if(user === null) {
+        return null;
+    }
+    return `${PROTOCOL}://${DOMAIN}/${MOUNTS.auth}/reset/${User.reset_token(user)}`;
 }
 
 if(require.main === module) {
@@ -28,9 +28,17 @@ if(require.main === module) {
     try {
         const [email] = argv;
         const link = generate_link(sqlite, email);
-        console.log(link);
+        if(link === null) {
+            console.log(`No admin account for ${email}.`);
+            process.exitCode = 1;
+        }
+        else {
+            console.log(link);
+        }
     }
     finally {
         sqlite.close();
     }
 }
+
+exports.generate_link = generate_link;

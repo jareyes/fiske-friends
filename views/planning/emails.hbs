@@ -1,0 +1,55 @@
+<div class="admin">
+  <div class="admin-head">
+    <h1>Emails</h1>
+  </div>
+
+  {{#if message}}<p class="admin-flash" role="status">{{message}}</p>{{/if}}
+
+  {{#if mail.live}}
+  <div class="admin-mail-status is-live">
+    <p><strong>Email is on.</strong> Emails send through <code>{{mail.host}}</code> from <code>{{mail.from}}</code>{{#if mail.reply_to}}, and replies go to <code>{{mail.reply_to}}</code>{{/if}}.</p>
+    <form method="post" action="/{{mounts.planning}}/emails/check"><button class="admin-button admin-button-quiet" type="submit">Check the connection</button></form>
+  </div>
+  {{else}}
+  <div class="admin-mail-status">
+    <p><strong>Email isn't set up here, so nothing is sent.</strong> Every email waits in the outbox below instead, where you can read it. To send for real, set <code>SMTP_HOST</code>, <code>SMTP_USER</code> and <code>SMTP_PASS</code> on the server.</p>
+  </div>
+  {{/if}}
+
+  <h2 class="admin-h2">The site's emails</h2>
+  <p class="admin-help">Preview each one with sample details. Nothing is sent unless you send yourself a test.</p>
+  <ul class="admin-cards">
+    {{#each previews}}
+    <li>
+      <a class="admin-card" href="/{{../mounts.planning}}/emails/preview/{{id}}">
+        <strong>{{name}}</strong>
+        <span class="admin-muted">{{when}}</span>
+      </a>
+    </li>
+    {{/each}}
+  </ul>
+
+  <h2 class="admin-h2">Recently sent</h2>
+  {{#if emails}}
+  <ul class="admin-events admin-emails">
+    {{#each emails}}
+    <li>
+      <div class="admin-event">
+        <span class="admin-event-when"><b>{{date created}}</b><span>{{time created}}</span></span>
+        <span class="admin-event-what">
+          {{#if has_body}}<a href="/{{../mounts.planning}}/emails/sent/{{email_id}}"><strong>{{subject}}</strong></a>{{else}}<strong>{{subject}}</strong>{{/if}}
+          <span class="admin-muted">To {{to_address}}</span>
+          <span class="admin-chips">
+            <span class="admin-chip admin-chip-{{status}}">{{status_name}}</span>
+            {{#if is_test}}<span class="admin-chip">Test</span>{{/if}}
+          </span>
+          {{#if error}}<span class="admin-warning">{{error}}</span>{{/if}}
+        </span>
+      </div>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <p class="admin-empty">No emails yet.</p>
+  {{/if}}
+</div>

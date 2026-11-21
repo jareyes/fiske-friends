@@ -1,0 +1,26 @@
+<div class="admin">
+  <div class="admin-head">
+    <h1>{{#if first_name}}Hi, {{first_name}}{{else}}Admin{{/if}}</h1>
+  </div>
+
+  <ul class="admin-cards admin-home">
+    <li>
+      <a class="admin-card" href="/{{mounts.planning}}/events">
+        <strong>Events</strong>
+        <span>{{#if upcoming_count}}{{upcoming_count}} coming up{{else}}Nothing coming up yet{{/if}}{{#if draft_count}}, <b class="admin-attention">{{draft_count}} still {{#if (eq draft_count 1)}}a draft{{else}}drafts{{/if}}</b>{{/if}}</span>
+        {{#if next_event}}<span class="admin-muted">Next: {{next_event.title}}, {{date next_event.start}}</span>{{/if}}
+      </a>
+    </li>
+    <li>
+      <a class="admin-card" href="/{{mounts.planning}}/emails">
+        <strong>Emails</strong>
+        {{#if mail.live}}
+        <span>{{sent_this_week}} sent this week{{#if failed_count}}, <b class="admin-attention">{{failed_count}} didn't send</b>{{/if}}</span>
+        {{else}}
+        <span><b class="admin-attention">Not sending yet:</b> SMTP isn't set up here{{#if outbox_count}}, {{outbox_count}} waiting in the outbox{{/if}}</span>
+        {{/if}}
+        <span class="admin-muted">Preview the site's emails and send yourself a test</span>
+      </a>
+    </li>
+  </ul>
+</div>

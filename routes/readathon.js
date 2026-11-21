@@ -2,6 +2,7 @@
 const config = require("config");
 const content = require("../lib/readathon-content");
 const FormGuard = require("../lib/form-guard");
+const Emails = require("../lib/readathon-emails");
 const Events = require("../lib/readathon-events");
 const Gifts = require("../lib/readathon-gifts");
 const Prizes = require("../lib/readathon-prizes");
@@ -9,9 +10,11 @@ const Reports = require("../lib/readathon-reports");
 const gift_routes = require("./readathon-gifts");
 const team_routes = require("./readathon-teams");
 const Teams = require("../lib/readathon-teams");
+const Mailer = require("../lib/mailer");
 const middleware = require("../lib/middleware");
 const Readathon = require("../lib/readathon");
 const {Router} = require("express");
+const SignIn = require("../lib/sign-in");
 const Throttle = require("../lib/throttle");
 const Token = require("../lib/token");
 const User = require("../lib/user");
@@ -177,6 +180,7 @@ function join(req, res, sqlite) {
     const id = Readathon.create_household(sqlite, household);
     sign_in_session(req, id);
     console.log({event: "Readathon.JOINED", household_id: id, readers: household.readers.length});
+    Mailer.deliver(sqlite, () => Emails.welcome_for(sqlite, Readathon.get_household(sqlite, id)));
     req.session.readathon_welcome = true;
     // Came from a team invite? Go back to the team so they can join it
     const team = Teams.get_by_code(sqlite, Readathon.clean(req.body.team, 16));
@@ -347,10 +351,12 @@ function sign_in(req, res, sqlite) {
         console.log({event: "Readathon.SIGN_IN_THROTTLED", household_id: household.household_id});
     }
     else if(household !== null) {
-        const token = Token.sign(`readathon:${household.household_id}`, SIGN_IN_LINK_DAYS * 24 * 60 * 60 * 1000);
-        link = `${BASE}/sign-in/${token}`;
-        // TODO: email this link. Until a mailer is set up it is logged for volunteers.
-        console.log({event: "Readathon.SIGN_IN_LINK", household_id: household.household_id, link: `${SITE_URL}${link}`});
+        // In the background, so the page takes just as long whether or not the address is signed up
+        Mailer.deliver(sqlite, () => Emails.sign_in_for(sqlite, household));
+        console.log({event: "Readathon.SIGN_IN_EMAILED", household_id: household.household_id});
+        if(SETTINGS.show_sign_in_links) {
+            link = `${BASE}/sign-in/${Token.sign(`readathon:${household.household_id}`, SIGN_IN_LINK_DAYS * 24 * 60 * 60 * 1000)}`;
+        }
     }
     // Same message whether or not the email exists, so addresses can't be guessed
     show_sign_in(req, res, {
@@ -1042,7 +1048,7 @@ function desk_add_reader(req, res, sqlite) {
     if(birth_year_text !== "" && birth_year === null) {
         return desk_back(req, res, "Birth year should be four digits, like 1958. Leave it blank if you don't know.");
     }
-    Readathon.create_household(sqlite, {
+    const household_id = Readathon.create_household(sqlite, {
         email: email || null,
         city: Readathon.clean(req.body.city, 60) || null,
         state: Readathon.parse_state(req.body.state),
@@ -1050,7 +1056,10 @@ function desk_add_reader(req, res, sqlite) {
         goal_minutes: content.DEFAULT_GOAL_MINUTES,
         readers: [{name, age_group, birth_year}],
     });
-    desk_back(req, res, `Signed up ${name}. Give them a paper kit!`, name);
+    if(email) {
+        Mailer.deliver(sqlite, () => Emails.welcome_for(sqlite, Readathon.get_household(sqlite, household_id)));
+    }
+    desk_back(req, res, `Signed up ${name}. Give them a paper kit!${email ? ` We emailed ${email} a welcome.` : ""}`, name);
 }
 
 function desk_review(req, res, sqlite) {
@@ -1079,6 +1088,8 @@ function safe_next(value) {
     return next.startsWith(`${BASE}/`) && !next.startsWith("//") ? next : `${BASE}/desk`;
 }
 
+const volunteer_failures = new SignIn.FailedSignIns();
+
 function show_volunteer(req, res, locals = {}) {
     page(res, "volunteer", {title: "Volunteer sign-in", next: safe_next(req.query.next), ...locals});
 }
@@ -1086,13 +1097,20 @@ function show_volunteer(req, res, locals = {}) {
 async function volunteer_sign_in(req, res, next, sqlite) {
     const email = Readathon.clean(req.body.email, 200);
     try {
-        req.session.user = await User.authenticate(sqlite, email, String(req.body.password ?? ""));
+        if(volunteer_failures.blocked(email, req.ip)) {
+            res.status(429);
+            return show_volunteer(req, res, {error: "Too many wrong passwords. Wait 15 minutes, then try again.", email, next: safe_next(req.body.next)});
+        }
+        const user = await User.authenticate(sqlite, email, String(req.body.password ?? ""));
+        volunteer_failures.clear(email);
+        await SignIn.start_user_session(req, user);
         res.redirect(safe_next(req.body.next));
     }
     catch(err) {
         if(!(err instanceof User.AuthenticationError)) {
             return next(err);
         }
+        volunteer_failures.record(email, req.ip);
         res.status(401);
         show_volunteer(req, res, {error: "That email and password don't match.", email, next: safe_next(req.body.next)});
     }

@@ -1,0 +1,25 @@
+<div class="admin admin-auth">
+  <div class="admin-auth-card">
+    <h1>Forgot your password?</h1>
+    {{#if sent}}
+    <p class="admin-flash" role="status">Check your email.</p>
+    <p>If <strong>{{email}}</strong> has an account, we just sent it a link to choose a new password. The link works once, for 24 hours.</p>
+    <p class="admin-auth-note">Nothing there after a few minutes? Check your spam folder, or <a href="/{{mounts.auth}}/forgot">try again</a>.</p>
+    {{else}}
+    <p class="admin-help">Enter the email you sign in with, and we'll send you a link to choose a new password.</p>
+    {{#if error_message}}<p class="admin-errors" role="alert">{{error_message}}</p>{{/if}}
+    <form class="admin-form" method="post" action="/{{mounts.auth}}/forgot">
+      <input type="hidden" name="form_stamp" value="{{form_stamp}}">
+      <div class="admin-hp" aria-hidden="true">
+        <label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <label class="admin-field">
+        <span>Email</span>
+        <input type="email" name="email" required autocomplete="username" inputmode="email" value="{{email}}" autofocus>
+      </label>
+      <button class="admin-button admin-button-block" type="submit">Email me a link</button>
+    </form>
+    {{/if}}
+    <p class="admin-auth-note"><a href="/{{mounts.auth}}/login">Back to sign in</a></p>
+  </div>
+</div>

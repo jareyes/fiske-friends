@@ -47,6 +47,23 @@
       match_cap_usd: 1500,
     },
   },
+  mail: {
+    // Who emails come from. Use an address at the domain your SMTP service is set up to send for.
+    from: "Resolve to Read <readathon@fiskefriends.org>",
+    // Where replies go (the Friends' Gmail). null sends replies to the from address.
+    reply_to: null,
+    // Without an SMTP host nothing is sent: emails wait in the outbox at /plan/emails, so you can
+    // read them. Set these at deploy time with SMTP_HOST, SMTP_PORT, SMTP_USER and SMTP_PASS
+    // (see config/custom-environment-variables.json5).
+    smtp: {
+      host: null,
+      port: 587,
+      // true for port 465; 587 starts plain and upgrades to TLS
+      secure: false,
+      user: null,
+      pass: null,
+    },
+  },
   session: {
     secret: null,
     resave: false,

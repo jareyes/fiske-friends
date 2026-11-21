@@ -1,0 +1,32 @@
+You're signed up!
+
+Welcome to Resolve to Read, a month of reading together at the Fiske Free Library. {{#if several}}Here's who's reading in your home, with their goals for January:{{else}}Here's who's reading, with a goal for January:{{/if}}
+
+{{#each readers}}
+- {{name}}: {{goal}}
+{{/each}}
+
+{{#if before}}
+Reading starts Friday, January 1. Until then, you can get ready: browse the book lists, start a team with friends, and mark your calendar.
+{{else}}
+Every minute you read from now through January 31 counts. Use the timer while you read, or add your minutes afterward.
+{{/if}}
+
+{{button}}: {{link}}
+(This link signs you in on any device for the next {{sign_in_link_days}} days. After that, use Sign in at {{base_url}})
+
+{{#if next_event}}
+{{#if before}}MARK YOUR CALENDAR{{else}}COMING UP{{/if}}
+{{next_event.title}}
+{{next_event.when}}{{#if next_event.location}} - {{next_event.location}}{{/if}}
+{{next_event.url}}
+
+{{/if}}
+HOW IT WORKS
+- Read anything. Novels, picture books, audiobooks, comics, the newspaper, reading aloud and being read to. Every minute counts the same.
+- Log your minutes on the website, or on a paper log you bring to the library desk.
+- Earn prizes. An enamel pin for any bingo, a tote bag for a full card, and a raffle entry for reaching your goal.
+
+{{#if wants_updates}}
+We'll send a short update each week in January with your reading and everyone's progress.
+{{/if}}

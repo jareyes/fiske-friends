@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>{{subject}}</title>
+</head>
+{{!-- For the Friends' own emails (not the read-a-thon's), in the main site's blue. Inline styles and tables for email clients. --}}
+<body style="margin:0;padding:0;background:#eef3fa;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">{{preheader}}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef3fa;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+          <tr>
+            <td style="background:#004d99;border-radius:12px 12px 0 0;padding:20px 24px;">
+              <a href="{{site_url}}" style="color:#ffffff;text-decoration:none;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:bold;font-size:22px;">Friends of the Fiske Free Library</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#ffffff;padding:28px 24px 24px;border-radius:0 0 12px 12px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55;color:#1c2433;">
+              {{{body}}}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 24px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;color:#5b6577;text-align:center;">
+              Friends of the Fiske Free Library &middot; Claremont, NH 03743
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

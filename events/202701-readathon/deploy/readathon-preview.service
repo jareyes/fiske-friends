@@ -22,6 +22,8 @@ WorkingDirectory=/srv/fiske-friends
 ExecStart=/usr/bin/node bin/readathon-demo.js
 Environment=PORT=3001
 Environment=HOST=127.0.0.1
+# The address people use, for links in emails
+Environment=SITE_DOMAIN=read.fiskefriends.org
 # Holds READATHON_DEMO_PASSWORD (and the dry-run settings), readable only by root
 EnvironmentFile=/etc/fiske-friends/readathon-preview.env
 Restart=on-failure

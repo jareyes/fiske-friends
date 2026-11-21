@@ -1,0 +1,37 @@
+<h1 style="margin:0 0 12px;font-family:'Trebuchet MS',Arial,sans-serif;font-size:26px;line-height:1.2;color:#1f2559;">You're signed up!</h1>
+<p style="margin:0 0 14px;">Welcome to Resolve to Read, a month of reading together at the Fiske Free Library. {{#if several}}Here's who's reading in your home, with their goals for January:{{else}}Here's who's reading, with a goal for January:{{/if}}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;background:#fff3d1;border-radius:12px;">
+  {{#each readers}}
+  <tr>
+    <td style="padding:{{#if @first}}14px{{else}}6px{{/if}} 16px {{#if @last}}14px{{else}}6px{{/if}};font-weight:bold;">{{name}}</td>
+    <td style="padding:{{#if @first}}14px{{else}}6px{{/if}} 16px {{#if @last}}14px{{else}}6px{{/if}};text-align:right;color:#585d80;white-space:nowrap;">{{goal}}</td>
+  </tr>
+  {{/each}}
+</table>
+{{#if before}}
+<p style="margin:0;">Reading starts <strong>Friday, January 1</strong>. Until then, you can get ready: browse the book lists, start a team with friends, and mark your calendar.</p>
+{{else}}
+<p style="margin:0;">Every minute you read from now through January 31 counts. Use the timer while you read, or add your minutes afterward.</p>
+{{/if}}
+{{> email-button href=link label=button}}
+<p style="margin:-8px 0 20px;font-size:13px;color:#585d80;">This button signs you in on any device for the next {{sign_in_link_days}} days. After that, use Sign in at <a href="{{base_url}}" style="color:#2d3680;">{{base_url}}</a>.</p>
+{{#if next_event}}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;border:2px solid #dbe0f2;border-radius:12px;">
+  <tr>
+    <td style="padding:14px 16px;">
+      <span style="font-size:12px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#e5483f;">{{#if before}}Mark your calendar{{else}}Coming up{{/if}}</span><br>
+      <a href="{{next_event.url}}" style="font-size:18px;font-weight:bold;color:#1f2559;text-decoration:none;">{{next_event.title}}</a><br>
+      <span style="color:#585d80;">{{next_event.when}}{{#if next_event.location}} &middot; {{next_event.location}}{{/if}}</span>
+    </td>
+  </tr>
+</table>
+{{/if}}
+<h2 style="margin:0 0 8px;font-family:'Trebuchet MS',Arial,sans-serif;font-size:19px;color:#1f2559;">How it works</h2>
+<ul style="margin:0 0 16px;padding-left:20px;">
+  <li style="margin-bottom:6px;"><strong>Read anything.</strong> Novels, picture books, audiobooks, comics, the newspaper, reading aloud and being read to. Every minute counts the same.</li>
+  <li style="margin-bottom:6px;"><strong>Log your minutes</strong> on the website, or on a paper log you bring to the library desk.</li>
+  <li style="margin-bottom:6px;"><strong>Earn prizes.</strong> An enamel pin for any bingo, a tote bag for a full card, and a raffle entry for reaching your goal.</li>
+</ul>
+{{#if wants_updates}}
+<p style="margin:0;">We'll send a short update each week in January with your reading and everyone's progress.</p>
+{{/if}}

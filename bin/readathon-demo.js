@@ -26,6 +26,14 @@ const process = require("node:process");
 
 const DRY_RUN = process.env.READATHON_MODE === "dry-run";
 
+// Links in emails (sign-in links, the logo) need the address people reach this server at.
+// SITE_DOMAIN sets it, like read.fiskefriends.org; otherwise it's this laptop.
+function site_settings(default_domain) {
+    const domain = process.env.SITE_DOMAIN || default_domain;
+    const local = domain.startsWith("localhost") || domain.startsWith("127.");
+    return {protocol: local || process.env.HTTPS === "0" ? "http" : "https", domain};
+}
+
 function dry_run_settings() {
     const env = process.env;
     const missing = ["READATHON_DB", "READATHON_STARTS", "READATHON_ENDS", "STRIPE_SECRET_KEY", "STRIPE_PUBLISHABLE_KEY", "READATHON_DEMO_PASSWORD", "SESSION_SECRET"]
@@ -44,6 +52,7 @@ function dry_run_settings() {
         process.exit(1);
     }
     return {
+        app: site_settings("read.fiskefriends.org"),
         session: {secret: env.SESSION_SECRET, cookie: {secure: env.HTTPS !== "0", domain: null, sameSite: "lax"}},
         stripe: {secret_key: env.STRIPE_SECRET_KEY, publishable_key: env.STRIPE_PUBLISHABLE_KEY},
         sqlite: {filepath: env.READATHON_DB},
@@ -51,8 +60,8 @@ function dry_run_settings() {
             starts: env.READATHON_STARTS,
             ends: env.READATHON_ENDS,
             today_override: null,
-            // Email isn't set up yet, so sign-in links show on screen, with no limits
-            show_sign_in_links: true,
+            // Until email is set up (SMTP_HOST), sign-in links show on screen. No limits either way.
+            show_sign_in_links: !env.SMTP_HOST,
             sign_in_email_limits: {minutes_between: 0, per_day: 0},
             fake_payments: false,
             show_report_link: true,
@@ -64,6 +73,7 @@ function dry_run_settings() {
 // Settings for running on a laptop: no HTTPS, no real domain, demo date and visible sign-in links
 process.env.NODE_CONFIG = JSON.stringify({
     ...(DRY_RUN ? dry_run_settings() : {
+        app: site_settings(`localhost:${process.env.PORT ?? 3000}`),
         session: {secret: "readathon-demo-only", cookie: {secure: false, domain: null, sameSite: "lax"}},
         // Placeholder keys so no real payment can ever happen from the demo
         stripe: {secret_key: "sk_test_readathon_demo", publishable_key: "pk_test_readathon_demo"},
@@ -77,6 +87,8 @@ process.chdir(path.join(__dirname, ".."));
 const config = require("config");
 const {DatabaseSync} = require("node:sqlite");
 const Gifts = require("../lib/readathon-gifts");
+const Mailer = require("../lib/mailer");
+const {seed_events} = require("./seed-readathon-events");
 const Readathon = require("../lib/readathon");
 const Prizes = require("../lib/readathon-prizes");
 const Teams = require("../lib/readathon-teams");
@@ -248,6 +260,8 @@ async function main() {
     // The dry run keeps its data in a file and starts empty; the meeting demo starts fresh with samples
     const sqlite = new DatabaseSync(DRY_RUN ? config.get("sqlite.filepath") : ":memory:");
     migrate(sqlite);
+    // The read-a-thon's sample events (not in the migrations, so the live site never gets them by accident)
+    seed_events(sqlite);
     if(!DRY_RUN) {
         await seed(sqlite);
     }
@@ -270,14 +284,16 @@ async function main() {
             console.log(`\nRead-a-thon DRY RUN running: ${settings.starts} to ${settings.ends}, data in ${config.get("sqlite.filepath")}.`);
             console.log(`  Open:      http://localhost:${port}/readathon`);
             console.log("  Volunteer: volunteer@example.com / your READATHON_DEMO_PASSWORD");
-            console.log("  Payments:  Stripe test mode. Use card 4242 4242 4242 4242, any future date, any CVC.\n");
+            console.log("  Payments:  Stripe test mode. Use card 4242 4242 4242 4242, any future date, any CVC.");
+            console.log(`  Emails:    ${Mailer.status().live ? `sending through ${Mailer.status().host}, links to ${config.get("app.domain")}` : "kept in the outbox at /plan/emails, not sent"}\n`);
             return;
         }
         console.log(`\nRead-a-thon demo running (pretending today is ${Readathon.today()}).`);
         console.log(`  Open:      http://localhost:${port}/readathon`);
         console.log("  Family:    sign in as demo@example.com (the link shows on screen)");
         console.log(`  Volunteer: volunteer@example.com / ${process.env.READATHON_DEMO_PASSWORD ? "(your READATHON_DEMO_PASSWORD)" : "readathon"} at /readathon/volunteer (Volunteers link in the footer)`);
-        console.log("  Timer:     add ?demo to the timer page address for a skip-ahead button\n");
+        console.log("  Timer:     add ?demo to the timer page address for a skip-ahead button");
+        console.log(`  Emails:    ${Mailer.status().live ? `sending through ${Mailer.status().host}` : "kept in the outbox, not sent"}. See them at /plan/emails (sign in at /auth/login as the volunteer)\n`);
     });
 }
 

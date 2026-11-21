@@ -1,0 +1,19 @@
+<div class="admin">
+  <p><a href="/{{mounts.planning}}/emails">&larr; All emails</a></p>
+  <div class="admin-head">
+    <h1>{{email.subject}}</h1>
+  </div>
+  <dl class="admin-email-head">
+    <dt>To</dt><dd>{{email.to_address}}</dd>
+    <dt>When</dt><dd>{{date email.created}}, {{time email.created}}</dd>
+    <dt>Status</dt><dd>{{email.status_name}}{{#if email.is_test}} (test){{/if}}</dd>
+  </dl>
+  {{#if email.has_body}}
+  <iframe class="admin-email-frame" title="The email" sandbox="allow-popups allow-popups-to-escape-sandbox"
+          src="/{{mounts.planning}}/emails/sent/{{email.email_id}}/html"></iframe>
+  <details class="admin-advanced">
+    <summary>Plain-text version</summary>
+    <pre class="admin-email-text">{{email.text}}</pre>
+  </details>
+  {{/if}}
+</div>

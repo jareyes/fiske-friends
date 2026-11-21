@@ -1,0 +1,22 @@
+// Settings that can come from environment variables, so secrets can live in the server's env file
+// instead of in a config file. Anything set here overrides config/default.json5 and local.json5.
+{
+  session: {
+    secret: "SESSION_SECRET",
+  },
+  stripe: {
+    secret_key: "STRIPE_SECRET_KEY",
+    publishable_key: "STRIPE_PUBLISHABLE_KEY",
+  },
+  mail: {
+    from: "MAIL_FROM",
+    reply_to: "MAIL_REPLY_TO",
+    smtp: {
+      host: "SMTP_HOST",
+      port: {__name: "SMTP_PORT", __format: "json"},
+      secure: {__name: "SMTP_SECURE", __format: "json"},
+      user: "SMTP_USER",
+      pass: "SMTP_PASS",
+    },
+  },
+}

@@ -5,6 +5,7 @@ const Event = require("../lib/event");
 const Events = require("../lib/readathon-events");
 const time = require("../lib/time");
 const {DatabaseSync} = require("node:sqlite");
+const {seed_events} = require("../bin/seed-readathon-events");
 const {suite, test} = require("node:test");
 
 function database() {
@@ -13,8 +14,26 @@ function database() {
     for(const file of fs.readdirSync(dirpath).filter(f => f.endsWith(".sql")).sort()) {
         sqlite.exec(fs.readFileSync(path.join(dirpath, file), "utf8"));
     }
+    // The read-a-thon's sample events aren't a migration; the demo loads them the same way
+    seed_events(sqlite);
     return sqlite;
 }
+
+suite("migrations and seeds", () => {
+    test("migrations alone add the tags but no read-a-thon events, and seeding twice adds them once", () => {
+        const sqlite = new DatabaseSync(":memory:");
+        const dirpath = path.join(__dirname, "..", "migrations");
+        for(const file of fs.readdirSync(dirpath).filter(f => f.endsWith(".sql")).sort()) {
+            sqlite.exec(fs.readFileSync(path.join(dirpath, file), "utf8"));
+        }
+        assert.ok(Event.get_tag(sqlite, "readathon-2027-01"));
+        assert.strictEqual(Event.list_tags(sqlite, "audience").length, 4);
+        assert.strictEqual(Event.list_by_tag(sqlite, "readathon-2027-01", {include_unpublished: true}).length, 0);
+        assert.strictEqual(seed_events(sqlite), 11);
+        assert.strictEqual(seed_events(sqlite), 0);
+        assert.strictEqual(Event.list_by_tag(sqlite, "readathon-2027-01").length, 11);
+    });
+});
 
 suite("lib/event.js tags", () => {
     const sqlite = database();

@@ -1,0 +1,39 @@
+<div class="admin">
+  <p><a href="/{{mounts.planning}}/emails">&larr; All emails</a></p>
+  <div class="admin-head">
+    <h1>{{preview.name}}</h1>
+  </div>
+  <p class="admin-help"><strong>When it's sent:</strong> {{preview.when}} This preview uses sample names and links.</p>
+
+  {{#if flash}}<p class="admin-flash" role="status">{{flash}}</p>{{/if}}
+
+  {{#if (eq variants.length 1)}}{{else}}
+  <div class="admin-segments admin-variants" role="group" aria-label="Version">
+    {{#each variants}}<a href="?variant={{id}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
+  </div>
+  {{/if}}
+
+  <dl class="admin-email-head">
+    <dt>From</dt><dd>{{from}}</dd>
+    {{#if mail.reply_to}}<dt>Replies to</dt><dd>{{mail.reply_to}}</dd>{{/if}}
+    <dt>Subject</dt><dd><strong>{{message.subject}}</strong></dd>
+  </dl>
+
+  <iframe class="admin-email-frame" title="The email as people will see it" sandbox="allow-popups allow-popups-to-escape-sandbox"
+          src="/{{mounts.planning}}/emails/preview/{{preview.id}}/html?variant={{variant.id}}"></iframe>
+
+  <details class="admin-advanced">
+    <summary>Plain-text version</summary>
+    <pre class="admin-email-text">{{message.text}}</pre>
+  </details>
+
+  <form class="admin-test-form" method="post" action="/{{mounts.planning}}/emails/test/{{preview.id}}">
+    <input type="hidden" name="variant" value="{{variant.id}}">
+    <label class="admin-field">
+      <span>Send a test to</span>
+      <input type="email" name="to" required value="{{test_to}}" placeholder="you@example.com">
+    </label>
+    <button class="admin-button" type="submit">Send test</button>
+  </form>
+  <p class="admin-help">The test says [Test] in the subject. Its links are samples, so they don't do anything.</p>
+</div>

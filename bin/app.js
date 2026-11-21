@@ -57,6 +57,8 @@ if(require.main === module) {
         () => console.log({
             event: "App.START",
             port: PORT,
+            // false means SMTP isn't set up: emails wait in the outbox at /plan/emails instead of sending
+            email_sending: require("../lib/mailer").status().live,
         }),
     );
 }

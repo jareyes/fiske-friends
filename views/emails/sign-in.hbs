@@ -1,0 +1,6 @@
+<h1 style="margin:0 0 12px;font-family:'Trebuchet MS',Arial,sans-serif;font-size:26px;line-height:1.2;color:#1f2559;">Here's your sign-in link</h1>
+<p style="margin:0;">Tap the button to sign in{{#if readers}} and log reading for {{readers}}{{/if}}.</p>
+{{> email-button href=link label="Sign in to Resolve to Read"}}
+<p style="margin:0 0 14px;">The button works for {{sign_in_link_days}} days, on any phone, tablet or computer. After you sign in, that device stays signed in for {{session_days}} days.</p>
+<p style="margin:0 0 14px;">Didn't ask for this? You can ignore this email. Nobody can sign in without the link.</p>
+<p style="margin:20px 0 0;font-size:13px;color:#585d80;">If the button doesn't work, copy this address into your browser:<br><a href="{{link}}" style="color:#2d3680;word-break:break-all;">{{link}}</a></p>
