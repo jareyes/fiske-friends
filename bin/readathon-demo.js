@@ -53,7 +53,9 @@ function dry_run_settings() {
     }
     return {
         app: site_settings("read.fiskefriends.org"),
-        session: {secret: env.SESSION_SECRET, cookie: {secure: env.HTTPS !== "0", domain: null, sameSite: "lax"}},
+        // Its own cookie name: the main site's cookie is for fiskefriends.org and every subdomain, so
+        // with the same name the two sites would trip over each other's sign-ins
+        session: {name: "readathon_preview.sid", secret: env.SESSION_SECRET, cookie: {secure: env.HTTPS !== "0", domain: null, sameSite: "lax"}},
         stripe: {secret_key: env.STRIPE_SECRET_KEY, publishable_key: env.STRIPE_PUBLISHABLE_KEY},
         sqlite: {filepath: env.READATHON_DB},
         readathon: {
@@ -74,7 +76,7 @@ function dry_run_settings() {
 process.env.NODE_CONFIG = JSON.stringify({
     ...(DRY_RUN ? dry_run_settings() : {
         app: site_settings(`localhost:${process.env.PORT ?? 3000}`),
-        session: {secret: "readathon-demo-only", cookie: {secure: false, domain: null, sameSite: "lax"}},
+        session: {name: "readathon_preview.sid", secret: "readathon-demo-only", cookie: {secure: false, domain: null, sameSite: "lax"}},
         // Placeholder keys so no real payment can ever happen from the demo
         stripe: {secret_key: "sk_test_readathon_demo", publishable_key: "pk_test_readathon_demo"},
         // No sign-in email limits: the demo shows the link on screen, and people sign in over and over
@@ -285,7 +287,11 @@ async function main() {
             console.log(`  Open:      http://localhost:${port}/readathon`);
             console.log("  Volunteer: volunteer@example.com / your READATHON_DEMO_PASSWORD");
             console.log("  Payments:  Stripe test mode. Use card 4242 4242 4242 4242, any future date, any CVC.");
-            console.log(`  Emails:    ${Mailer.status().live ? `sending through ${Mailer.status().host}, links to ${config.get("app.domain")}` : "kept in the outbox at /plan/emails, not sent"}\n`);
+            console.log(`  Emails:    ${Mailer.status().live ? `sending through ${Mailer.status().host}, links to ${config.get("app.domain")}` : "kept in the outbox at /plan/emails, not sent"}`);
+            if(Mailer.status().problem) {
+                console.log(`  PROBLEM:   ${Mailer.status().problem}`);
+            }
+            console.log("");
             return;
         }
         console.log(`\nRead-a-thon demo running (pretending today is ${Readathon.today()}).`);

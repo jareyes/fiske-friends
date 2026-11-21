@@ -151,3 +151,14 @@ suite("lib/mailer.js", () => {
         assert.ok(Mailer.settings_transport({smtp: {host: "smtp.example.org", port: 465, user: "u", pass: "p"}}));
     });
 });
+
+suite("lib/mailer.js settings check", () => {
+    test("says which SMTP setting is missing, without showing the password", () => {
+        assert.strictEqual(Mailer.settings_problem({smtp: {host: null}}), null);
+        assert.strictEqual(Mailer.settings_problem({smtp: {host: "smtp.example.org", port: 587, user: "u", pass: "secret"}}), null);
+        assert.match(Mailer.settings_problem({smtp: {host: "smtp.example.org", port: 587, user: "u", pass: ""}}), /SMTP_PASS is empty or missing/);
+        assert.match(Mailer.settings_problem({smtp: {host: "smtp.example.org", port: 587, user: "u"}}), /SMTP_PASS/);
+        assert.match(Mailer.settings_problem({smtp: {host: "smtp.example.org", port: "587   # note", user: "u", pass: "p"}}), /SMTP_PORT should be a number/);
+        assert.doesNotMatch(Mailer.settings_problem({smtp: {host: "h", port: 587, user: "u", pass: ""}}), /secret/);
+    });
+});

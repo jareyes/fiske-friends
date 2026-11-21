@@ -59,6 +59,7 @@ if(require.main === module) {
             port: PORT,
             // false means SMTP isn't set up: emails wait in the outbox at /plan/emails instead of sending
             email_sending: require("../lib/mailer").status().live,
+            email_problem: require("../lib/mailer").status().problem ?? undefined,
         }),
     );
 }

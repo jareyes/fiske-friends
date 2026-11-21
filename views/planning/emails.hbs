@@ -5,9 +5,10 @@
 
   {{#if message}}<p class="admin-flash" role="status">{{message}}</p>{{/if}}
 
+  {{#if mail.problem}}<p class="admin-errors" role="alert"><strong>Email settings problem:</strong> {{mail.problem}}</p>{{/if}}
   {{#if mail.live}}
   <div class="admin-mail-status is-live">
-    <p><strong>Email is on.</strong> Emails send through <code>{{mail.host}}</code> from <code>{{mail.from}}</code>{{#if mail.reply_to}}, and replies go to <code>{{mail.reply_to}}</code>{{/if}}.</p>
+    <p><strong>Email is on.</strong> Emails send through <code>{{mail.host}}</code>{{#if mail.user}} (signing in as <code>{{mail.user}}</code>){{/if}} from <code>{{mail.from}}</code>{{#if mail.reply_to}}, and replies go to <code>{{mail.reply_to}}</code>{{/if}}.</p>
     <form method="post" action="/{{mounts.planning}}/emails/check"><button class="admin-button admin-button-quiet" type="submit">Check the connection</button></form>
   </div>
   {{else}}

@@ -127,7 +127,7 @@
   <ul class="ra-desk-results">
     {{#each pending}}
     <li>
-      <div><strong>{{title}}</strong>{{#if author}} by {{author}}{{/if}}<br><span class="ra-muted">{{audience}} &middot; from {{#if recommended_by}}{{recommended_by}}{{else}}no name{{/if}}</span>{{#if why}}<br>&ldquo;{{why}}&rdquo;{{/if}}</div>
+      <div><strong>{{title}}</strong>{{#if author}} by {{author}}{{/if}}<br><span class="ra-muted">{{audience}} &middot; from {{#if recommended_by}}{{recommended_by}}{{else}}no name{{/if}}</span>{{#if why}}<br>&ldquo;{{why}}&rdquo;{{/if}}{{#if catalog_url}}<br><a href="{{catalog_url}}" target="_blank" rel="noopener">Check the library catalog</a>{{/if}}</div>
       <form class="ra-desk-review" action="{{@root.base}}/desk/recommendations/{{recommendation_id}}" method="post">
         <button class="ra-btn ra-btn-lamp" name="status" value="approved" type="submit">Approve</button>
         <button class="ra-btn ra-btn-ghost" name="status" value="declined" type="submit">Decline</button>

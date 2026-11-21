@@ -2105,6 +2105,28 @@ button.ra-square:hover {
     font-size: 0.85rem;
     color: var(--ra-muted);
 }
+/* "Find it at the Fiske": the book's search in the library catalog */
+.ra-catalog-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.6rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    background: var(--ra-lamp-soft);
+    color: var(--ra-ink) !important;
+    font-size: 0.88rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+.ra-catalog-link::after {
+    content: "\2197";
+    font-weight: 700;
+}
+.ra-catalog-link:hover,
+.ra-catalog-link:focus-visible {
+    background: var(--ra-lamp);
+}
 
 /* ---------- help ---------- */
 .ra-faq {

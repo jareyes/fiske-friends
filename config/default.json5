@@ -21,6 +21,13 @@
     community_goal_minutes: 100000,
     // This read-a-thon's events are the main site's events with this series tag (see /plan/events)
     event_tag: "readathon-2027-01",
+    // "Find it at the Fiske" links on the book lists: searches of the library's public catalog.
+    // {title} is the book's main title and {author} the author's last name. null turns the links off.
+    catalog: {
+      search_url: "https://fiskefreenh.booksys.net/opac/fiskefreenh/index.html#search:ExpertSearch?view=Bibliographic&SortDescend=0&ST0=T&M0=c&SF0={title}&B1=A&ST1=N&M1=c&SF1={author}",
+      // For a book with no author given
+      title_search_url: "https://fiskefreenh.booksys.net/opac/fiskefreenh/index.html#search:ExpertSearch?view=Bibliographic&SortDescend=0&ST0=T&M0=c&SF0={title}",
+    },
     // For map links and calendar files; events elsewhere have their own address
     library_address: "Fiske Free Library, 108 Broad Street, Claremont, NH 03743",
     // Shown on the privacy page for questions and requests to correct or remove information.

@@ -1,5 +1,6 @@
 // January 2027 Read-a-thon pages. Mounted at /readathon.
 const config = require("config");
+const Catalog = require("../lib/catalog");
 const content = require("../lib/readathon-content");
 const FormGuard = require("../lib/form-guard");
 const Emails = require("../lib/readathon-emails");
@@ -991,7 +992,8 @@ function desk(req, res, sqlite, message = null) {
         message: message ?? req.session.readathon_desk_message ?? null,
         query,
         totals: {...totals, minutes_label: format_number(totals.minutes)},
-        pending: Readathon.list_recommendations(sqlite, "pending"),
+        // With a catalog link, so a volunteer can see if the library has it before approving
+        pending: Readathon.list_recommendations(sqlite, "pending").map(rec => ({...rec, catalog_url: Catalog.book_url(rec)})),
         reports: Reports.list_open(sqlite).map(report => ({
             ...report,
             when: new Date(report.created_ms).toLocaleString("en-US", {timeZone: APP.timezone, month: "short", day: "numeric", hour: "numeric", minute: "2-digit"}),

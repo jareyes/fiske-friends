@@ -25,6 +25,7 @@
       {{#if author}}<p class="ra-by">{{author}}</p>{{/if}}
       {{#if why}}<p class="ra-why">&ldquo;{{why}}&rdquo;</p>{{/if}}
       <p class="ra-picked">Picked by {{recommended_by}}{{#if audience}} &middot; {{audience}}{{/if}}{{#if read_during}} &middot; read in January{{/if}}</p>
+      {{#if catalog_url}}<a class="ra-catalog-link" href="{{catalog_url}}" target="_blank" rel="noopener">Find it at the Fiske<span class="ra-visually-hidden"> (library catalog, opens in a new tab)</span></a>{{/if}}
     </div>
   </li>
   {{/each}}
