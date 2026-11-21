@@ -894,10 +894,11 @@ function books(req, res, sqlite) {
         all: {url: url({list: null, mine: false}), current: !filters.list && !filters.mine},
         my_list: reader ? {url: url({mine: true, list: null}), current: filters.mine, count: Books.reading_list(sqlite, reader.reader_id).length} : null,
         lists: content.LISTS.map(l => ({...l, url: url({list: l.id, mine: false}), current: l.id === filters.list})),
-        ages: [{name: "All ages", url: url({age: null}), current: !filters.age},
-            ...Books.AGES.map(age => ({name: age, url: url({age}), current: age === filters.age}))],
-        sorts: [{name: "Most recommended", url: url({sort: "popular"}), current: filters.sort === "popular"},
-            {name: "A to Z", url: url({sort: "title"}), current: filters.sort === "title"}],
+        // value is for the dropdowns shown instead of chips on phones
+        ages: [{name: "All ages", value: "", url: url({age: null}), current: !filters.age},
+            ...Books.AGES.map(age => ({name: age, value: age, url: url({age}), current: age === filters.age}))],
+        sorts: [{name: "Most recommended", value: "popular", url: url({sort: "popular"}), current: filters.sort === "popular"},
+            {name: "A to Z", value: "title", url: url({sort: "title"}), current: filters.sort === "title"}],
         back: here,
         books: Books.browse(sqlite, {...filters, reader_id: reader?.reader_id ?? null}),
     });

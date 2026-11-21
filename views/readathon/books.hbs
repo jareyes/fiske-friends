@@ -10,6 +10,7 @@
 </nav>
 {{/if}}
 
+<p class="ra-filter-label" aria-hidden="true">Lists</p>
 <nav class="ra-list-chips" aria-label="Book lists">
   <a href="{{all.url}}"{{#if all.current}} aria-current="page"{{/if}}>All</a>
   {{#if my_list}}<a class="ra-chip-mine" href="{{my_list.url}}"{{#if my_list.current}} aria-current="page"{{/if}}><span aria-hidden="true">&#9733;</span> My list{{#if my_list.count}} ({{my_list.count}}){{/if}}</a>{{/if}}
@@ -17,13 +18,34 @@
 </nav>
 
 <div class="ra-book-filters">
-  <nav class="ra-age-chips" aria-label="Ages">
-    {{#each ages}}<a href="{{url}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
-  </nav>
-  <nav class="ra-mini-chips ra-sort" aria-label="Sort">
-    {{#each sorts}}<a href="{{url}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
-  </nav>
+  <div class="ra-filter-group">
+    <p class="ra-filter-label" aria-hidden="true">Age</p>
+    <nav class="ra-age-chips" aria-label="Ages">
+      {{#each ages}}<a href="{{url}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
+    </nav>
+  </div>
+  <div class="ra-filter-group">
+    <p class="ra-filter-label" aria-hidden="true">Sort by</p>
+    <nav class="ra-mini-chips ra-sort" aria-label="Sort">
+      {{#each sorts}}<a href="{{url}}"{{#if current}} aria-current="page"{{/if}}>{{name}}</a>{{/each}}
+    </nav>
+  </div>
 </div>
+
+{{!-- On phones, age and sort are dropdowns instead (the chips above are hidden there) --}}
+<form class="ra-filter-selects" method="get" action="{{base}}/books" data-filter-selects>
+  {{#if mine}}<input type="hidden" name="mine" value="1">{{/if}}
+  {{#if list}}<input type="hidden" name="list" value="{{list.id}}">{{/if}}
+  <label class="ra-field">
+    <span>Age</span>
+    <select name="for">{{#each ages}}<option value="{{value}}"{{#if current}} selected{{/if}}>{{name}}</option>{{/each}}</select>
+  </label>
+  <label class="ra-field">
+    <span>Sort by</span>
+    <select name="sort">{{#each sorts}}<option value="{{value}}"{{#if current}} selected{{/if}}>{{name}}</option>{{/each}}</select>
+  </label>
+  <noscript><button class="ra-btn ra-btn-ghost" type="submit">Show</button></noscript>
+</form>
 
 {{#unless signed_in}}
 <p class="ra-books-join"><a href="{{base}}/join">Join</a> or <a href="{{base}}/sign-in">sign in</a> to star books for your reading list and recommend the ones you love.</p>

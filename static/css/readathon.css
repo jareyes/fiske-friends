@@ -2121,6 +2121,51 @@ button.ra-square:hover {
     color: #fff !important;
     box-shadow: none;
 }
+.ra-book-filters {
+    align-items: center;
+}
+/* Headings for the filter groups: only on small screens, where the groups would otherwise run together */
+.ra-filter-label {
+    display: none;
+    margin: 0 0 0.4rem;
+    color: var(--ra-muted);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+/* Phones: age and sort become two dropdowns side by side, set apart from the list chips */
+.ra-filter-selects {
+    display: none;
+}
+@media (max-width: 560px) {
+    .ra-filter-label {
+        display: block;
+    }
+    .ra-book-filters {
+        display: none;
+    }
+    .ra-filter-selects {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin: 0.25rem 0 1.1rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--ra-line);
+    }
+    .ra-filter-selects .ra-field {
+        margin: 0;
+    }
+    .ra-filter-selects .ra-field > span {
+        color: var(--ra-muted);
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .ra-filter-selects noscript {
+        grid-column: 1 / -1;
+    }
+}
 .ra-books-join {
     margin: 0 0 1rem;
     color: var(--ra-muted);

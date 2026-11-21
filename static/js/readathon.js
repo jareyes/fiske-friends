@@ -466,6 +466,13 @@
         });
     }
 
+    // ---------- book lists on phones: a new age or sort shows right away ----------
+    function setup_filter_selects(form) {
+        form.querySelectorAll("select").forEach(select => {
+            select.addEventListener("change", () => form.submit());
+        });
+    }
+
     // ---------- copy the cheer link ----------
     function setup_copy(button) {
         const input = document.querySelector("[data-share-url]");
@@ -490,5 +497,6 @@
         document.querySelectorAll("[data-timer]").forEach(setup_timer);
         document.querySelectorAll("[data-goal-choices]").forEach(setup_goal_choices);
         document.querySelectorAll("form[data-book-action]").forEach(setup_book_action);
+        document.querySelectorAll("form[data-filter-selects]").forEach(setup_filter_selects);
     });
 })();
