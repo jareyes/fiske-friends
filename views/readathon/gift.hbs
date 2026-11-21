@@ -1,9 +1,10 @@
 {{#if reader}}
-<header class="ra-cheer-head">
+<header class="ra-give-hero is-cheer">
   <span class="ra-avatar ra-avatar-big a{{reader.color}}" aria-hidden="true">{{reader.initial}}</span>
-  <h1 class="ra-h1">Cheer on {{reader.name}}!</h1>
-  <p class="ra-lede-dark">{{reader.name}} is reading all January in the Fiske Free Library read-a-thon{{#if reader.minutes}}, with <b>{{reader.minutes}} minutes</b> read so far{{/if}}.</p>
-  <p class="ra-muted">Your gift supports {{purpose}}.</p>
+  <h1 class="ra-give-title">Cheer on {{reader.name}}!</h1>
+  <p class="ra-give-lede">{{reader.name}} is reading all January in the Fiske Free Library read-a-thon{{#if reader.minutes}}, with <b>{{reader.minutes}} minutes</b> read so far{{/if}}.</p>
+  <p class="ra-give-note">Your gift supports {{purpose}}.</p>
+  {{{hero_art}}}
 </header>
 {{#if cheers.recent}}
 <ul class="ra-cheer-strip" aria-label="Cheers so far">
@@ -11,14 +12,16 @@
 </ul>
 {{/if}}
 {{else}}
-<header class="ra-page-head">
-  <h1 class="ra-h1">Give to the read-a-thon</h1>
-  <p class="ra-lede-dark">Every gift supports {{purpose}}.</p>
+<header class="ra-give-hero">
+  <p class="ra-kicker">Resolve to Read</p>
+  <h1 class="ra-give-title">Give to the read-a-thon</h1>
+  <p class="ra-give-lede">Every gift supports {{purpose}}.</p>
+  <section class="ra-give-fund" aria-label="Raised so far">
+    <p class="ra-fund-number"><b>{{fundraising.total}}</b> raised of {{fundraising.goal}}</p>
+    <div class="ra-meter ra-meter-lamp" role="img" aria-label="{{fundraising.percent}} percent of the goal"><span style="width: {{fundraising.percent}}%"></span></div>
+  </section>
+  {{{hero_art}}}
 </header>
-<section class="ra-fund ra-fund-small" aria-label="Raised so far">
-  <p class="ra-fund-number"><b>{{fundraising.total}}</b> raised of {{fundraising.goal}}</p>
-  <div class="ra-meter ra-meter-pine" role="img" aria-label="{{fundraising.percent}} percent of the goal"><span style="width: {{fundraising.percent}}%"></span></div>
-</section>
 {{/if}}
 
 <form class="ra-form" action="{{action}}" method="post" novalidate data-gift

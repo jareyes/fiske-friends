@@ -11,6 +11,7 @@ const gift_routes = require("./readathon-gifts");
 const team_routes = require("./readathon-teams");
 const Teams = require("../lib/readathon-teams");
 const Mailer = require("../lib/mailer");
+const OgImages = require("../lib/readathon-og");
 const middleware = require("../lib/middleware");
 const Readathon = require("../lib/readathon");
 const {Router} = require("express");
@@ -28,6 +29,8 @@ const SESSION_DAYS = 60;
 const SIGN_IN_LINK_DAYS = 7;
 
 const DATE_RANGE_LABEL = "January 1 to 31, 2027";
+// Bump when the sharing images change, so sites that saved the old picture fetch the new one
+const OG_VERSION = 2;
 
 // At most one sign-in email per address every few minutes, and a handful a day, so nobody can use
 // the sign-in form to flood someone's inbox. Settings: readathon.sign_in_email_limits.
@@ -55,12 +58,15 @@ function page(res, view, locals = {}) {
         report_url: SETTINGS.show_report_link
             ? `${BASE}/report?from=${encodeURIComponent(res.req?.originalUrl ?? "")}`
             : null,
+        ...locals,
         og: {
             title: "Resolve to Read: the Fiske Free Library Read-a-thon",
             description: `A month-long read-a-thon for every age, ${DATE_RANGE_LABEL}. No rules, just read.`,
             url: `${SITE_URL}${BASE}`,
+            image: `${SITE_URL}${BASE}/og/site.png?v=${OG_VERSION}`,
+            image_alt: "Resolve to Read: a snowy library with lit windows and a stack of books tied with a bow",
+            ...locals.og,
         },
-        ...locals,
         title: locals.title ? `${locals.title} | Read-a-thon` : "Resolve to Read",
     });
 }
@@ -1128,8 +1134,16 @@ async function volunteer_sign_in(req, res, next, sqlite) {
     }
 }
 
+function send_png(res, png) {
+    res.set("Cache-Control", "public, max-age=86400");
+    res.type("png").send(png);
+}
+
 function create(sqlite) {
     const router = Router();
+    // Sharing images (og:image), drawn once and then served from memory
+    router.get("/og/site.png", (req, res) => send_png(res, OgImages.site_image(DATE_RANGE_LABEL)));
+    router.get("/og/give.png", (req, res) => send_png(res, OgImages.give_image(content.FUNDRAISING_PURPOSE)));
     const own = load_reader(sqlite);
     const volunteer = require_volunteer(sqlite);
     const wrap = handler => (req, res, next) => {

@@ -11,6 +11,8 @@ const config = require("config");
 const content = require("../lib/readathon-content");
 const crypto = require("node:crypto");
 const Gifts = require("../lib/readathon-gifts");
+const OgImages = require("../lib/readathon-og");
+const Art = require("../lib/readathon-art");
 const Readathon = require("../lib/readathon");
 const {Router} = require("express");
 const Stripe = require("stripe");
@@ -66,6 +68,8 @@ function create(sqlite, {page, own}) {
             errors,
             form,
             reader: reader ? reader_summary(sqlite, reader) : null,
+            // The winter scene under the heading (the same drawing as the sharing images)
+            hero_art: Art.scene_svg({width: 1200, height: 320, ground_gap: 72, sky: false, cheer: Boolean(reader), id: "give-art"}),
             action: reader ? `${BASE}/cheer/${reader.cheer_code}` : `${BASE}/give`,
             cheers: cheers ? {...cheers, recent: cheers.cheers.slice(0, 4)} : null,
             fundraising: fundraising(),
@@ -79,6 +83,14 @@ function create(sqlite, {page, own}) {
                 title: reader ? `Cheer on ${reader.name} in the Fiske Free Library Read-a-thon` : "Give to the Fiske Free Library Read-a-thon",
                 description: `Every gift supports ${content.FUNDRAISING_PURPOSE}.`,
                 url: `${site_origin(req)}${req.originalUrl}`,
+                // The cheer picture has the reader's name and goal; ?v changes with them so shared
+                // previews don't keep an old goal
+                image: reader
+                    ? `${site_origin(req)}${BASE}/og/cheer/${reader.cheer_code}.png?v=2-${reader.goal_minutes}-${reader.color}`
+                    : `${site_origin(req)}${BASE}/og/give.png?v=2`,
+                image_alt: reader
+                    ? `Cheer on ${reader.name}! ${reader.name} is reading all January for the Fiske Free Library.`
+                    : "Give to the read-a-thon: a snowy library and a stack of books tied with a bow",
             },
         });
     }
@@ -187,6 +199,20 @@ function create(sqlite, {page, own}) {
 
     router.get("/give", safely((req, res) => show_form(req, res, null)));
     router.post("/give", safely((req, res) => process_gift(req, res, null)));
+    // A reader's sharing image; an unknown code gets the give page's picture
+    router.get("/og/cheer/:code.png", safely((req, res) => {
+        const reader = Gifts.reader_by_cheer_code(sqlite, req.params.code);
+        const png = reader
+            ? OgImages.cheer_image({
+                name: reader.name,
+                initial: reader.name.charAt(0).toUpperCase(),
+                color: reader.color,
+                goal_label: Readathon.goal_label(reader.goal_minutes),
+            })
+            : OgImages.give_image(content.FUNDRAISING_PURPOSE);
+        res.set("Cache-Control", "public, max-age=3600");
+        res.type("png").send(png);
+    }));
     router.get("/cheer/:code", by_code, safely((req, res) => show_form(req, res, res.locals.cheer_reader)));
     router.post("/cheer/:code", by_code, safely((req, res) => process_gift(req, res, res.locals.cheer_reader)));
 
