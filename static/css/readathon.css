@@ -2101,6 +2101,26 @@ button.ra-square:hover {
     background: var(--ra-paper);
     box-shadow: 0 1px 3px rgba(28, 31, 63, 0.15);
 }
+/* Ages: separate little pills, so they wrap neatly on narrow screens */
+.ra-age-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+.ra-age-chips a {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    color: var(--ra-ink) !important;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: inset 0 0 0 2px var(--ra-line);
+}
+.ra-age-chips a[aria-current="page"] {
+    background: var(--ra-night);
+    color: #fff !important;
+    box-shadow: none;
+}
 .ra-books-join {
     margin: 0 0 1rem;
     color: var(--ra-muted);
@@ -2899,10 +2919,26 @@ a.ra-team-card:hover {
     grid-template-columns: 1fr auto;
     align-items: center;
 }
-@media (max-width: 420px) {
+/* Phones: the links get their own full-width row that never wraps. Text and spacing shrink with the
+   screen, and with very large text settings the row scrolls sideways instead of breaking in two. */
+@media (max-width: 560px) {
+    .ra-nav {
+        width: calc(100% + 0.6rem);
+    }
+    .ra-nav ul {
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        gap: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .ra-nav ul::-webkit-scrollbar {
+        display: none;
+    }
     .ra-nav ul a {
-        padding: 0.3rem 0.6rem;
-        font-size: 0.9rem;
+        padding: 0.3rem clamp(0.4rem, 2.2vw, 0.75rem);
+        font-size: clamp(0.82rem, 3.9vw, 0.95rem);
+        white-space: nowrap;
     }
 }
 .ra-tags {
