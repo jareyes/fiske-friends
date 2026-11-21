@@ -150,17 +150,11 @@
   </ul>
 </section>
 
-<details class="ra-details">
+<details class="ra-details" id="change-goal"{{#if goal_error}} open{{/if}}>
   <summary>Change my goal</summary>
   <form class="ra-goal-form" action="{{reader_url}}/goal" method="post">
-    <div class="ra-choices ra-choices-2">
-      {{#each goals}}
-      <label class="ra-choice ra-choice-tall">
-        <input type="radio" name="goal" value="{{minutes}}"{{#if current}} checked{{/if}}>
-        <span><b>{{name}}</b><strong class="ra-choice-goal">{{label}} total</strong><small>{{hint}}</small></span>
-      </label>
-      {{/each}}
-    </div>
+    {{#if goal_error}}<div class="ra-errors" role="alert">{{goal_error}}</div>{{/if}}
+    {{> readathon-goal-choices goals=goals}}
     <button class="ra-btn ra-btn-ghost" type="submit">Save goal</button>
   </form>
 </details>

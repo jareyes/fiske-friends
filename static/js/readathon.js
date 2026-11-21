@@ -381,6 +381,48 @@
         });
     }
 
+    // ---------- goals: "My own goal" picks itself when you type, and shows the daily pace ----------
+    // Same wording as friendly_minutes in lib/readathon.js
+    function friendly_minutes(minutes) {
+        if(minutes < 7.5) {
+            return "about 5 minutes";
+        }
+        if(minutes < 52.5) {
+            return `about ${Math.round(minutes / 5) * 5} minutes`;
+        }
+        const quarters = Math.round(minutes / 15);
+        const hours = Math.floor(quarters / 4);
+        const rest = (quarters % 4) * 15;
+        const hour_words = hours === 1 ? "an hour" : `${hours} hours`;
+        if(rest === 0) {
+            return `about ${hour_words}`;
+        }
+        if(rest === 30) {
+            return hours === 1 ? "about an hour and a half" : `about ${hours} and a half hours`;
+        }
+        return `about ${hours} ${hours === 1 ? "hour" : "hours"} ${rest} minutes`;
+    }
+
+    function setup_goal_choices(root) {
+        const radio = root.querySelector("[data-own-goal]");
+        const hours = root.querySelector("[data-own-hours]");
+        const hint = root.querySelector("[data-own-hint]");
+        if(!radio || !hours || !hint) {
+            return;
+        }
+        const days = Number(root.dataset.days) || 31;
+        const rest = root.dataset.rest || "";
+        const blank = "Any number of hours, 1 or more";
+        const update = () => {
+            const value = Number(String(hours.value).replace(",", "."));
+            hint.textContent = value >= 1 ? `${friendly_minutes(value * 60 / days)} a day${rest}` : blank;
+        };
+        hours.addEventListener("focus", () => { radio.checked = true; });
+        hours.addEventListener("input", () => { radio.checked = true; update(); });
+        radio.addEventListener("change", () => hours.focus());
+        update();
+    }
+
     // ---------- copy the cheer link ----------
     function setup_copy(button) {
         const input = document.querySelector("[data-share-url]");
@@ -403,5 +445,6 @@
         document.querySelectorAll("form[data-join]").forEach(setup_join);
         document.querySelectorAll("form").forEach(setup_other_minutes);
         document.querySelectorAll("[data-timer]").forEach(setup_timer);
+        document.querySelectorAll("[data-goal-choices]").forEach(setup_goal_choices);
     });
 })();

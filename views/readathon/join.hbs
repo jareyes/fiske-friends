@@ -48,14 +48,7 @@
   <fieldset class="ra-step">
     <legend><span class="ra-step-number">2</span> Pick a goal for January</legend>
     <p class="ra-help">Pick something easy. Every minute counts toward it, so a missed day is no big deal. You can change it any time.</p>
-    <div class="ra-choices ra-choices-2">
-      {{#each goals}}
-      <label class="ra-choice ra-choice-tall">
-        <input type="radio" name="goal" value="{{minutes}}"{{#if (eq minutes @root.form.goal)}} checked{{/if}}>
-        <span><b>{{name}}</b><strong class="ra-choice-goal">{{label}} total</strong><small>{{hint}}</small></span>
-      </label>
-      {{/each}}
-    </div>
+    {{> readathon-goal-choices goals=goals}}
   </fieldset>
 
   <fieldset class="ra-step">

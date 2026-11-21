@@ -34,14 +34,7 @@
   {{#if goals}}
   <fieldset class="ra-step">
     <legend>Goal for January</legend>
-    <div class="ra-choices ra-choices-2">
-      {{#each goals}}
-      <label class="ra-choice ra-choice-tall">
-        <input type="radio" name="goal" value="{{minutes}}"{{#if current}} checked{{/if}}>
-        <span><b>{{name}}</b><strong class="ra-choice-goal">{{label}} total</strong><small>{{hint}}</small></span>
-      </label>
-      {{/each}}
-    </div>
+    {{> readathon-goal-choices goals=goals}}
   </fieldset>
   {{/if}}
   {{#unless confirm_age}}<button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">{{#if reader}}Save changes{{else}}Add reader{{/if}}</button>{{/unless}}

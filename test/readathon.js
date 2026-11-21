@@ -91,24 +91,49 @@ suite("lib/readathon.js parse_join", () => {
 });
 
 suite("lib/readathon.js monthly goals", () => {
-    test("hints for the whole month match what the board approved", () => {
-        assert.deepStrictEqual(Readathon.goal_choices("2026-12-01", 300, SETTINGS).map(g => [g.label, g.hint, g.current]), [
-            ["2 hours", "about 5 minutes, most days", false],
-            ["5 hours", "about 15 minutes, most days", true],
-            ["10 hours", "about 30 minutes, most days", false],
-            ["20 hours", "about an hour, most days", false],
+    test("hints spread the goal over every day of January", () => {
+        // The board's math: 20 hours is about 39 minutes a day, 5 hours about 10
+        assert.deepStrictEqual(Readathon.goal_choices("2026-12-01", 300, SETTINGS).presets.map(g => [g.label, g.hint, g.current]), [
+            ["2 hours", "about 5 minutes a day", false],
+            ["5 hours", "about 10 minutes a day", true],
+            ["10 hours", "about 20 minutes a day", false],
+            ["20 hours", "about 40 minutes a day", false],
+            ["40 hours", "about 1 hour 15 minutes a day", false],
         ]);
     });
 
-    test("hints for late joiners show their real pace", () => {
-        // January 20: 12 days left, about 8 reading days
-        assert.deepStrictEqual(Readathon.goal_choices("2027-01-20", null, SETTINGS).map(g => g.hint), [
-            "about 15 minutes, most days",
-            "about 40 minutes, most days",
-            "about an hour and a half, most days",
-            "about 2½ hours, most days",
+    test("hints for late joiners say it's for the rest of the month", () => {
+        // January 20: 12 days left
+        assert.deepStrictEqual(Readathon.goal_choices("2027-01-20", null, SETTINGS).presets.map(g => g.hint), [
+            "about 10 minutes a day for the rest of January",
+            "about 25 minutes a day for the rest of January",
+            "about 50 minutes a day for the rest of January",
+            "about 1 hour 45 minutes a day for the rest of January",
+            "about 3 hours 15 minutes a day for the rest of January",
         ]);
-        assert.strictEqual(Readathon.goal_choices("2027-01-31", null, SETTINGS)[0].hint, "about 2 hours, most days");
+        assert.strictEqual(Readathon.goal_choices("2027-01-31", null, SETTINGS).presets[0].hint, "about 2 hours today");
+    });
+
+    test("my own goal: any number of hours, 1 or more", () => {
+        assert.deepStrictEqual(Readathon.parse_goal({goal: "600"}), {minutes: 600});
+        assert.deepStrictEqual(Readathon.parse_goal({goal: "own", goal_hours: "37"}), {minutes: 2220});
+        assert.deepStrictEqual(Readathon.parse_goal({goal: "own", goal_hours: "1,5"}), {minutes: 90});
+        assert.deepStrictEqual(Readathon.parse_goal({goal_hours: "100"}), {minutes: 6000}, "typed hours without picking the choice");
+        assert.deepStrictEqual(Readathon.parse_goal({goal: "600", goal_hours: "100"}), {minutes: 600}, "a picked choice wins");
+        assert.match(Readathon.parse_goal({goal: "own", goal_hours: "0.5"}).error, /at least 1 hour/);
+        assert.match(Readathon.parse_goal({goal: "own", goal_hours: ""}).error, /how many hours/);
+        assert.match(Readathon.parse_goal({goal: "own", goal_hours: "900"}).error, /more hours than January/);
+        assert.match(Readathon.parse_goal({goal: "777"}).error, /Pick a goal/);
+    });
+
+    test("a goal that isn't one of the choices shows up as my own goal", () => {
+        const choices = Readathon.goal_choices("2026-12-01", 2220, SETTINGS);
+        assert.ok(choices.presets.every(g => !g.current));
+        assert.deepStrictEqual([choices.own.picked, choices.own.hours, choices.own.hint], [true, "37", "about 1 hour 15 minutes a day"]);
+        const preset = Readathon.goal_choices("2026-12-01", 600, SETTINGS);
+        assert.deepStrictEqual([preset.own.picked, preset.own.hours], [false, ""]);
+        assert.strictEqual(Readathon.goal_label(2220), "37 hours");
+        assert.strictEqual(Readathon.goal_label(90), "1.5 hours");
     });
 
     test("pace is measured from the day a reader joined, or the first day they logged", () => {
@@ -130,13 +155,13 @@ suite("lib/readathon.js monthly goals", () => {
     });
 
     test("suggests how much to read today and notices when it's done", () => {
-        // January 11, 5-hour goal, 60 minutes read before today: 240 left over 21 days, about 14 reading days
-        assert.deepStrictEqual(Readathon.today_plan(60, 0, 300, "2027-01-11", SETTINGS), {done: false, text: "Today's Goal: 15 minutes"});
-        assert.deepStrictEqual(Readathon.today_plan(70, 10, 300, "2027-01-11", SETTINGS), {done: false, text: "Today's Goal: 10 minutes so far. 5 minutes left!"});
+        // January 11, 5-hour goal, 60 minutes read before today: 240 left over 21 days is about 11 a day
+        assert.deepStrictEqual(Readathon.today_plan(60, 0, 300, "2027-01-11", SETTINGS), {done: false, text: "Today's Goal: 10 minutes"});
+        assert.deepStrictEqual(Readathon.today_plan(65, 5, 300, "2027-01-11", SETTINGS), {done: false, text: "Today's Goal: 5 minutes so far. 5 minutes left!"});
         assert.deepStrictEqual(Readathon.today_plan(80, 20, 300, "2027-01-11", SETTINGS), {done: true, text: "Today's Goal: 20 minutes. Nice job!"});
-        assert.strictEqual(Readathon.today_plan(68, 8, 300, "2027-01-11", SETTINGS).text, "Today's Goal: 8 minutes so far. 7 minutes left!");
-        // A 20-hour goal late in the month
-        assert.strictEqual(Readathon.today_plan(0, 0, 1200, "2027-01-25", SETTINGS).text, "Today's Goal: 4 hours");
+        assert.strictEqual(Readathon.today_plan(68, 8, 300, "2027-01-11", SETTINGS).text, "Today's Goal: 8 minutes so far. 2 minutes left!");
+        // A 20-hour goal late in the month: 1,200 minutes over 7 days
+        assert.strictEqual(Readathon.today_plan(0, 0, 1200, "2027-01-25", SETTINGS).text, "Today's Goal: 2 hours, 50 minutes");
         // Goal already reached before today
         assert.deepStrictEqual(Readathon.today_plan(320, 0, 300, "2027-01-20", SETTINGS), {done: false, text: "Not yet today."});
         assert.deepStrictEqual(Readathon.today_plan(330, 10, 300, "2027-01-20", SETTINGS), {done: true, text: "Today: 10 minutes read."});

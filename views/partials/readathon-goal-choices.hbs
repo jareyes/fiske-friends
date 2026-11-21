@@ -1,0 +1,17 @@
+{{!-- The goal picker: the choices plus "My own goal". Pass goals (from Readathon.goal_choices). --}}
+<div class="ra-choices ra-choices-2" data-goal-choices data-days="{{goals.own.days}}" data-rest="{{goals.own.rest}}">
+  {{#each goals.presets}}
+  <label class="ra-choice ra-choice-tall">
+    <input type="radio" name="goal" value="{{minutes}}"{{#if current}} checked{{/if}}>
+    <span><b>{{name}}</b><strong class="ra-choice-goal">{{label}} total</strong><small>{{hint}}</small></span>
+  </label>
+  {{/each}}
+  <label class="ra-choice ra-choice-tall ra-choice-own">
+    <input type="radio" name="goal" value="own"{{#if goals.own.picked}} checked{{/if}} data-own-goal>
+    <span>
+      <b>My own goal</b>
+      <span class="ra-own-goal-row"><input class="ra-own-goal-hours" type="number" name="goal_hours" min="{{goals.own.min}}" step="any" inputmode="decimal" value="{{goals.own.hours}}" placeholder="30" aria-label="Hours in January" data-own-hours> <strong class="ra-choice-goal">hours total</strong></span>
+      <small data-own-hint>{{goals.own.hint}}</small>
+    </span>
+  </label>
+</div>

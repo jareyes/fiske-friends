@@ -137,7 +137,7 @@ function show_join(req, res, rows = [{name: "", age_group: "adult", birth_year: 
         form,
         rows: rows.map((row, i) => ({...row, i, number: i + 1, removable: i > 0})),
         can_add: rows.length < Readathon.MAX_READERS,
-        goals: Readathon.goal_choices(Readathon.today()),
+        goals: Readathon.goal_choices(Readathon.today(), Number(form.goal), undefined, form),
         ages: content.AGE_GROUPS,
         states: content.STATES,
         latest_birth_year: Readathon.today().slice(0, 4),
@@ -148,6 +148,7 @@ function join(req, res, sqlite) {
     const {errors, rows, household} = Readathon.parse_join(req.body);
     const form = {
         goal: String(req.body.goal ?? ""),
+        goal_hours: Readathon.clean(req.body.goal_hours, 8),
         email: Readathon.clean(req.body.email, 200),
         city: Readathon.clean(req.body.city, 60),
         state: Readathon.clean(req.body.state, 2).toUpperCase(),
@@ -257,7 +258,7 @@ function show_reader_form(req, res, sqlite, form = {}, errors = [], reader = nul
         form,
         confirm_age,
         ages: content.AGE_GROUPS.map(age => ({...age, checked: age.id === (form.age_group ?? (reader ? reader.age_group : "kid"))})),
-        goals: reader ? null : Readathon.goal_choices(Readathon.today(), Number(form.goal ?? content.DEFAULT_GOAL_MINUTES)),
+        goals: reader ? null : Readathon.goal_choices(Readathon.today(), Number(form.goal ?? content.DEFAULT_GOAL_MINUTES), undefined, form),
         cannot_remove: reader ? Readathon.why_not_remove(sqlite, reader) : null,
         latest_birth_year: Readathon.today().slice(0, 4),
     });
@@ -463,14 +464,16 @@ function get_ready_home(sqlite, id) {
 // Before the read-a-thon starts: a countdown, the reader's goal, and things to do now
 function get_ready(sqlite, reader, {readers, teams, cheers, today}) {
     const days = Readathon.days_between(today, SETTINGS.starts);
-    const goal = Readathon.goal_choices(today, reader.goal_minutes).find(g => g.current);
+    const choices = Readathon.goal_choices(today, reader.goal_minutes);
+    const preset = choices.presets.find(g => g.current);
+    const goal = preset ?? {name: "My own goal", label: Readathon.goal_label(reader.goal_minutes), hint: choices.own.hint};
     const team_names = teams.map(team => team.name);
     const [next_event = null] = Events.upcoming(sqlite, today, 1);
     return {
         days_to_go: days,
         countdown: days === 1 ? "Starts tomorrow!" : `Starts in ${days} days`,
         start_label: Readathon.long_day(SETTINGS.starts),
-        goal: goal ? {name: goal.name, label: goal.label, hint: goal.hint} : null,
+        goal: {name: goal.name, label: goal.label, hint: goal.hint},
         checklist: [
             {
                 label: "Add everyone in your home",
@@ -514,6 +517,8 @@ function reader_home(req, res, sqlite) {
     const phase = Readathon.phase(today);
     const cheers = Gifts.reader_cheers(sqlite, reader.reader_id);
     const teams = Teams.for_reader(sqlite, reader.reader_id, today);
+    const goal_message = req.session.readathon_goal_message ?? null;
+    delete req.session.readathon_goal_message;
     page(res, "reader", {
         title: reader.name,
         nav: "me",
@@ -527,7 +532,8 @@ function reader_home(req, res, sqlite) {
         stats,
         progress: Readathon.goal_progress(stats.total, reader.goal_minutes, Readathon.reader_start_day(reader, entries), today),
         today_plan: Readathon.today_plan(stats.total, stats.today_minutes, reader.goal_minutes, today),
-        goals: Readathon.goal_choices(today, reader.goal_minutes),
+        goals: Readathon.goal_choices(today, reader.goal_minutes, undefined, goal_message?.form ?? {}),
+        goal_error: goal_message?.error ?? null,
         board,
         prizes: Prizes.bingo_prizes(board, Prizes.list_pickups(sqlite, reader.reader_id)),
         raffle: Prizes.raffle(sqlite, reader.reader_id),
@@ -562,7 +568,13 @@ function reading_log(req, res, sqlite) {
 
 function update_goal(req, res, sqlite) {
     const {reader} = res.locals;
-    Readathon.set_goal(sqlite, reader.reader_id, Number.parseInt(req.body.goal, 10));
+    const goal = Readathon.parse_goal(req.body);
+    if(goal.error) {
+        // Back to the reader's page with the goal form open and what they typed
+        req.session.readathon_goal_message = {error: goal.error, form: {goal: String(req.body.goal ?? ""), goal_hours: Readathon.clean(req.body.goal_hours, 8)}};
+        return res.redirect(`${BASE}/r/${reader.reader_id}#change-goal`);
+    }
+    Readathon.set_goal(sqlite, reader.reader_id, goal.minutes);
     // A smaller goal might already be reached, for them or their teams
     Prizes.update_awards(sqlite, reader.reader_id);
     res.redirect(`${BASE}/r/${reader.reader_id}`);

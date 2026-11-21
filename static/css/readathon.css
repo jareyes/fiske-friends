@@ -1091,6 +1091,37 @@ a.ra-get-ready-event:focus-visible b {
 .ra-choice-tall span {
     min-height: 4.2rem;
 }
+/* "My own goal": an hours box inside the choice card */
+.ra-choice .ra-own-goal-row {
+    flex-direction: row;
+    gap: 0.35rem;
+    min-height: 0;
+    margin: 0.15rem 0 0.4rem;
+    padding: 0;
+    border: 0;
+    background: none;
+}
+.ra-choice .ra-own-goal-row .ra-choice-goal {
+    margin: 0;
+}
+.ra-choice input.ra-own-goal-hours {
+    position: relative;
+    z-index: 1;
+    width: 4.5rem;
+    padding: 0.3rem 0.4rem;
+    border: 2px solid var(--ra-line);
+    border-radius: 8px;
+    background: #fff;
+    opacity: 1;
+    font: inherit;
+    font-weight: 800;
+    text-align: center;
+    cursor: text;
+}
+.ra-choice input.ra-own-goal-hours:focus {
+    outline: 3px solid var(--ra-lamp);
+    outline-offset: 1px;
+}
 .ra-choice-goal {
     margin-bottom: 0.4rem;
     font-weight: 800;
