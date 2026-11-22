@@ -1,0 +1,18 @@
+{{#if upcoming}}
+<section class="ra-section ra-upcoming" aria-labelledby="events-title">
+  <div class="ra-upcoming-head">
+    <h2 id="events-title" class="ra-h2"><svg class="ra-upcoming-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Coming up at the library</h2>
+    <a class="ra-small-link" href="{{@root.base}}/events">See all events</a>
+  </div>
+  <ul class="ra-events">
+    {{#each upcoming}}
+    <li>
+      <a class="ra-event-row" href="{{@root.base}}/events/{{slug}}">
+        {{> readathon-date-badge badge}}
+        <span class="ra-event-text"><strong>{{title}}</strong><span>{{time_label}}{{#if location}} &middot; {{location}}{{/if}}</span>{{#if summary}}<span class="ra-muted">{{summary}}</span>{{/if}}</span>
+      </a>
+    </li>
+    {{/each}}
+  </ul>
+</section>
+{{/if}}

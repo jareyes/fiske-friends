@@ -64,6 +64,8 @@
   <a class="ra-btn ra-btn-ghost" href="{{base}}/teams">See how the teams are doing</a>
 </section>
 
+{{> readathon-upcoming}}
+
 <section class="ra-section ra-fund" aria-labelledby="fund-title">
   <h2 id="fund-title" class="ra-h2">Reading raises money too</h2>
   <p>Gifts support {{purpose}}. Plus, a local sponsor gives {{fundraising.match_per_hour}} for every hour Claremont reads, up to {{fundraising.match_cap}}.</p>
@@ -75,22 +77,8 @@
 </section>
 {{/if}}
 
-{{#if upcoming}}
-<section class="ra-section" aria-labelledby="events-title">
-  <h2 id="events-title" class="ra-h2">Coming up at the library</h2>
-  <ul class="ra-events">
-    {{#each upcoming}}
-    <li>
-      <a class="ra-event-row" href="{{@root.base}}/events/{{slug}}">
-        {{> readathon-date-badge badge}}
-        <span class="ra-event-text"><strong>{{title}}</strong><span>{{time_label}}{{#if location}} &middot; {{location}}{{/if}}</span>{{#if summary}}<span class="ra-muted">{{summary}}</span>{{/if}}</span>
-      </a>
-    </li>
-    {{/each}}
-  </ul>
-  <p class="ra-center"><a class="ra-btn ra-btn-ghost" href="{{base}}/events">See all events</a></p>
-</section>
-{{/if}}
+{{! Before the read-a-thon, events follow the get-ready list; during it, they sit under "Claremont is reading" }}
+{{#if get_ready}}{{> readathon-upcoming}}{{/if}}
 
 <nav class="ra-footer-links" aria-label="More">
   <a href="{{base}}/books">Find something to read</a>
