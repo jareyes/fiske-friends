@@ -1,0 +1,9 @@
+{{!-- The volunteer desk's heading and tabs. Pass the page's tab ("desk" or "books") and an optional line. --}}
+<header class="ra-page-head ra-desk-head">
+  <h1 class="ra-h1">Volunteer desk</h1>
+  <p class="ra-lede-dark">{{#if line}}{{line}} {{/if}}<a class="ra-small-link" href="{{@root.base}}/volunteer/sign-out">Sign out</a></p>
+</header>
+<nav class="ra-desk-tabs" aria-label="Volunteer desk">
+  <a href="{{@root.base}}/desk"{{#if (eq @root.tab "desk")}} aria-current="page"{{/if}}>Readers &amp; prizes</a>
+  <a href="{{@root.base}}/desk/books"{{#if (eq @root.tab "books")}} aria-current="page"{{/if}}>Book lists</a>
+</nav>

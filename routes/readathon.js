@@ -870,8 +870,11 @@ function books_url({list = null, age = null, sort = "popular", mine = false} = {
 
 function books(req, res, sqlite) {
     const {readers, reader} = browsing_reader(req, sqlite);
+    // Lists with nothing on them yet (say, a new one) don't get a chip
+    const with_books = Books.lists_with_books(sqlite);
+    const shown_lists = Books.lists(sqlite).filter(l => with_books.has(l.id));
     const filters = {
-        list: content.LISTS.some(l => l.id === req.query.list) ? req.query.list : null,
+        list: shown_lists.some(l => l.id === req.query.list) ? req.query.list : null,
         age: Books.AGES.includes(req.query.for) ? req.query.for : null,
         sort: req.query.sort === "title" ? "title" : "popular",
         mine: reader !== null && req.query.mine === "1",
@@ -889,11 +892,11 @@ function books(req, res, sqlite) {
             url: `${here}${here.includes("?") ? "&" : "?"}reader=${r.reader_id}`,
             current: r.reader_id === reader?.reader_id,
         })) : null,
-        list: content.LISTS.find(l => l.id === filters.list) ?? null,
+        list: shown_lists.find(l => l.id === filters.list) ?? null,
         mine: filters.mine,
         all: {url: url({list: null, mine: false}), current: !filters.list && !filters.mine},
         my_list: reader ? {url: url({mine: true, list: null}), current: filters.mine, count: Books.reading_list(sqlite, reader.reader_id).length} : null,
-        lists: content.LISTS.map(l => ({...l, url: url({list: l.id, mine: false}), current: l.id === filters.list})),
+        lists: shown_lists.map(l => ({...l, url: url({list: l.id, mine: false}), current: l.id === filters.list})),
         // value is for the dropdowns shown instead of chips on phones
         ages: [{name: "All ages", value: "", url: url({age: null}), current: !filters.age},
             ...Books.AGES.map(age => ({name: age, value: age, url: url({age}), current: age === filters.age}))],
@@ -927,7 +930,7 @@ function book_mark(kind) {
     };
 }
 
-function show_recommend(req, res, form = {}, errors = []) {
+function show_recommend(req, res, sqlite, form = {}, errors = []) {
     const list = form.list ?? "community";
     const audience = form.audience ?? "All ages";
     page(res, "recommend", {
@@ -935,13 +938,13 @@ function show_recommend(req, res, form = {}, errors = []) {
         nav: "books",
         errors,
         form: {...form, read_during: form.read_during ?? true},
-        lists: content.LISTS.map(l => ({...l, checked: l.id === list})),
+        lists: Books.lists(sqlite).map(l => ({...l, checked: l.id === list})),
         audiences: content.AUDIENCES.map(name => ({name, checked: name === audience})),
     });
 }
 
 function recommend(req, res, sqlite) {
-    const {errors, recommendation} = Readathon.parse_recommendation(req.body);
+    const {errors, recommendation} = Readathon.parse_recommendation(req.body, Books.lists(sqlite).map(l => l.id));
     const guard = FormGuard.check(req.body);
     if(guard === "honeypot") {
         console.log({event: "Readathon.BOT_BLOCKED", form: "recommend"});
@@ -949,11 +952,11 @@ function recommend(req, res, sqlite) {
     }
     if(guard === "too_fast") {
         res.status(400);
-        return show_recommend(req, res, {...req.body, read_during: !!req.body.read_during}, [FormGuard.TOO_FAST_MESSAGE]);
+        return show_recommend(req, res, sqlite, {...req.body, read_during: !!req.body.read_during}, [FormGuard.TOO_FAST_MESSAGE]);
     }
     if(errors.length > 0) {
         res.status(400);
-        return show_recommend(req, res, {...req.body, read_during: !!req.body.read_during}, errors);
+        return show_recommend(req, res, sqlite, {...req.body, read_during: !!req.body.read_during}, errors);
     }
     Readathon.create_recommendation(sqlite, household_id(req), recommendation);
     req.session.readathon_recommended = recommendation;
@@ -1078,6 +1081,7 @@ function desk(req, res, sqlite, message = null) {
     const totals = Readathon.community(sqlite);
     page(res, "desk", {
         title: "Volunteer desk",
+        tab: "desk",
         message: message ?? req.session.readathon_desk_message ?? null,
         query,
         totals: {...totals, minutes_label: format_number(totals.minutes)},
@@ -1169,6 +1173,154 @@ function desk_add_reader(req, res, sqlite) {
         Mailer.deliver(sqlite, () => Emails.welcome_for(sqlite, Readathon.get_household(sqlite, household_id)));
     }
     desk_back(req, res, `Signed up ${name}. Give them a paper kit!${email ? ` We emailed ${email} a welcome.` : ""}`, name);
+}
+
+// ---------- the desk's Book lists tab: the lists and the books on them ----------
+
+const DESK_BOOKS = `${BASE}/desk/books`;
+
+function books_back(req, res, text, to = DESK_BOOKS) {
+    req.session.readathon_books_message = text;
+    res.redirect(to);
+}
+
+function desk_books(req, res, sqlite) {
+    const message = req.session.readathon_books_message ?? null;
+    delete req.session.readathon_books_message;
+    const all_lists = Books.lists(sqlite, {include_hidden: true});
+    const filter = req.query.show === "hidden" ? "hidden" : (all_lists.some(l => l.id === req.query.list) ? req.query.list : null);
+    const {books, picks: all_picks} = Books.for_editor(sqlite);
+    // Search: every word has to be in the title or author, ignoring capitals and punctuation
+    const query = Readathon.clean(req.query.q, 80);
+    const words = Books.search_words(query);
+    const matches = book => words.every(word => Books.search_words(`${book.title} ${book.author ?? ""}`).some(w => w.startsWith(word)));
+    // Hidden books are under their own chip, not in "All books"
+    const matching = books.filter(book => filter === "hidden" ? book.is_hidden
+        : filter ? Books.get_book(sqlite, book.book_id).lists.includes(filter) : !book.is_hidden).filter(matches);
+    // With no search or list picked, just the few changed most recently, so the page stays short
+    const showing_all = Boolean(filter || query || req.query.show === "all");
+    const RECENT = 5;
+    const shown = showing_all ? matching
+        : [...matching].sort((a, b) => b.updated_ms - a.updated_ms).slice(0, RECENT);
+    const picks = all_picks;
+    const counts = new Map(all_lists.map(l => [l.id, 0]));
+    for(const book of books.filter(b => !b.is_hidden)) {
+        for(const id of Books.get_book(sqlite, book.book_id).lists) {
+            counts.set(id, (counts.get(id) ?? 0) + 1);
+        }
+    }
+    // (Reader picks have their own section and count, so the Books counts are books from the desk)
+    // The filter chips keep the search, and the search keeps the filter
+    const with_query = url => query ? `${url}${url.includes("?") ? "&" : "?"}q=${encodeURIComponent(query)}` : url;
+    page(res, "desk-books", {
+        title: "Book lists",
+        tab: "books",
+        message,
+        query,
+        filter_list: filter && filter !== "hidden" ? filter : null,
+        filter_hidden: filter === "hidden",
+        filters: [
+            {name: "All books", url: with_query(DESK_BOOKS), current: filter === null, count: books.filter(b => !b.is_hidden).length},
+            ...all_lists.map(l => ({name: l.name, url: with_query(`${DESK_BOOKS}?list=${l.id}`), current: filter === l.id, count: counts.get(l.id)})),
+            {name: "Hidden", url: with_query(`${DESK_BOOKS}?show=hidden`), current: filter === "hidden", count: books.filter(b => b.is_hidden).length},
+        ],
+        books: shown,
+        showing_recent: !showing_all,
+        all_count: matching.length,
+        all_url: `${DESK_BOOKS}?show=all`,
+        more: !showing_all && matching.length > RECENT,
+        picks: picks.filter(matches),
+        // How many books families see on each list (reader picks included)
+        lists: (() => {
+            const seen = Books.list_counts(sqlite);
+            return all_lists.map((l, i) => ({...l, first: i === 0, last: i === all_lists.length - 1, count: seen.get(l.id) ?? 0}));
+        })(),
+    });
+}
+
+function show_desk_book(req, res, sqlite, {book = null, form = null, errors = []} = {}) {
+    const values = form ?? book ?? {audience: "All ages", lists: []};
+    const chosen = new Set(values.lists ?? []);
+    page(res, "desk-book", {
+        title: book ? `Edit ${book.title}` : "Add a book",
+        tab: "books",
+        book,
+        errors,
+        form: values,
+        lists: Books.lists(sqlite, {include_hidden: true}).map(l => ({...l, checked: chosen.has(l.id)})),
+        audiences: content.AUDIENCES.map(name => ({name, checked: name === (values.audience || "All ages")})),
+        catalog_url: book ? Catalog.book_url(book) : null,
+    });
+}
+
+function desk_book(req, res, sqlite) {
+    if(req.params.book_id === undefined) {
+        return show_desk_book(req, res, sqlite);
+    }
+    const book = Books.get_book(sqlite, req.params.book_id);
+    if(book === null) {
+        return books_back(req, res, "That book isn't on the lists anymore.");
+    }
+    show_desk_book(req, res, sqlite, {book});
+}
+
+function desk_save_book(req, res, sqlite) {
+    const existing = req.body.book_id ? Books.get_book(sqlite, req.body.book_id) : null;
+    const valid = Books.lists(sqlite, {include_hidden: true}).map(l => l.id);
+    const {errors, book, list_ids} = Books.parse_book(req.body, valid);
+    // Keep "read in January" as it was; it's only set by readers who recommend a book
+    book.read_during = existing ? (existing.read_during ? 1 : 0) : 0;
+    const twin = book.title ? Books.same_book(sqlite, book.title, book.author, existing?.book_id) : null;
+    if(twin) {
+        errors.push({
+            text: `"${twin.title}"${twin.author ? ` by ${twin.author}` : ""} is already on the lists.`,
+            link: {url: `${DESK_BOOKS}/${twin.book_id}`, label: "Edit that one instead"},
+        });
+    }
+    if(errors.length > 0) {
+        res.status(400);
+        return show_desk_book(req, res, sqlite, {book: existing, form: {...book, lists: list_ids}, errors});
+    }
+    if(existing) {
+        Books.update_book(sqlite, existing.book_id, book, list_ids);
+        console.log({event: "Readathon.BOOK_UPDATED", book_id: existing.book_id});
+    }
+    else {
+        const book_id = Books.create_book(sqlite, book, list_ids);
+        console.log({event: "Readathon.BOOK_ADDED", book_id});
+    }
+    books_back(req, res, book.is_hidden ? `Saved "${book.title}". It's hidden, so families won't see it.` : `Saved "${book.title}".`);
+}
+
+// A reader's approved pick becomes a regular book, so it can be edited
+function desk_adopt_pick(req, res, sqlite) {
+    const book_id = Books.adopt_recommendation(sqlite, Number(req.params.recommendation_id));
+    if(book_id === null) {
+        return books_back(req, res, "That recommendation isn't approved anymore.");
+    }
+    res.redirect(`${DESK_BOOKS}/${book_id}`);
+}
+
+function desk_save_list(req, res, sqlite) {
+    const name = Readathon.clean(req.body.name, 40);
+    const blurb = Readathon.clean(req.body.blurb, 160);
+    if(name === "") {
+        return books_back(req, res, "Give the list a name.", `${DESK_BOOKS}#lists`);
+    }
+    const all = Books.lists(sqlite, {include_hidden: true});
+    if(req.body.list_id && all.some(l => l.id === req.body.list_id)) {
+        // Community picks is where readers' recommendations go, so it can't be hidden
+        const is_hidden = req.body.list_id !== "community" && !!req.body.is_hidden;
+        Books.update_list(sqlite, req.body.list_id, {name, blurb, is_hidden});
+        return books_back(req, res, `Saved the "${name}" list.`, `${DESK_BOOKS}#lists`);
+    }
+    Books.create_list(sqlite, {name, blurb});
+    books_back(req, res, `Added the "${name}" list. It shows up for families once a book is on it.`, `${DESK_BOOKS}#lists`);
+}
+
+function desk_move_list(req, res, sqlite) {
+    Books.move_list(sqlite, req.params.list_id, req.body.direction === "up" ? -1 : 1);
+    res.redirect(`${DESK_BOOKS}#lists`);
 }
 
 function desk_review(req, res, sqlite) {
@@ -1281,7 +1433,7 @@ function create(sqlite) {
     router.get("/books", wrap(books));
     router.post("/books/save", wrap(book_mark("save")));
     router.post("/books/vote", wrap(book_mark("vote")));
-    router.get("/books/recommend", (req, res) => show_recommend(req, res));
+    router.get("/books/recommend", wrap((req, res, db) => show_recommend(req, res, db)));
     router.post("/books/recommend", wrap(recommend));
     router.get("/books/recommend/thanks", recommend_thanks);
     router.get("/how", how);
@@ -1308,6 +1460,13 @@ function create(sqlite) {
     router.post("/desk/reports/:report_id", volunteer, wrap(desk_resolve_report));
     router.post("/desk/teams/:team_id", volunteer, wrap(desk_team));
     router.post("/desk/recommendations/:recommendation_id", volunteer, wrap(desk_review));
+    router.get("/desk/books", volunteer, wrap(desk_books));
+    router.get("/desk/books/new", volunteer, wrap(desk_book));
+    router.post("/desk/books/save", volunteer, wrap(desk_save_book));
+    router.post("/desk/books/adopt/:recommendation_id", volunteer, wrap(desk_adopt_pick));
+    router.get("/desk/books/:book_id", volunteer, wrap(desk_book));
+    router.post("/desk/lists/save", volunteer, wrap(desk_save_list));
+    router.post("/desk/lists/:list_id/move", volunteer, wrap(desk_move_list));
     return router;
 }
 

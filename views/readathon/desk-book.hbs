@@ -1,0 +1,32 @@
+{{> readathon-desk-head}}
+
+<p><a href="{{base}}/desk/books">&larr; All books</a></p>
+<h2 class="ra-h2">{{#if book}}Edit &ldquo;{{book.title}}&rdquo;{{else}}Add a book{{/if}}</h2>
+{{#if book.recommendation_id}}<p class="ra-muted">This started as a reader's recommendation.</p>{{/if}}
+
+{{> readathon-errors}}
+
+<form class="ra-form" action="{{base}}/desk/books/save" method="post">
+  <input type="hidden" name="book_id" value="{{book.book_id}}">
+  <div class="ra-step">
+    <label class="ra-field"><span>Title</span><input name="title" value="{{form.title}}" maxlength="150" required></label>
+    <label class="ra-field"><span>Author <small>Optional</small></span><input name="author" value="{{form.author}}" maxlength="100"></label>
+    <label class="ra-field"><span>Why it's good <small>A sentence or two families will see</small></span><textarea name="why" rows="3" maxlength="280">{{form.why}}</textarea></label>
+    <label class="ra-field"><span>Picked by <small>Shown as "Picked by ...", like "Fiske children's staff"</small></span><input name="recommended_by" value="{{form.recommended_by}}" maxlength="60"></label>
+    <label class="ra-field">
+      <span>Who it's for</span>
+      <select name="audience">{{#each audiences}}<option{{#if checked}} selected{{/if}}>{{name}}</option>{{/each}}</select>
+    </label>
+  </div>
+  <fieldset class="ra-step">
+    <legend>Lists it's on</legend>
+    <div class="ra-checks">
+      {{#each lists}}<label class="ra-check"><input type="checkbox" name="lists" value="{{id}}"{{#if checked}} checked{{/if}}> {{name}}{{#if is_hidden}} <span class="ra-muted">(hidden)</span>{{/if}}</label>{{/each}}
+    </div>
+  </fieldset>
+  <div class="ra-step">
+    <label class="ra-check"><input type="checkbox" name="is_hidden" value="1"{{#if form.is_hidden}} checked{{/if}}> Hide this book from families <small class="ra-muted">(readers who saved it keep it, and it can come back)</small></label>
+    {{#if catalog_url}}<p class="ra-fine"><a href="{{catalog_url}}" target="_blank" rel="noopener">Check it in the library catalog</a></p>{{/if}}
+  </div>
+  <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">{{#if book}}Save changes{{else}}Add book{{/if}}</button>
+</form>

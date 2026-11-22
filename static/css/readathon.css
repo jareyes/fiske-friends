@@ -3012,3 +3012,232 @@ a.ra-team-card:hover {
 .ra-reading-list li:last-child {
     border-bottom: 0;
 }
+
+/* ---------- the volunteer desk: tabs and the Book lists tab ---------- */
+.ra-desk-head {
+    margin-bottom: 0.75rem;
+}
+.ra-desk-tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0 0 1.25rem;
+    border-bottom: 2px solid var(--ra-line);
+}
+.ra-desk-tabs a {
+    margin-bottom: -2px;
+    padding: 0.55rem 1rem;
+    border-bottom: 3px solid transparent;
+    color: var(--ra-muted) !important;
+    font-weight: 800;
+    text-decoration: none;
+}
+.ra-desk-tabs a[aria-current="page"] {
+    border-bottom-color: var(--ra-night);
+    color: var(--ra-ink) !important;
+}
+.ra-desk-totals {
+    margin: 0 0 1rem;
+    color: var(--ra-muted);
+}
+.ra-desk-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.75rem;
+}
+.ra-desk-section-head .ra-h2 {
+    margin: 0;
+}
+.ra-desk-book-filter {
+    margin-bottom: 0.75rem;
+}
+.ra-desk-book-filter a[aria-current="page"] .ra-muted {
+    color: #c9d2ff;
+}
+.ra-desk-books {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.ra-desk-books li {
+    border-top: 1px solid var(--ra-line);
+}
+.ra-desk-books li > a,
+.ra-desk-books li > form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 0.75rem;
+    padding: 0.7rem 0.25rem;
+    color: inherit !important;
+    text-decoration: none;
+}
+.ra-desk-books li > a {
+    display: block;
+}
+.ra-desk-books li > a:hover,
+.ra-desk-books li > a:focus-visible {
+    background: var(--ra-snow);
+}
+.ra-desk-books li.is-hidden strong {
+    color: var(--ra-muted);
+}
+.ra-desk-book-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.5rem;
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+}
+.ra-desk-tag {
+    padding: 0.05rem 0.55rem;
+    border-radius: 999px;
+    background: var(--ra-snow);
+    box-shadow: inset 0 0 0 1px var(--ra-line);
+    font-weight: 700;
+}
+.ra-desk-tag-hidden {
+    background: var(--ra-lamp-soft);
+    box-shadow: none;
+}
+.ra-desk-hearts {
+    color: var(--ra-mitten-deep);
+    font-weight: 800;
+}
+.ra-desk-lists {
+    margin: 0.5rem 0 1rem;
+    padding: 0;
+    list-style: none;
+}
+.ra-desk-lists > li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.5rem;
+    border-top: 1px solid var(--ra-line);
+}
+/* Each list folds: one line to see it, tap to edit it */
+.ra-desk-list summary,
+.ra-desk-list-add summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.65rem 0.25rem;
+    cursor: pointer;
+    list-style: none;
+}
+.ra-desk-list summary::-webkit-details-marker,
+.ra-desk-list-add summary::-webkit-details-marker {
+    display: none;
+}
+.ra-desk-list summary:hover,
+.ra-desk-list summary:focus-visible {
+    background: var(--ra-snow);
+}
+.ra-desk-list-name strong::after {
+    content: " \270E";
+    color: var(--ra-muted);
+    font-weight: 400;
+    font-size: 0.85em;
+}
+.ra-desk-list[open] .ra-desk-list-name strong::after {
+    content: "";
+}
+.ra-desk-list-blurb {
+    color: var(--ra-muted);
+    font-size: 0.9rem;
+}
+.ra-desk-list[open] .ra-desk-list-blurb {
+    display: none;
+}
+.ra-desk-list .ra-desk-list-form,
+.ra-desk-list-add .ra-desk-list-form {
+    padding: 0.25rem 0.25rem 1rem;
+}
+.ra-desk-list-add {
+    border-top: 2px solid var(--ra-line);
+}
+.ra-desk-list-add summary {
+    color: var(--ra-night-2);
+    font-weight: 800;
+}
+.ra-desk-list-move {
+    padding-top: 0.45rem;
+}
+.ra-desk-lists > li.is-hidden .ra-field input {
+    color: var(--ra-muted);
+}
+/* Each list: name, then description, each on its own line, then hide and save */
+.ra-desk-list-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem;
+}
+.ra-desk-list-actions .ra-fine {
+    text-align: left;
+}
+.ra-desk-list-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+}
+.ra-desk-list-form .ra-field,
+.ra-desk-list-form .ra-check,
+.ra-desk-list-form .ra-fine {
+    margin: 0;
+}
+.ra-desk-list-form .ra-check {
+    white-space: nowrap;
+}
+.ra-desk-list-move {
+    display: flex;
+    gap: 0.1rem;
+}
+.ra-desk-list-move button {
+    font-size: 1.15rem;
+    line-height: 1;
+    padding: 0.2rem 0.45rem;
+}
+.ra-desk-list-move button:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+.ra-checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+}
+.ra-checks .ra-check {
+    margin: 0;
+}
+
+.ra-desk-book-search {
+    margin: 0 0 0.75rem;
+}
+.ra-desk-search-note {
+    margin: 0 0 0.75rem;
+    font-size: 0.92rem;
+}
+
+.ra-desk-subhead {
+    margin: 0.5rem 0 0.25rem;
+    color: var(--ra-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.ra-desk-more {
+    margin: 0.75rem 0 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--ra-line);
+}
+.ra-desk-more a {
+    font-weight: 800;
+}

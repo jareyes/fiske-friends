@@ -91,6 +91,7 @@ const {DatabaseSync} = require("node:sqlite");
 const Gifts = require("../lib/readathon-gifts");
 const Mailer = require("../lib/mailer");
 const {seed_events} = require("./seed-readathon-events");
+const {seed_books} = require("./seed-readathon-books");
 const Readathon = require("../lib/readathon");
 const Prizes = require("../lib/readathon-prizes");
 const Teams = require("../lib/readathon-teams");
@@ -264,6 +265,8 @@ async function main() {
     migrate(sqlite);
     // The read-a-thon's sample events (not in the migrations, so the live site never gets them by accident)
     seed_events(sqlite);
+    // The sample books, the same way (volunteers edit them at /readathon/desk/books)
+    seed_books(sqlite);
     if(!DRY_RUN) {
         await seed(sqlite);
     }

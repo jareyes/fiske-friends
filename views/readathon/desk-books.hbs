@@ -1,0 +1,108 @@
+{{> readathon-desk-head}}
+
+{{#if message}}<p class="ra-flash" role="status">{{message}}</p>{{/if}}
+
+{{#if picks}}
+<section class="ra-card">
+  <h2 class="ra-h2">Reader picks ({{picks.length}})</h2>
+  <p class="ra-muted">Recommendations from families that a volunteer approved. Edit one to fix a typo, change its lists, or hide it. (New recommendations to approve are on the <a href="{{base}}/desk">Readers &amp; prizes</a> tab.)</p>
+  <ul class="ra-desk-books">
+    {{#each picks}}
+    <li>
+      <form action="{{@root.base}}/desk/books/adopt/{{recommendation_id}}" method="post">
+        <div>
+          <strong>{{title}}</strong>{{#if author}} <span class="ra-muted">by {{author}}</span>{{/if}}
+          <span class="ra-desk-book-meta">
+            {{#each list_names}}<span class="ra-desk-tag">{{this}}</span>{{/each}}
+            <span class="ra-muted">from {{#if recommended_by}}{{recommended_by}}{{else}}a reader{{/if}}</span>
+            {{#if recommend_count}}<span class="ra-desk-hearts">&#9829; {{recommend_count}}</span>{{/if}}
+          </span>
+        </div>
+        <button class="ra-btn ra-btn-ghost" type="submit">Edit</button>
+      </form>
+    </li>
+    {{/each}}
+  </ul>
+</section>
+{{/if}}
+
+<section class="ra-card">
+  <div class="ra-desk-section-head">
+    <h2 class="ra-h2">Books</h2>
+    <a class="ra-btn ra-btn-lamp" href="{{base}}/desk/books/new">Add a book</a>
+  </div>
+  <form class="ra-search ra-desk-book-search" action="{{base}}/desk/books" method="get" role="search">
+    {{#if filter_list}}<input type="hidden" name="list" value="{{filter_list}}">{{/if}}
+    {{#if filter_hidden}}<input type="hidden" name="show" value="hidden">{{/if}}
+    <label class="ra-visually-hidden" for="desk-book-q">Find a book</label>
+    <input id="desk-book-q" name="q" type="search" value="{{query}}" placeholder="Find a book by title or author">
+    <button class="ra-btn ra-btn-ghost" type="submit">Find</button>
+  </form>
+  {{#if query}}<p class="ra-muted ra-desk-search-note">Showing books matching &ldquo;{{query}}&rdquo;{{#if picks}} (reader picks below match too){{/if}}. <a href="{{base}}/desk/books{{#if filter_list}}?list={{filter_list}}{{/if}}{{#if filter_hidden}}?show=hidden{{/if}}">Clear</a></p>{{/if}}
+  <nav class="ra-age-chips ra-desk-book-filter" aria-label="Show">
+    {{#each filters}}<a href="{{url}}"{{#if current}} aria-current="page"{{/if}}>{{name}} <span class="ra-muted">{{count}}</span></a>{{/each}}
+  </nav>
+  {{#if showing_recent}}<h3 class="ra-desk-subhead">Recently added or changed</h3>{{/if}}
+  {{#if books}}
+  <ul class="ra-desk-books">
+    {{#each books}}
+    <li class="{{#if is_hidden}}is-hidden{{/if}}">
+      <a href="{{@root.base}}/desk/books/{{book_id}}">
+        <strong>{{title}}</strong>{{#if author}} <span class="ra-muted">by {{author}}</span>{{/if}}
+        <span class="ra-desk-book-meta">
+          {{#if is_hidden}}<span class="ra-desk-tag ra-desk-tag-hidden">Hidden</span>{{/if}}
+          {{#each list_names}}<span class="ra-desk-tag">{{this}}</span>{{/each}}
+          {{#if audience}}<span class="ra-muted">{{audience}}</span>{{/if}}
+          {{#if recommend_count}}<span class="ra-desk-hearts">&#9829; {{recommend_count}}</span>{{/if}}
+        </span>
+      </a>
+    </li>
+    {{/each}}
+  </ul>
+  {{#if more}}<p class="ra-desk-more"><a href="{{all_url}}">Show all {{all_count}} books</a> <span class="ra-muted">or search, or pick a list above</span></p>{{/if}}
+  {{else}}
+  <p class="ra-muted">{{#if query}}No books from the desk match that{{#if picks}}, but some reader picks below do{{/if}}. Try fewer words, or <a href="{{base}}/desk/books/new">add it</a>.{{else}}{{#if picks}}No books from the desk here; reader picks are below.{{else}}No books here yet.{{/if}}{{/if}}</p>
+  {{/if}}
+</section>
+
+<section class="ra-card" id="lists">
+  <h2 class="ra-h2">Lists</h2>
+  <p class="ra-muted">What families browse by, in this order. A list only shows up for families once a book is on it. Hiding a list does not hide its books. Tap a list to edit it.</p>
+  <ul class="ra-desk-lists">
+    {{#each lists}}
+    <li class="{{#if is_hidden}}is-hidden{{/if}}" id="list-{{id}}">
+      <details class="ra-desk-list">
+        <summary>
+          <span class="ra-desk-list-name"><strong>{{name}}</strong> <span class="ra-muted">{{count}} {{#if (eq count 1)}}book{{else}}books{{/if}}</span>{{#if is_hidden}} <span class="ra-desk-tag ra-desk-tag-hidden">Hidden</span>{{/if}}</span>
+          {{#if blurb}}<span class="ra-desk-list-blurb">{{blurb}}</span>{{/if}}
+        </summary>
+        <form class="ra-desk-list-form" action="{{@root.base}}/desk/lists/save" method="post">
+          <input type="hidden" name="list_id" value="{{id}}">
+          <label class="ra-field"><span>Name</span><input name="name" value="{{name}}" maxlength="40" required></label>
+          <label class="ra-field"><span>Description</span><input name="blurb" value="{{blurb}}" maxlength="160"></label>
+          <div class="ra-desk-list-actions">
+            {{#if (eq id "community")}}
+            <p class="ra-fine">Readers' recommendations go here, so it can't be hidden.</p>
+            {{else}}
+            <label class="ra-check"><input type="checkbox" name="is_hidden" value="1"{{#if is_hidden}} checked{{/if}}> Hide this list</label>
+            {{/if}}
+            <button class="ra-btn ra-btn-ghost" type="submit">Save</button>
+          </div>
+        </form>
+      </details>
+      <form class="ra-desk-list-move" action="{{@root.base}}/desk/lists/{{id}}/move" method="post">
+        <button class="ra-text-btn" name="direction" value="up" type="submit"{{#if first}} disabled{{/if}} aria-label="Move {{name}} up">&uarr;</button>
+        <button class="ra-text-btn" name="direction" value="down" type="submit"{{#if last}} disabled{{/if}} aria-label="Move {{name}} down">&darr;</button>
+      </form>
+    </li>
+    {{/each}}
+  </ul>
+  <details class="ra-desk-list-add">
+    <summary>+ Add a list</summary>
+    <form class="ra-desk-list-form" action="{{base}}/desk/lists/save" method="post">
+      <label class="ra-field"><span>Name</span><input name="name" maxlength="40" required placeholder="Snow day picks"></label>
+      <label class="ra-field"><span>Description</span><input name="blurb" maxlength="160" placeholder="One sentence families will see"></label>
+      <div class="ra-desk-list-actions"><span></span><button class="ra-btn ra-btn-ghost" type="submit">Add list</button></div>
+    </form>
+  </details>
+</section>
