@@ -251,6 +251,7 @@ async function seed(sqlite) {
     }, `demo_seed_${Gifts.new_cheer_code()}`, true);
     Gifts.cheer_code(sqlite, renee);
     Gifts.cheer_code(sqlite, katie);
+    Gifts.set_sponsor_note(sqlite, katie.reader_id, "I want to read every Dog Man book this month! The library got me reading, so every gift helps another kid find their book.");
     cheer(renee, "Grandma Jo", 25, "Proud of you! Keep reading!");
     cheer(renee, "The Martins", 10, null, {hide_amount: 1});
     cheer(katie, "Aunt Linda", 50, "Read on, Katie! Can't wait to hear about Dog Man.");

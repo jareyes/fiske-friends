@@ -461,6 +461,14 @@ suite("lib/readathon-gifts.js database", () => {
         assert.ok(!JSON.stringify(cheers).includes("jo@example.com"));
     });
 
+    test("a reader's note for their cheer page is tidied, capped, and cleared when blank", () => {
+        assert.strictEqual(Gifts.set_sponsor_note(sqlite, maya.reader_id, "  I love\n\n  dragons!  "), "I love dragons!");
+        assert.strictEqual(Readathon.get_reader(sqlite, maya.reader_id).sponsor_note, "I love dragons!");
+        assert.strictEqual(Gifts.set_sponsor_note(sqlite, maya.reader_id, "x".repeat(500)).length, Gifts.NOTE_MAX);
+        assert.strictEqual(Gifts.set_sponsor_note(sqlite, maya.reader_id, "   "), null);
+        assert.strictEqual(Readathon.get_reader(sqlite, maya.reader_id).sponsor_note, null);
+    });
+
     test("totals add the sponsor match per hour, up to the cap", () => {
         const settings = {fundraising: {goal_usd: 5000, match_per_hour_usd: 1, match_cap_usd: 100}};
         Gifts.record_gift(sqlite, null, gift(10000), "pi_3");

@@ -3,6 +3,12 @@
   <span class="ra-avatar ra-avatar-big a{{reader.color}}" aria-hidden="true">{{reader.initial}}</span>
   <h1 class="ra-give-title">Cheer on {{reader.name}}!</h1>
   <p class="ra-give-lede">{{reader.name}} is reading all January in the Fiske Free Library read-a-thon{{#if reader.minutes}}, with <b>{{reader.minutes}} minutes</b> read so far{{/if}}.</p>
+  {{#if reader.note}}
+  <figure class="ra-give-why">
+    <blockquote><p>{{reader.note}}</p></blockquote>
+    <figcaption>{{reader.name}}</figcaption>
+  </figure>
+  {{/if}}
   <p class="ra-give-note">Your gift supports {{purpose}}.</p>
   {{{hero_art}}}
 </header>

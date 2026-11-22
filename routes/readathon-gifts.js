@@ -50,7 +50,15 @@ function reader_summary(sqlite, reader) {
         initial: reader.name.charAt(0).toUpperCase(),
         minutes: stats.total,
         days: stats.days_read,
+        note: reader.sponsor_note,
     };
+}
+
+// A one-time message kept in the session across a redirect
+function take(req, key) {
+    const value = req.session[key];
+    delete req.session[key];
+    return value ?? null;
 }
 
 function create(sqlite, {page, own}) {
@@ -81,7 +89,7 @@ function create(sqlite, {page, own}) {
             stripe_publishable_key: config.get("stripe.publishable_key"),
             og: {
                 title: reader ? `Cheer on ${reader.name} in the Fiske Free Library Read-a-thon` : "Give to the Fiske Free Library Read-a-thon",
-                description: `Every gift supports ${content.FUNDRAISING_PURPOSE}.`,
+                description: `${reader?.sponsor_note ? `“${reader.sponsor_note}” ` : ""}Every gift supports ${content.FUNDRAISING_PURPOSE}.`,
                 url: `${site_origin(req)}${req.originalUrl}`,
                 // The cheer picture has the reader's name and goal; ?v changes with them so shared
                 // previews don't keep an old goal
@@ -238,7 +246,17 @@ function create(sqlite, {page, own}) {
             cheer_path: `${BASE}/cheer/${code}`,
             cheers: Gifts.reader_cheers(sqlite, reader.reader_id),
             purpose: content.FUNDRAISING_PURPOSE,
+            note: reader.sponsor_note ?? "",
+            note_max: Gifts.NOTE_MAX,
+            note_action: `${BASE}/r/${reader.reader_id}/cheers/note`,
+            message: take(req, "readathon_note_message"),
         });
+    }));
+    router.post("/r/:reader_id/cheers/note", own, safely((req, res) => {
+        const {reader} = res.locals;
+        const note = Gifts.set_sponsor_note(sqlite, reader.reader_id, req.body.note);
+        req.session.readathon_note_message = note ? "Saved. It's on your cheer page now." : "Removed it from your cheer page.";
+        res.redirect(`${BASE}/r/${reader.reader_id}/cheers#why`);
     }));
 
     return router;

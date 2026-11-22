@@ -14,6 +14,17 @@
   <p class="ra-muted" data-copy-status role="status"><a href="{{cheer_path}}">See what they'll see</a></p>
 </section>
 
+<section class="ra-card ra-reader-note" id="why" aria-labelledby="why-title">
+  <h2 id="why-title" class="ra-h2">Why are you reading?</h2>
+  <p>Tell the people you share your link with, in a sentence or two. It shows at the top of your cheer page.</p>
+  {{#if message}}<p class="ra-flash" role="status">{{message}}</p>{{/if}}
+  <form action="{{note_action}}" method="post">
+    <label class="ra-field"><span class="ra-visually-hidden">Why you're reading</span><textarea name="note" rows="3" maxlength="{{note_max}}" placeholder="I want to read every Dog Man book! Every gift helps the library run summer reading.">{{note}}</textarea></label>
+    <p class="ra-fine">Up to {{note_max}} characters. Skip last names, schools, and where you live: anyone with your link can see this.</p>
+    <button class="ra-btn ra-btn-lamp" type="submit">Save</button>
+  </form>
+</section>
+
 {{#if cheers.cheers}}
 <ul class="ra-cheers">
   {{#each cheers.cheers}}
