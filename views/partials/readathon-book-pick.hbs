@@ -1,0 +1,26 @@
+{{!-- Pick a book from the reader's shelf, or type one in.
+      books: [{shelf_id, title, author, checked}]; new_book: the "something else" choice is picked
+      form_id: the form these belong to (the timer's form sits apart from them)
+      typed_title, typed_author: what they typed in (named so the page's own title can't stand in)
+      kinds: [{name}] to ask what kind (book, audiobook...) with the title; the add-reading form asks separately --}}
+<div class="ra-book-pick{{#if dark}} is-dark{{/if}}">
+  {{#if books}}
+  <div class="ra-book-chips">
+    {{#each books}}
+    <label class="ra-book-chip"><input type="radio" name="book" value="{{shelf_id}}"{{#if ../form_id}} form="{{../form_id}}"{{/if}}{{#if checked}} checked{{/if}} data-book-choice><span><b>{{title}}</b>{{#if author}}<small>{{author}}</small>{{/if}}</span></label>
+    {{/each}}
+    <label class="ra-book-chip ra-book-chip-new"><input type="radio" name="book" value="new"{{#if form_id}} form="{{form_id}}"{{/if}}{{#if new_book}} checked{{/if}} data-book-choice><span><b>+ Something else</b></span></label>
+  </div>
+  {{else}}
+  <input type="hidden" name="book" value="new"{{#if form_id}} form="{{form_id}}"{{/if}}>
+  {{/if}}
+  <div class="ra-book-new">
+    <label class="ra-field"><span>Title</span><input name="title" type="text" maxlength="120"{{#if form_id}} form="{{form_id}}"{{/if}} value="{{typed_title}}" placeholder="e.g. Ox-Cart Man" data-book-title></label>
+    <label class="ra-field"><span>Author <small>(optional)</small></span><input name="author" type="text" maxlength="80"{{#if form_id}} form="{{form_id}}"{{/if}} value="{{typed_author}}" placeholder="e.g. Donald Hall"></label>
+    {{#if kinds}}
+    <label class="ra-field"><span>Kind <small>(optional)</small></span>
+      <select name="format"{{#if form_id}} form="{{form_id}}"{{/if}} data-book-kind><option value="">Pick one</option>{{#each kinds}}<option>{{name}}</option>{{/each}}</select>
+    </label>
+    {{/if}}
+  </div>
+</div>

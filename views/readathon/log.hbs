@@ -35,18 +35,18 @@
     </label>
   </fieldset>
 
-  <details class="ra-step ra-optional"{{#if open_details}} open{{/if}}>
-    <summary><span class="ra-step-number">3</span> What did you read? <small>(optional)</small></summary>
-    <label class="ra-field">
-      <span>Title</span>
-      <input name="title" type="text" maxlength="120" value="{{form.title}}" placeholder="e.g. Ox-Cart Man">
-    </label>
-    <div class="ra-choices ra-choices-wrap">
-      {{#each formats}}
-      <label class="ra-choice ra-choice-small"><input type="radio" name="format" value="{{name}}"{{#if checked}} checked{{/if}}><span>{{name}}</span></label>
-      {{/each}}
-    </div>
-  </details>
+  <fieldset class="ra-step">
+    <legend><span class="ra-step-number">3</span> What did you read? <small>(optional)</small></legend>
+    {{> readathon-book-pick books=books new_book=new_book typed_title=form.title typed_author=form.author}}
+    <details class="ra-format-pick"{{#if form.format}} open{{/if}}>
+      <summary>What kind? Book, audiobook, comics&hellip;</summary>
+      <div class="ra-choices ra-choices-wrap">
+        {{#each formats}}
+        <label class="ra-choice ra-choice-small"><input type="radio" name="format" value="{{name}}"{{#if checked}} checked{{/if}}><span>{{name}}</span></label>
+        {{/each}}
+      </div>
+    </details>
+  </fieldset>
 
   {{#if entry}}
   <button class="ra-btn ra-btn-lamp ra-btn-big ra-btn-block" type="submit">Save changes</button>

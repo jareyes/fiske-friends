@@ -63,6 +63,31 @@
 </section>
 {{/if}}
 
+<section class="ra-card ra-reading-now" id="reading-now" aria-labelledby="reading-now-title">
+  <div class="ra-recent-head">
+    <h2 id="reading-now-title" class="ra-h2">What I'm reading</h2>
+    <a class="ra-small-link" href="{{reader_url}}/reading-log#books">My books{{#if finished_count}} &middot; {{finished_count}} finished{{/if}}</a>
+  </div>
+  {{#if shelf_message}}<p class="ra-flash{{#if shelf_message.error}} ra-flash-bad{{/if}}" role="status">{{shelf_message.text}}</p>{{/if}}
+  {{#if reading_now}}
+  <ul class="ra-shelf">
+    {{#each reading_now}}
+    <li>
+      <span class="ra-shelf-what"><b>{{title}}</b>{{#if author}}<span class="ra-muted">{{author}}</span>{{/if}}</span>
+      {{#if minutes_label}}<span class="ra-shelf-time">{{minutes_label}}</span>{{/if}}
+      <form action="{{@root.reader_url}}/books/{{shelf_id}}/finished" method="post">
+        <input type="hidden" name="finished" value="1"><input type="hidden" name="back" value="reader">
+        <button class="ra-btn ra-btn-ghost ra-btn-small" type="submit">Finished<span class="ra-visually-hidden"> {{title}}</span></button>
+      </form>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <p class="ra-muted">Add the books you're reading. The timer remembers them, so there's nothing to type when you're done.</p>
+  {{/if}}
+  {{> readathon-shelf-add back="reader" open=false}}
+</section>
+
 {{#unless get_ready}}
 <section class="ra-card ra-recent" id="log" aria-labelledby="recent-title">
   <div class="ra-recent-head">
@@ -154,7 +179,11 @@
   <h2 id="reading-list-title" class="ra-h2"><span aria-hidden="true">&#9733;</span> My reading list</h2>
   {{#if reading_list.books}}
   <ul>
-    {{#each reading_list.books}}<li><b>{{title}}</b>{{#if author}} <span class="ra-muted">by {{author}}</span>{{/if}}</li>{{/each}}
+    {{#each reading_list.books}}<li><span><b>{{title}}</b>{{#if author}} <span class="ra-muted">by {{author}}</span>{{/if}}</span>
+      <form action="{{@root.reader_url}}/books" method="post">
+        <input type="hidden" name="title" value="{{title}}"><input type="hidden" name="author" value="{{author}}"><input type="hidden" name="back" value="reader">
+        <button class="ra-text-btn" type="submit">Start reading<span class="ra-visually-hidden"> {{title}}</span></button>
+      </form></li>{{/each}}
   </ul>
   <a href="{{reading_list.url}}">{{#if reading_list.more}}See all {{reading_list.count}}{{else}}See my list{{/if}}</a>
   {{else}}

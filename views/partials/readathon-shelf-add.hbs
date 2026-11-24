@@ -1,0 +1,13 @@
+{{!-- Add a book to the shelf. back: where to come back to (reader, log); open: start open --}}
+<details class="ra-shelf-add"{{#if open}} open{{/if}}>
+  <summary>+ Add a book</summary>
+  <form action="{{@root.reader_url}}/books" method="post">
+    <input type="hidden" name="back" value="{{back}}">
+    <label class="ra-field"><span>Title</span><input name="title" type="text" maxlength="120" required placeholder="e.g. Ox-Cart Man"></label>
+    <label class="ra-field"><span>Author <small>(optional)</small></span><input name="author" type="text" maxlength="80" placeholder="e.g. Donald Hall"></label>
+    <label class="ra-field"><span>Kind <small>(optional)</small></span>
+      <select name="format"><option value="">Pick one</option>{{#each @root.formats}}<option>{{name}}</option>{{/each}}</select>
+    </label>
+    <button class="ra-btn ra-btn-lamp" type="submit">Add it</button>
+  </form>
+</details>

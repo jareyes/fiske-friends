@@ -1,0 +1,40 @@
+{{!-- One of the reader's books on the reading log page, with what they can do with it --}}
+<li class="ra-shelf-book{{#if is_filter}} is-filter{{/if}}">
+  <div class="ra-shelf-what">
+    <b>{{title}}</b>
+    <span class="ra-muted">{{#if author}}{{author}} &middot; {{/if}}{{#if minutes_label}}<b class="ra-shelf-time">{{minutes_label}}</b> on {{days_count}} {{#if days_plural}}days{{else}}day{{/if}}{{else}}No reading yet{{/if}}{{#if finished}} &middot; finished {{finished_label}}{{/if}}</span>
+  </div>
+  <form class="ra-shelf-finish" action="{{@root.reader_url}}/books/{{shelf_id}}/finished" method="post">
+      <input type="hidden" name="back" value="log">
+      {{#if finished}}
+      <input type="hidden" name="finished" value="0">
+      <button class="ra-btn ra-btn-ghost ra-btn-small" type="submit">Still reading it</button>
+      {{else}}
+      <input type="hidden" name="finished" value="1">
+      <button class="ra-btn ra-btn-lamp ra-btn-small" type="submit">I finished it!</button>
+      {{/if}}
+  </form>
+  <div class="ra-shelf-actions">
+    {{#if days_count}}{{#if is_filter}}<a class="ra-small-link" href="{{@root.book_filter.clear_url}}">Show all days</a>{{else}}<a class="ra-small-link" href="{{days_url}}">Show my days</a>{{/if}}{{/if}}
+    {{#if finished}}<a class="ra-small-link" href="{{recommend_url}}">Recommend it</a>{{/if}}
+    {{#if catalog_url}}<a class="ra-small-link" href="{{catalog_url}}" target="_blank" rel="noopener">Library catalog<span class="ra-visually-hidden"> (opens in a new tab)</span></a>{{/if}}
+    <details class="ra-shelf-edit">
+    <summary><span aria-hidden="true">&#9998;</span> Edit<span class="ra-visually-hidden"> {{title}}</span></summary>
+    <form action="{{@root.reader_url}}/books/{{shelf_id}}" method="post">
+      <input type="hidden" name="back" value="log">
+      <label class="ra-field"><span>Title</span><input name="title" type="text" maxlength="120" required value="{{title}}"></label>
+      <label class="ra-field"><span>Author <small>(optional)</small></span><input name="author" type="text" maxlength="80" value="{{author}}"></label>
+      <label class="ra-field"><span>Kind <small>(optional)</small></span>
+        <select name="format"><option value="">Pick one</option>{{#each formats}}<option{{#if checked}} selected{{/if}}>{{name}}</option>{{/each}}</select>
+      </label>
+      <button class="ra-btn ra-btn-ghost" type="submit">Save</button>
+    </form>
+    {{#if removable}}
+    <form action="{{@root.reader_url}}/books/{{shelf_id}}/remove" method="post">
+      <input type="hidden" name="back" value="log">
+      <button class="ra-text-btn ra-text-btn-danger" type="submit">Take it off my list</button>
+    </form>
+    {{/if}}
+    </details>
+  </div>
+</li>

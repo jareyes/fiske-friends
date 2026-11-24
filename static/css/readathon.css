@@ -3326,3 +3326,249 @@ a.ra-team-card:hover {
 .ra-desk-more a {
     font-weight: 800;
 }
+
+/* ---------- what I'm reading: the reader's shelf, and picking a book ---------- */
+.ra-btn-small {
+    min-height: 2.25rem;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.9rem;
+}
+.ra-shelf {
+    margin: 0.25rem 0 0.75rem;
+    padding: 0;
+    list-style: none;
+}
+.ra-shelf li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--ra-line);
+}
+.ra-shelf li:last-child {
+    border-bottom: 0;
+}
+.ra-shelf-what {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+    line-height: 1.35;
+}
+.ra-shelf-what .ra-muted {
+    font-size: 0.9rem;
+}
+.ra-shelf-time {
+    color: var(--ra-ink);
+    font-weight: 800;
+    white-space: nowrap;
+}
+.ra-shelf-add {
+    margin-top: 0.25rem;
+}
+.ra-shelf-add > summary,
+.ra-shelf-edit > summary,
+.ra-format-pick > summary {
+    width: fit-content;
+    color: var(--ra-night-2);
+    font-weight: 800;
+    cursor: pointer;
+    list-style: none;
+}
+.ra-shelf-add > summary::-webkit-details-marker,
+.ra-shelf-edit > summary::-webkit-details-marker,
+.ra-format-pick > summary::-webkit-details-marker {
+    display: none;
+}
+.ra-shelf-add form,
+.ra-shelf-edit form {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: start;
+    margin-top: 0.6rem;
+}
+.ra-shelf-add .ra-field,
+.ra-shelf-edit .ra-field {
+    width: 100%;
+    margin: 0;
+}
+.ra-reading-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+/* The reading log's My books */
+.ra-shelf-sub {
+    margin: 1rem 0 0.25rem;
+    color: var(--ra-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.ra-shelf-books {
+    margin: 0 0 0.75rem;
+    padding: 0;
+    list-style: none;
+}
+.ra-shelf-book {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 0.5rem 0.75rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--ra-line);
+}
+.ra-shelf-book:last-child {
+    border-bottom: 0;
+}
+.ra-shelf-book.is-filter {
+    margin: 0 -0.75rem;
+    padding: 0.85rem 0.75rem;
+    border-radius: 14px;
+    background: var(--ra-lamp-soft);
+}
+.ra-shelf-finish .ra-btn {
+    white-space: nowrap;
+}
+/* Show my days, Recommend it, Library catalog, Edit: one row under the title and button */
+.ra-shelf-actions {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    align-items: baseline;
+    gap: 0.35rem 1.1rem;
+    font-size: 0.9rem;
+}
+.ra-shelf-actions > a {
+    white-space: nowrap;
+}
+.ra-shelf-edit > summary {
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+/* Open, the edit form takes its own full-width line */
+.ra-shelf-edit[open] {
+    flex-basis: 100%;
+}
+.ra-cal-filter {
+    margin: -0.5rem 0 0.75rem;
+    font-size: 0.95rem;
+}
+.ra-cal-day.is-dim {
+    opacity: 0.3;
+}
+.ra-cal-day.is-book-day {
+    box-shadow: inset 0 0 0 3px var(--ra-night-2);
+}
+
+/* Picking a book on the timer and the add-reading form */
+.ra-book-pick {
+    display: grid;
+    gap: 0.6rem;
+}
+.ra-book-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.ra-book-chip {
+    position: relative;
+}
+.ra-book-chip input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+.ra-book-chip span {
+    display: grid;
+    max-width: 16rem;
+    padding: 0.5rem 0.85rem;
+    border: 2px solid var(--ra-line);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--ra-ink);
+    line-height: 1.25;
+    text-align: left;
+}
+.ra-book-chip b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ra-book-chip small {
+    overflow: hidden;
+    color: var(--ra-muted);
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ra-book-chip input:checked + span {
+    border-color: var(--ra-lamp-deep);
+    background: var(--ra-lamp-soft);
+    box-shadow: 0 3px 0 var(--ra-lamp-deep);
+}
+.ra-book-chip input:focus-visible + span {
+    outline: 3px solid var(--ra-mitten);
+    outline-offset: 2px;
+}
+.ra-book-chip-new span {
+    border-style: dashed;
+}
+.ra-book-new {
+    display: grid;
+    gap: 0.5rem;
+}
+.ra-book-new .ra-field {
+    margin: 0;
+}
+/* The title and author boxes only when "Something else" is picked (always, where :has isn't known) */
+.ra-book-pick:has(input[value="new"][type="radio"]:not(:checked)) .ra-book-new {
+    display: none;
+}
+.ra-format-pick {
+    margin-top: 0.75rem;
+}
+.ra-format-pick > summary {
+    font-size: 0.92rem;
+}
+.ra-format-pick .ra-choices {
+    margin-top: 0.5rem;
+}
+
+/* On the timer, at night */
+.ra-timer-book {
+    width: 100%;
+    max-width: 30rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    border: 0;
+}
+.ra-timer-book .ra-book-chips {
+    justify-content: center;
+}
+.ra-book-pick.is-dark .ra-book-chip span {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+.ra-book-pick.is-dark .ra-book-chip small {
+    color: #c9d2ff;
+}
+.ra-book-pick.is-dark .ra-book-chip input:checked + span {
+    border-color: var(--ra-lamp);
+    background: rgba(255, 200, 61, 0.18);
+    box-shadow: none;
+}
+.ra-book-pick.is-dark .ra-book-new {
+    text-align: left;
+}
+.ra-book-pick.is-dark .ra-field > span {
+    color: #e8ebff;
+}
+.ra-reading-list li .ra-text-btn {
+    white-space: nowrap;
+}

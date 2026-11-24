@@ -2,13 +2,17 @@
   <a class="ra-timer-back" href="{{reader_url}}">&larr; Back</a>
   {{#if is_open}}
   <p class="ra-timer-who">{{reader.name}} is reading</p>
+  <fieldset class="ra-timer-book" data-timer-book>
+    <legend class="ra-visually-hidden">What are you reading?</legend>
+    {{> readathon-book-pick books=books form_id="timer-save" dark=true typed_title="" typed_author="" kinds=kinds}}
+  </fieldset>
   <div class="ra-timer-ring" aria-hidden="true"><div class="ra-timer-moon"></div></div>
   <p class="ra-timer-face" data-face role="timer" aria-live="off">0:00</p>
   <p class="ra-timer-note" data-note aria-live="polite">Press start, then enjoy your book.</p>
 
   <div class="ra-timer-controls" data-controls hidden>
     <button class="ra-btn ra-btn-lamp ra-btn-big" type="button" data-toggle>Start</button>
-    <form action="{{reader_url}}/log" method="post" data-save hidden>
+    <form id="timer-save" action="{{reader_url}}/log" method="post" data-save hidden>
       <input type="hidden" name="source" value="timer">
       <input type="hidden" name="day" value="{{today}}">
       <input type="hidden" name="minutes" value="" data-minutes>

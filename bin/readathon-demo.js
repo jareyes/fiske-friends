@@ -249,6 +249,22 @@ async function seed(sqlite) {
         email: "donor@example.org",
         ...extra,
     }, `demo_seed_${Gifts.new_cheer_code()}`, true);
+    // Shelves: Renee finished one book and is partway through another; Katie has a second book going
+    const Shelf = require("../lib/readathon-shelf");
+    const lincoln = Shelf.by_title(sqlite, renee.reader_id, "The Lincoln Highway");
+    if(lincoln) {
+        Shelf.update(sqlite, renee.reader_id, lincoln.shelf_id, {title: "The Lincoln Highway", author: "Amor Towles", format: "Book"});
+        Shelf.set_finished(sqlite, renee.reader_id, lincoln.shelf_id, "2027-01-08");
+    }
+    const educated = Shelf.by_title(sqlite, renee.reader_id, "Educated");
+    if(educated) {
+        Shelf.update(sqlite, renee.reader_id, educated.shelf_id, {title: "Educated", author: "Tara Westover", format: "Audiobook"});
+    }
+    const dog_man = Shelf.by_title(sqlite, katie.reader_id, "Dog Man");
+    if(dog_man) {
+        Shelf.update(sqlite, katie.reader_id, dog_man.shelf_id, {title: "Dog Man", author: "Dav Pilkey", format: "Comics"});
+    }
+    Shelf.ensure(sqlite, katie.reader_id, {title: "Hilda and the Troll", author: "Luke Pearson", format: "Comics"});
     Gifts.cheer_code(sqlite, renee);
     Gifts.cheer_code(sqlite, katie);
     Gifts.set_sponsor_note(sqlite, katie.reader_id, "I want to read every Dog Man book this month! The library got me reading, so every gift helps another kid find their book.");

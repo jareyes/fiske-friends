@@ -613,3 +613,62 @@ suite("lib/readathon.js event_date", () => {
         assert.deepStrictEqual(Readathon.event_date("2026-11-23"), {day_name: "Mon", day_number: 23, month: "Nov"});
     });
 });
+
+const Shelf = require("../lib/readathon-shelf");
+
+suite("lib/readathon-shelf.js", () => {
+    const fresh = () => {
+        const sqlite = new DatabaseSync(":memory:");
+        const dirpath = path.join(__dirname, "..", "migrations");
+        for(const file of fs.readdirSync(dirpath).filter(f => f.endsWith(".sql")).sort()) {
+            sqlite.exec(fs.readFileSync(path.join(dirpath, file), "utf8"));
+        }
+        const id = Readathon.create_household(sqlite, {email: "s@example.com", readers: [{name: "Bo", age_group: "kid"}]});
+        return {sqlite, bo: Readathon.list_readers(sqlite, id)[0].reader_id};
+    };
+
+    test("logging a title puts the book on the shelf once, whatever the capitals", () => {
+        const {sqlite, bo} = fresh();
+        Readathon.add_entry(sqlite, bo, {day: "2027-01-02", minutes: 20, title: "The Hobbit", format: "Book", author: "J. R. R. Tolkien"});
+        Readathon.add_entry(sqlite, bo, {day: "2027-01-03", minutes: 30, title: "the hobbit"});
+        Readathon.add_entry(sqlite, bo, {day: "2027-01-03", minutes: 15});
+        const books = Shelf.books(sqlite, bo, Readathon.list_entries(sqlite, bo));
+        assert.strictEqual(books.length, 1);
+        assert.deepStrictEqual([books[0].title, books[0].author, books[0].minutes, books[0].days], ["The Hobbit", "J. R. R. Tolkien", 50, ["2027-01-02", "2027-01-03"]]);
+    });
+
+    test("finished books sort after the ones being read, and are counted", () => {
+        const {sqlite, bo} = fresh();
+        const a = Shelf.ensure(sqlite, bo, {title: "Alpha"});
+        Shelf.ensure(sqlite, bo, {title: "Beta"});
+        Shelf.set_finished(sqlite, bo, a.shelf_id, "2027-01-05");
+        const books = Shelf.books(sqlite, bo, []);
+        assert.deepStrictEqual(books.map(b => [b.title, b.finished]), [["Beta", false], ["Alpha", true]]);
+        assert.strictEqual(Shelf.finished_count(sqlite, bo), 1);
+        assert.deepStrictEqual(Shelf.current(sqlite, bo, []).map(b => b.title), ["Beta"]);
+    });
+
+    test("renaming a book renames its log entries; a clash with another book is refused", () => {
+        const {sqlite, bo} = fresh();
+        Readathon.add_entry(sqlite, bo, {day: "2027-01-02", minutes: 20, title: "Dogman"});
+        Shelf.ensure(sqlite, bo, {title: "Hatchet"});
+        const book = Shelf.by_title(sqlite, bo, "dogman");
+        assert.strictEqual(Shelf.update(sqlite, bo, book.shelf_id, {title: "Dog Man", author: "Dav Pilkey", format: "Comics"}), null);
+        assert.strictEqual(Readathon.list_entries(sqlite, bo)[0].title, "Dog Man");
+        assert.match(Shelf.update(sqlite, bo, book.shelf_id, {title: "hatchet"}), /already/);
+    });
+
+    test("only a book with no reading can be taken off the shelf", () => {
+        const {sqlite, bo} = fresh();
+        Readathon.add_entry(sqlite, bo, {day: "2027-01-02", minutes: 20, title: "Kept"});
+        const empty = Shelf.ensure(sqlite, bo, {title: "Oops"});
+        assert.strictEqual(Shelf.remove(sqlite, bo, Shelf.by_title(sqlite, bo, "Kept").shelf_id), false);
+        assert.strictEqual(Shelf.remove(sqlite, bo, empty.shelf_id), true);
+        assert.deepStrictEqual(Shelf.books(sqlite, bo, Readathon.list_entries(sqlite, bo)).map(b => b.title), ["Kept"]);
+    });
+
+    test("a typed-in book needs a title, and only known formats are kept", () => {
+        assert.deepStrictEqual(Shelf.parse_book({title: "  "}).errors, ["What's the book called?"]);
+        assert.deepStrictEqual(Shelf.parse_book({title: " Holes ", author: "", format: "Scroll"}).book, {title: "Holes", author: null, format: null});
+    });
+});

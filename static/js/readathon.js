@@ -168,6 +168,42 @@
             render();
         }
 
+        // The book they're reading is remembered for next time (and survives closing the page)
+        const book_key = `ra-timer-book-${reader}`;
+        const choices = [...root.querySelectorAll("[data-book-choice]")];
+        const title_input = root.querySelector("[data-book-title]");
+        const kind_input = root.querySelector("[data-book-kind]");
+        try {
+            const saved = JSON.parse(store?.getItem(book_key) ?? "null");
+            const match = saved && choices.find(choice => choice.value === saved.book);
+            if(match) {
+                match.checked = true;
+                // (An early version saved the page's own title here by mistake: skip that)
+                if(saved.book === "new" && title_input && saved.title !== document.title) {
+                    title_input.value = saved.title ?? "";
+                    if(kind_input) {
+                        kind_input.value = saved.kind ?? "";
+                    }
+                }
+            }
+        }
+        catch(err) {
+            // Use the book the page picked
+        }
+        const remember_book = () => {
+            const picked = choices.find(choice => choice.checked);
+            try {
+                store?.setItem(book_key, JSON.stringify({book: picked?.value ?? "new", title: title_input?.value ?? "", kind: kind_input?.value ?? ""}));
+            }
+            catch(err) {
+                // Private browsing
+            }
+        };
+        choices.forEach(choice => choice.addEventListener("change", remember_book));
+        title_input?.addEventListener("input", remember_book);
+        kind_input?.addEventListener("change", remember_book);
+        const picked_book = () => choices.find(choice => choice.checked)?.value ?? "";
+
         controls.hidden = false;
         tip.hidden = false;
         toggle.addEventListener("click", () => (state.running ? pause() : start()));
@@ -179,7 +215,7 @@
                     pause();
                 }
                 long_check.querySelector("[data-long-time]").textContent = minutes_label();
-                long_fix.href = `${long_fix.getAttribute("href").split("?")[0]}?minutes=${minutes_read()}`;
+                long_fix.href = `${long_fix.getAttribute("href").split("?")[0]}?minutes=${minutes_read()}${picked_book() && picked_book() !== "new" ? `&book=${encodeURIComponent(picked_book())}` : ""}`;
                 long_check.hidden = false;
                 controls.hidden = true;
                 cancel.hidden = true;

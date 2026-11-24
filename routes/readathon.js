@@ -9,6 +9,7 @@ const Events = require("../lib/readathon-events");
 const Gifts = require("../lib/readathon-gifts");
 const Prizes = require("../lib/readathon-prizes");
 const Reports = require("../lib/readathon-reports");
+const Shelf = require("../lib/readathon-shelf");
 const gift_routes = require("./readathon-gifts");
 const team_routes = require("./readathon-teams");
 const Teams = require("../lib/readathon-teams");
@@ -512,6 +513,119 @@ function get_ready(sqlite, reader, {readers, teams, cheers, today}) {
     };
 }
 
+// ---------- what I'm reading (the reader's shelf) ----------
+
+// A book on the shelf, ready for the page
+function book_view(book, reader, today) {
+    const reader_url = `${BASE}/r/${reader.reader_id}`;
+    const little = day => Readathon.label_day(day, today).replace(/^(Today|Yesterday)$/, word => word.toLowerCase());
+    return {
+        ...book,
+        minutes_label: book.minutes > 0 ? Readathon.duration_short(book.minutes) : null,
+        days_count: book.days.length,
+        days_plural: book.days.length !== 1,
+        last_label: book.last_day ? little(book.last_day) : null,
+        finished_label: book.finished_day ? little(book.finished_day) : null,
+        catalog_url: Catalog.book_url(book),
+        days_url: `${reader_url}/reading-log?book=${book.shelf_id}#calendar`,
+        recommend_url: `${BASE}/books/recommend?${new URLSearchParams({title: book.title, author: book.author ?? ""})}`,
+        removable: book.minutes === 0,
+        formats: content.FORMATS.map(name => ({name, checked: name === book.format})),
+    };
+}
+
+// The books to pick from on the timer and the add-reading form: the ones they're reading, newest
+// reading first, plus extra (a finished book an entry being changed is about)
+function book_choices(sqlite, reader, entries, checked_id, extra = null) {
+    const choices = Shelf.current(sqlite, reader.reader_id, entries);
+    if(extra && !choices.some(book => book.shelf_id === extra.shelf_id)) {
+        choices.push(extra);
+    }
+    return choices.map(book => ({shelf_id: book.shelf_id, title: book.title, author: book.author, checked: String(book.shelf_id) === String(checked_id)}));
+}
+
+// The book picked on the timer or the add-reading form: a book on their shelf, or one typed in
+function picked_book(sqlite, reader, body) {
+    const choice = String(body.book ?? "");
+    if(choice !== "" && choice !== "new") {
+        const book = Shelf.get(sqlite, reader.reader_id, choice);
+        if(book) {
+            return {title: book.title, author: book.author, format: book.format, from_shelf: true};
+        }
+    }
+    return {
+        title: Readathon.clean(body.title, Shelf.TITLE_MAX) || null,
+        author: Readathon.clean(body.author, Shelf.AUTHOR_MAX) || null,
+        format: null,
+    };
+}
+
+// Where a shelf change goes back to: the reader page, the log page, or the timer
+function shelf_back(req, res, text, error = false) {
+    const {reader} = res.locals;
+    const reader_url = `${BASE}/r/${reader.reader_id}`;
+    const back = {
+        log: `${reader_url}/reading-log#books`,
+        timer: `${reader_url}/timer`,
+    }[req.body.back] ?? `${reader_url}#reading-now`;
+    if(text) {
+        req.session.readathon_shelf_message = {text, error, where: req.body.back ?? "reader"};
+    }
+    res.redirect(back);
+}
+
+function shelf_message(req, where) {
+    const message = req.session.readathon_shelf_message ?? null;
+    if(message && (message.where === where || (where === "reader" && !["log", "timer"].includes(message.where)))) {
+        delete req.session.readathon_shelf_message;
+        return message;
+    }
+    return null;
+}
+
+function add_book(req, res, sqlite) {
+    const {reader} = res.locals;
+    const {errors, book} = Shelf.parse_book(req.body);
+    if(errors.length > 0) {
+        return shelf_back(req, res, errors[0], true);
+    }
+    const existing = Shelf.by_title(sqlite, reader.reader_id, book.title);
+    const row = Shelf.ensure(sqlite, reader.reader_id, book);
+    // Adding a finished book again means they're reading it again
+    if(existing?.finished_day) {
+        Shelf.set_finished(sqlite, reader.reader_id, row.shelf_id, null);
+    }
+    shelf_back(req, res, existing && !existing.finished_day ? `"${row.title}" was already on your list.` : `Added "${row.title}".`);
+}
+
+function save_book(req, res, sqlite) {
+    const {reader} = res.locals;
+    const {errors, book} = Shelf.parse_book(req.body);
+    if(errors.length > 0) {
+        return shelf_back(req, res, errors[0], true);
+    }
+    const error = Shelf.update(sqlite, reader.reader_id, req.params.shelf_id, book);
+    shelf_back(req, res, error ?? `Saved "${book.title}".`, Boolean(error));
+}
+
+function finish_book(req, res, sqlite) {
+    const {reader} = res.locals;
+    const book = Shelf.get(sqlite, reader.reader_id, req.params.shelf_id);
+    if(book === null) {
+        return shelf_back(req, res, null);
+    }
+    const finished = req.body.finished === "1";
+    Shelf.set_finished(sqlite, reader.reader_id, book.shelf_id, finished ? Readathon.today() : null);
+    shelf_back(req, res, finished ? `You finished "${book.title}"! Nice work.` : `"${book.title}" is back on your list.`);
+}
+
+function remove_book(req, res, sqlite) {
+    const {reader} = res.locals;
+    const book = Shelf.get(sqlite, reader.reader_id, req.params.shelf_id);
+    const removed = Shelf.remove(sqlite, reader.reader_id, req.params.shelf_id);
+    shelf_back(req, res, removed ? `Took "${book.title}" off your list.` : "Books with reading logged stay, so their time still counts. Mark it finished instead.", !removed);
+}
+
 function reader_home(req, res, sqlite) {
     const {reader} = res.locals;
     const {today, entries, stats} = reader_context(sqlite, reader);
@@ -561,6 +675,10 @@ function reader_home(req, res, sqlite) {
         // Only shown for a run of two or more, so nobody sees a zero
         streak_note: stats.streak >= 2 ? `${stats.streak} days in a row!` : null,
         recent: entries.slice(0, 3).map(entry => ({...entry, day_label: Readathon.label_day(entry.day, today)})),
+        reading_now: Shelf.current(sqlite, reader.reader_id, entries).map(book => book_view(book, reader, today)),
+        finished_count: Shelf.finished_count(sqlite, reader.reader_id),
+        shelf_message: shelf_message(req, "reader"),
+        formats: content.FORMATS.map(name => ({name})),
         entry_count: entries.length,
         more_entries: entries.length > 3,
     });
@@ -570,6 +688,15 @@ function reader_home(req, res, sqlite) {
 function reading_log(req, res, sqlite) {
     const {reader} = res.locals;
     const {today, entries, stats} = reader_context(sqlite, reader);
+    const books = Shelf.books(sqlite, reader.reader_id, entries);
+    // ?book= highlights the days they read that book
+    const filter_book = books.find(book => String(book.shelf_id) === String(req.query.book ?? "")) ?? null;
+    const book_days = new Set(filter_book?.days ?? []);
+    const calendar = Readathon.month_calendar(stats.by_day, today).map(week => week.map(day => ({
+        ...day,
+        book_day: book_days.has(day.day),
+        dim: filter_book !== null && !book_days.has(day.day),
+    })));
     page(res, "reading-log", {
         title: `${reader.name}'s reading log`,
         nav: "me",
@@ -578,9 +705,14 @@ function reading_log(req, res, sqlite) {
         phase: Readathon.phase(today),
         stats,
         total_label: Readathon.duration_short(stats.total),
-        calendar: Readathon.month_calendar(stats.by_day, today),
+        calendar,
         weeks: Readathon.log_by_week(entries, today),
-        books: Readathon.books_read(entries, today),
+        book_filter: filter_book ? {title: filter_book.title, days_count: filter_book.days.length, days_plural: filter_book.days.length !== 1, clear_url: `${BASE}/r/${reader.reader_id}/reading-log#calendar`} : null,
+        reading: books.filter(book => !book.finished).map(book => ({...book_view(book, reader, today), is_filter: book === filter_book})),
+        finished: books.filter(book => book.finished).map(book => ({...book_view(book, reader, today), is_filter: book === filter_book})),
+        finished_count: books.filter(book => book.finished).length,
+        shelf_message: shelf_message(req, "log"),
+        formats: content.FORMATS.map(name => ({name})),
     });
 }
 
@@ -607,6 +739,12 @@ function timer(req, res, sqlite) {
         bare: true,
         is_open: Readathon.phase(today) === "during",
         today,
+        books: (() => {
+            const entries = Readathon.list_entries(sqlite, reader.reader_id);
+            const current = Shelf.current(sqlite, reader.reader_id, entries);
+            return book_choices(sqlite, reader, entries, current[0]?.shelf_id);
+        })(),
+        kinds: content.FORMATS.map(name => ({name})),
     });
 }
 
@@ -632,6 +770,12 @@ function prefill_minutes(value) {
 function show_log(req, res, sqlite, form = {}, errors = [], entry = null) {
     const {reader} = res.locals;
     const today = Readathon.today();
+    const entries = Readathon.list_entries(sqlite, reader.reader_id);
+    // The book picked: what they chose before, the entry's book, or the one they read most recently
+    const entry_book = entry?.title ? Shelf.by_title(sqlite, reader.reader_id, entry.title) : null;
+    const current = Shelf.current(sqlite, reader.reader_id, entries);
+    const book = form.book ?? (entry ? (entry_book?.shelf_id ?? "new") : (current[0]?.shelf_id ?? "new"));
+    const books = book_choices(sqlite, reader, entries, book, entry_book);
     const minutes = String(form.minutes ?? "20");
     // Adding offers the last two weeks; changing an entry offers every day so far
     const days = Readathon.loggable_days(today).slice(0, entry ? undefined : 14);
@@ -642,8 +786,9 @@ function show_log(req, res, sqlite, form = {}, errors = [], entry = null) {
         entry,
         action: entry ? `${BASE}/r/${reader.reader_id}/entries/${entry.entry_id}` : `${BASE}/r/${reader.reader_id}/log`,
         is_open: Readathon.phase(today) !== "before",
-        form: {...form, minutes},
-        open_details: !!(form.title || form.format),
+        form: {...form, minutes, title: book === "new" ? (form.title ?? "") : "", author: form.author ?? ""},
+        books,
+        new_book: !books.some(choice => choice.checked),
         minute_choices: MINUTE_CHOICES.map(n => ({n, checked: String(n) === minutes})),
         other_checked: minutes === "other",
         days: days.map(day => ({
@@ -664,12 +809,25 @@ function save_log(req, res, sqlite) {
         res.status(400);
         return show_log(req, res, sqlite, req.body, errors);
     }
+    // On the timer, the kind box belongs to a typed-in book; a book from their list brings its own
+    const book = picked_book(sqlite, reader, req.body);
+    if(source === "timer" && book.from_shelf) {
+        entry.format = null;
+    }
+    with_book(entry, book);
     const before_stats = Readathon.stats(Readathon.list_entries(sqlite, reader.reader_id), today);
     const before_auto = Readathon.auto_squares(sqlite, reader, before_stats);
     Readathon.add_entry(sqlite, reader.reader_id, entry);
     const earned = Prizes.update_awards(sqlite, reader.reader_id);
     req.session.readathon_yay = {reader_id: reader.reader_id, added: entry.minutes, before: before_stats.total, before_auto, earned};
     res.redirect(`${BASE}/r/${reader.reader_id}/yay`);
+}
+
+// The picked book's title (and author, for the shelf) on an entry; a format they chose wins
+function with_book(entry, book) {
+    entry.title = book.title;
+    entry.author = book.author;
+    entry.format = entry.format ?? book.format;
 }
 
 function yay(req, res, sqlite) {
@@ -750,6 +908,7 @@ function save_entry(req, res, sqlite) {
         res.status(400);
         return show_log(req, res, sqlite, req.body, errors, entry);
     }
+    with_book(changes, picked_book(sqlite, reader, req.body));
     Readathon.update_entry(sqlite, reader.reader_id, entry.entry_id, changes);
     // More minutes might reach a goal. Fewer never takes back a raffle entry.
     Prizes.update_awards(sqlite, reader.reader_id);
@@ -1420,12 +1579,20 @@ function create(sqlite) {
     router.post("/r/:reader_id/goal", own, wrap(update_goal));
     router.get("/r/:reader_id/reading-log", own, wrap(reading_log));
     router.get("/r/:reader_id/timer", own, wrap(timer));
-    router.get("/r/:reader_id/log", own, wrap((req, res, db) => show_log(req, res, db, prefill_minutes(req.query.minutes))));
+    // "Fix the time" from the timer brings its minutes and book
+    router.get("/r/:reader_id/log", own, wrap((req, res, db) => show_log(req, res, db, {
+        ...prefill_minutes(req.query.minutes),
+        ...(req.query.book ? {book: String(req.query.book)} : {}),
+    })));
     router.post("/r/:reader_id/log", own, wrap(save_log));
     router.get("/r/:reader_id/yay", own, wrap(yay));
     router.get("/r/:reader_id/entries/:entry_id", own, wrap(edit_entry));
     router.post("/r/:reader_id/entries/:entry_id", own, wrap(save_entry));
     router.post("/r/:reader_id/entries/:entry_id/delete", own, wrap(remove_entry));
+    router.post("/r/:reader_id/books", own, wrap(add_book));
+    router.post("/r/:reader_id/books/:shelf_id", own, wrap(save_book));
+    router.post("/r/:reader_id/books/:shelf_id/finished", own, wrap(finish_book));
+    router.post("/r/:reader_id/books/:shelf_id/remove", own, wrap(remove_book));
     router.get("/r/:reader_id/bingo", own, wrap((req, res, db) => bingo(req, res, db)));
     router.post("/r/:reader_id/bingo", own, wrap(toggle_square));
     router.post("/r/:reader_id/bingo/code", own, wrap(bingo_code));
@@ -1433,7 +1600,11 @@ function create(sqlite) {
     router.get("/books", wrap(books));
     router.post("/books/save", wrap(book_mark("save")));
     router.post("/books/vote", wrap(book_mark("vote")));
-    router.get("/books/recommend", wrap((req, res, db) => show_recommend(req, res, db)));
+    // "Recommend it" on a finished book fills in its title and author
+    router.get("/books/recommend", wrap((req, res, db) => show_recommend(req, res, db, {
+        title: Readathon.clean(req.query.title, 150),
+        author: Readathon.clean(req.query.author, 100),
+    })));
     router.post("/books/recommend", wrap(recommend));
     router.get("/books/recommend/thanks", recommend_thanks);
     router.get("/how", how);
