@@ -52,6 +52,8 @@ function page(res, view, locals = {}) {
         // For the bot check on public forms (partials/readathon-form-guard)
         form_stamp: FormGuard.stamp(),
         date_range: DATE_RANGE_LABEL,
+        // "January" from the read-a-thon's dates (the dry run's own month, so its calendar makes sense)
+        month: Readathon.event_month(),
         demo_today: SETTINGS.today_override
             ? `${Readathon.label_day(SETTINGS.today_override)}, ${SETTINGS.today_override.slice(0, 4)}`
             : null,
@@ -567,6 +569,7 @@ function shelf_back(req, res, text, error = false) {
     const back = {
         log: `${reader_url}/reading-log#books`,
         timer: `${reader_url}/timer`,
+        cheers: `${reader_url}/cheers#books`,
     }[req.body.back] ?? `${reader_url}#reading-now`;
     if(text) {
         req.session.readathon_shelf_message = {text, error, where: req.body.back ?? "reader"};
@@ -576,7 +579,7 @@ function shelf_back(req, res, text, error = false) {
 
 function shelf_message(req, where) {
     const message = req.session.readathon_shelf_message ?? null;
-    if(message && (message.where === where || (where === "reader" && !["log", "timer"].includes(message.where)))) {
+    if(message && (message.where === where || (where === "reader" && !["log", "timer", "cheers"].includes(message.where)))) {
         delete req.session.readathon_shelf_message;
         return message;
     }
@@ -617,6 +620,80 @@ function finish_book(req, res, sqlite) {
     const finished = req.body.finished === "1";
     Shelf.set_finished(sqlite, reader.reader_id, book.shelf_id, finished ? Readathon.today() : null);
     shelf_back(req, res, finished ? `You finished "${book.title}"! Nice work.` : `"${book.title}" is back on your list.`);
+}
+
+function private_book(req, res, sqlite) {
+    const {reader} = res.locals;
+    const book = Shelf.get(sqlite, reader.reader_id, req.params.shelf_id);
+    if(book === null) {
+        return shelf_back(req, res, null);
+    }
+    const hide = req.body.private === "1";
+    Shelf.set_private(sqlite, reader.reader_id, book.shelf_id, hide);
+    shelf_back(req, res, hide ? `"${book.title}" is private now. Only you see it.` : `"${book.title}" isn't private anymore.`);
+}
+
+// Show (or hide) their books to teammates (team=1/0) or on their cheer page (cheer=1/0)
+function save_sharing(req, res, sqlite) {
+    const {reader} = res.locals;
+    const flag = value => (value === undefined ? undefined : value === "1");
+    const team = flag(req.body.team);
+    const cheer = flag(req.body.cheer);
+    Shelf.set_sharing(sqlite, reader.reader_id, {team, cheer});
+    const text = team !== undefined
+        ? (team ? "Your teammates can see your books now (but not private ones)." : "Your books are hidden from your teammates.")
+        : (cheer ? "Your books are on your cheer page now (but not private ones)." : "Your books are off your cheer page.");
+    shelf_back(req, res, text);
+}
+
+// ---------- a reader's profile, for their teammates ----------
+
+// Someone signed in can see a reader's profile if they're from the same home or share a team
+function teams_in_common(sqlite, req, reader) {
+    const id = household_id(req);
+    if(id === null) {
+        return null;
+    }
+    const theirs = Teams.team_ids_for_reader(sqlite, reader.reader_id);
+    const ours = new Set(Readathon.list_readers(sqlite, id).flatMap(r => Teams.team_ids_for_reader(sqlite, r.reader_id)));
+    const common = theirs.filter(team_id => ours.has(team_id));
+    if(reader.household_id !== id && common.length === 0) {
+        return null;
+    }
+    return common.map(team_id => Teams.get_team(sqlite, team_id)).filter(Boolean);
+}
+
+function profile(req, res, sqlite) {
+    const reader = Readathon.get_reader(sqlite, Number(req.params.reader_id));
+    const teams = reader ? teams_in_common(sqlite, req, reader) : null;
+    if(teams === null) {
+        return res.redirect(household_id(req) === null ? `${BASE}/sign-in` : `${BASE}/teams`);
+    }
+    const today = Readathon.today();
+    const entries = Readathon.list_entries(sqlite, reader.reader_id);
+    const stats = Readathon.stats(entries, today);
+    const shares = Shelf.shares_with_team(reader);
+    const books = Shelf.shared_books(sqlite, reader, entries, "team").map(book => book_view(book, reader, today));
+    const week = Readathon.week_and_streaks(entries, today);
+    const progress = Readathon.goal_progress(stats.total, reader.goal_minutes, Readathon.reader_start_day(reader, entries), today);
+    // Their page says "you"; a teammate's says it about them
+    const progress_note = {reached: "Goal reached!", on_track: "Right on track.", keep_going: "Still plenty of time.", over: null}[progress.status];
+    page(res, "profile", {
+        title: reader.name,
+        nav: "teams",
+        reader: {name: reader.name, color: reader.color, initial: reader.name.charAt(0).toUpperCase()},
+        is_mine: reader.household_id === household_id(req),
+        my_books_url: `${BASE}/r/${reader.reader_id}/reading-log#books`,
+        teams: teams.map(team => ({name: team.name, url: `${BASE}/teams/${team.code}`})),
+        total_label: Readathon.duration_short(stats.total),
+        days_read: stats.days_read,
+        week,
+        progress: {...progress, note: progress_note},
+        calendar: Readathon.month_calendar(stats.by_day, today),
+        shares,
+        reading: books.filter(book => !book.finished),
+        finished: books.filter(book => book.finished),
+    });
 }
 
 function remove_book(req, res, sqlite) {
@@ -713,6 +790,11 @@ function reading_log(req, res, sqlite) {
         finished_count: books.filter(book => book.finished).length,
         shelf_message: shelf_message(req, "log"),
         formats: content.FORMATS.map(name => ({name})),
+        sharing: {
+            team: Shelf.shares_with_team(reader),
+            on_team: Teams.team_ids_for_reader(sqlite, reader.reader_id).length > 0,
+            profile_url: `${BASE}/readers/${reader.reader_id}`,
+        },
     });
 }
 
@@ -1593,6 +1675,9 @@ function create(sqlite) {
     router.post("/r/:reader_id/books/:shelf_id", own, wrap(save_book));
     router.post("/r/:reader_id/books/:shelf_id/finished", own, wrap(finish_book));
     router.post("/r/:reader_id/books/:shelf_id/remove", own, wrap(remove_book));
+    router.post("/r/:reader_id/books/:shelf_id/private", own, wrap(private_book));
+    router.post("/r/:reader_id/sharing", own, wrap(save_sharing));
+    router.get("/readers/:reader_id", wrap(profile));
     router.get("/r/:reader_id/bingo", own, wrap((req, res, db) => bingo(req, res, db)));
     router.post("/r/:reader_id/bingo", own, wrap(toggle_square));
     router.post("/r/:reader_id/bingo/code", own, wrap(bingo_code));

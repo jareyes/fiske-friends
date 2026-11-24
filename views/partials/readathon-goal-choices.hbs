@@ -10,7 +10,7 @@
     <input type="radio" name="goal" value="own"{{#if goals.own.picked}} checked{{/if}} data-own-goal>
     <span>
       <b>My own goal</b>
-      <span class="ra-own-goal-row"><input class="ra-own-goal-hours" type="number" name="goal_hours" min="{{goals.own.min}}" step="any" inputmode="decimal" value="{{goals.own.hours}}" placeholder="30" aria-label="Hours in January" data-own-hours> <strong class="ra-choice-goal">hours total</strong></span>
+      <span class="ra-own-goal-row"><input class="ra-own-goal-hours" type="number" name="goal_hours" min="{{goals.own.min}}" step="any" inputmode="decimal" value="{{goals.own.hours}}" placeholder="30" aria-label="Hours in {{@root.month}}" data-own-hours> <strong class="ra-choice-goal">hours total</strong></span>
       <small data-own-hint>{{goals.own.hint}}</small>
     </span>
   </label>

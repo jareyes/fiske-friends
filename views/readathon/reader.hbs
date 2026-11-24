@@ -32,9 +32,9 @@
 {{else}}
 <section class="ra-today" aria-label="Today">
   <div class="ra-goal">
-    <p class="ra-goal-label">{{#if progress.reached}}Goal reached!{{else}}My January goal{{/if}}</p>
+    <p class="ra-goal-label">{{#if progress.reached}}Goal reached!{{else}}My {{month}} goal{{/if}}</p>
     <p class="ra-goal-number"><b>{{progress.total_short}}</b> <span>of {{progress.goal_label}}</span></p>
-    <div class="ra-meter ra-meter-lamp" role="img" aria-label="{{progress.percent}} percent of my January goal"><span style="width: {{progress.percent}}%"></span></div>
+    <div class="ra-meter ra-meter-lamp" role="img" aria-label="{{progress.percent}} percent of my {{month}} goal"><span style="width: {{progress.percent}}%"></span></div>
     <p class="ra-muted">{{progress.message}}</p>
     {{#if (eq phase "during")}}<p class="ra-today-plan{{#if today_plan.done}} is-done{{/if}}">{{#if today_plan.done}}<span aria-hidden="true">&check;</span> {{/if}}{{today_plan.text}}</p>{{/if}}
     {{#if (eq phase "during")}}

@@ -235,6 +235,15 @@ async function seed(sqlite) {
     team("Stevens High Book Club", 0, ["Kai", "Lena", "Milo", "Nora"]);
     team("The Night Owls", 1, ["Hana", "Ike", "June", "Renee"]);
     team("Red River Diner Regulars", 1, ["Otis", "Pia", "Bea", "Walt"]);
+    // Some teammates' books, for their profiles: Carmen shares hers; Dot is a kid, so hers start hidden
+    const ShelfDemo = require("../lib/readathon-shelf");
+    const carmen = by_name("Carmen");
+    ShelfDemo.ensure(sqlite, carmen, {title: "Tom Lake", author: "Ann Patchett", format: "Audiobook"});
+    const finished = ShelfDemo.ensure(sqlite, carmen, {title: "The Snow Child", author: "Eowyn Ivey", format: "Book"});
+    ShelfDemo.set_finished(sqlite, carmen, finished.shelf_id, "2027-01-06");
+    const private_one = ShelfDemo.ensure(sqlite, carmen, {title: "Diary of a Secret Admirer"});
+    ShelfDemo.set_private(sqlite, carmen, private_one.shelf_id, true);
+    ShelfDemo.ensure(sqlite, by_name("Dot"), {title: "The Wild Robot", author: "Peter Brown"});
     // Work out raffle entries from the sample reading
     Prizes.update_all_awards(sqlite);
 

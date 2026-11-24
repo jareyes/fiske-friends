@@ -17,7 +17,7 @@
   <p class="ra-muted">{{#if team.reached}}Amazing teamwork. Everyone on the team earned a raffle entry!{{else}}{{team.to_go_label}} to go &middot; {{team.read_today}} of {{team.member_count}} read today{{/if}}</p>
   {{#if team.reached_before}}<p class="ra-muted">New teammates made the goal bigger. Reach it again so they earn a raffle entry too.</p>{{/if}}
 </section>
-<p class="ra-fine">The team goal is everyone's January goals added up. When the team reaches it, everyone on the team earns an entry in the grand prize raffle.</p>
+<p class="ra-fine">The team goal is everyone's {{month}} goals added up. When the team reaches it, everyone on the team earns an entry in the grand prize raffle.</p>
 
 {{#if on_team}}
 <section class="ra-card ra-share" aria-labelledby="invite-title">
@@ -35,13 +35,18 @@
 {{#if team.members}}
 <section aria-labelledby="members-title">
   <h2 id="members-title" class="ra-h2">The team</h2>
-  <ul class="ra-members">
+  <ul class="ra-members{{#if teammate}} has-weeks{{/if}}">
     {{#each team.members}}
     <li{{#if is_mine}} class="is-mine"{{/if}}>
       <span class="ra-avatar a{{color}}" aria-hidden="true">{{initial}}</span>
-      <span class="ra-member-name"><b>{{name}}</b>{{#if read_today}}<small class="ra-read-today">read today</small>{{/if}}</span>
+      <span class="ra-member-name">{{#if profile_url}}<a href="{{profile_url}}"><b>{{name}}</b></a>{{else}}<b>{{name}}</b>{{/if}}{{#if read_today}}<small class="ra-read-today">read today</small>{{/if}}{{#if streak_label}}<small class="ra-streak-tag"><span aria-hidden="true">&#128293;</span> {{streak}}<span class="ra-visually-hidden"> {{streak_label}}</span></small>{{/if}}</span>
       <span class="ra-member-bar" aria-hidden="true"><span style="width: {{share}}%"></span></span>
       <span class="ra-member-min">{{minutes}} min</span>
+      {{#if week}}
+      <ol class="ra-member-week" aria-label="This week: read {{week_read}} of {{week_days}} days">
+        {{#each week}}<li class="{{#if read}}is-read{{/if}}{{#if is_today}} is-today{{/if}}{{#if future}} is-future{{/if}}{{#if outside}} is-outside{{/if}}" title="{{label}}"><span aria-hidden="true">{{letter}}</span></li>{{/each}}
+      </ol>
+      {{/if}}
     </li>
     {{/each}}
   </ul>

@@ -25,6 +25,19 @@
   </form>
 </section>
 
+<section class="ra-card ra-cheer-books" id="books" aria-labelledby="cheer-books-title">
+  <h2 id="cheer-books-title" class="ra-h2">Show what you're reading?</h2>
+  {{#if books_message}}<p class="ra-flash" role="status">{{books_message}}</p>{{/if}}
+  <p>{{#if books_shared}}Your cheer page shows the books you're reading and the ones you've finished.{{else}}Your cheer page can show the books you're reading and the ones you've finished. It's off for now.{{/if}}
+    Private books never show. <a href="{{my_books_url}}">My books</a></p>
+  <form action="{{sharing_action}}" method="post">
+    <input type="hidden" name="back" value="cheers">
+    <input type="hidden" name="cheer" value="{{#if books_shared}}0{{else}}1{{/if}}">
+    <button class="ra-btn {{#if books_shared}}ra-btn-ghost{{else}}ra-btn-lamp{{/if}}" type="submit">{{#if books_shared}}Take them off my cheer page{{else}}Show my books{{/if}}</button>
+  </form>
+  {{#unless books_preview}}<p class="ra-fine">You don't have any books to show yet.</p>{{/unless}}
+</section>
+
 {{#if cheers.cheers}}
 <ul class="ra-cheers">
   {{#each cheers.cheers}}

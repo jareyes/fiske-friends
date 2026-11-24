@@ -17,19 +17,9 @@
   </section>
 
   <section class="ra-card ra-log-calendar" id="calendar" aria-labelledby="calendar-title">
-    <h2 id="calendar-title" class="ra-h2">January</h2>
+    <h2 id="calendar-title" class="ra-h2">{{month}}</h2>
     {{#if book_filter}}<p class="ra-cal-filter">Days you read <b>{{book_filter.title}}</b> ({{book_filter.days_count}}) &middot; <a href="{{book_filter.clear_url}}">Show all days</a></p>{{/if}}
-    <div class="ra-calendar" role="table" aria-label="Minutes read each day in January">
-      <div class="ra-calendar-row ra-calendar-head" role="row" aria-hidden="true"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
-      {{#each calendar}}
-      <div class="ra-calendar-row" role="row">
-        {{#each this}}
-        {{#if outside}}<span class="ra-cal-day is-outside" role="cell" aria-hidden="true"></span>
-        {{else}}<span class="ra-cal-day lv{{level}}{{#if is_today}} is-today{{/if}}{{#if future}} is-future{{/if}}{{#if book_day}} is-book-day{{/if}}{{#if dim}} is-dim{{/if}}" role="cell" title="{{label}}" aria-label="{{label}}">{{number}}</span>{{/if}}
-        {{/each}}
-      </div>
-      {{/each}}
-    </div>
+    {{> readathon-calendar}}
     <p class="ra-fine">The more you read in a day, the brighter it shines.</p>
   </section>
 
@@ -59,6 +49,7 @@
   <section class="ra-card ra-log-books" id="books" aria-labelledby="books-title">
     <h2 id="books-title" class="ra-h2">My books</h2>
     {{#if shelf_message}}<p class="ra-flash{{#if shelf_message.error}} ra-flash-bad{{/if}}" role="status">{{shelf_message.text}}</p>{{/if}}
+    {{#if reading}}{{> readathon-sharing}}{{else}}{{#if finished}}{{> readathon-sharing}}{{/if}}{{/if}}
     {{#if reading}}
     <h3 class="ra-shelf-sub">Reading now</h3>
     <ul class="ra-shelf-books">{{#each reading}}{{> readathon-shelf-book}}{{/each}}</ul>

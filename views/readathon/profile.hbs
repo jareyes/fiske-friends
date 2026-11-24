@@ -1,0 +1,55 @@
+<header class="ra-hello ra-profile-head">
+  <span class="ra-avatar a{{reader.color}}" aria-hidden="true">{{reader.initial}}</span>
+  <div>
+    <h1 class="ra-h1">{{reader.name}}</h1>
+    {{#if teams}}<p class="ra-hello-links">On {{#each teams}}<a class="ra-small-link" href="{{url}}">{{name}}</a>{{#unless @last}}, {{/unless}}{{/each}}</p>{{/if}}
+  </div>
+</header>
+
+{{#if is_mine}}
+<p class="ra-flash ra-profile-note">This is what teammates see. <a href="{{my_books_url}}">Change who sees your books</a></p>
+{{/if}}
+
+<section class="ra-today ra-profile-goal" aria-label="{{reader.name}}'s goal">
+  <p class="ra-goal-label">{{#if progress.reached}}Goal reached!{{else}}{{month}} goal{{/if}}</p>
+  <p class="ra-goal-number"><b>{{progress.total_short}}</b> <span>of {{progress.goal_label}}</span></p>
+  <div class="ra-meter ra-meter-lamp" role="img" aria-label="{{progress.percent}} percent of {{reader.name}}'s {{month}} goal"><span style="width: {{progress.percent}}%"></span></div>
+  {{#unless progress.reached}}{{#if progress.note}}<p class="ra-muted">{{progress.note}}</p>{{/if}}{{/unless}}
+  <ul class="ra-profile-stats">
+    <li><b>{{days_read}}</b><span>{{#if (eq days_read 1)}}day{{else}}days{{/if}} read</span></li>
+    <li><b>{{week.best_streak}}</b><span>best streak</span></li>
+    {{#if shares}}<li><b>{{finished.length}}</b><span>{{#if (eq finished.length 1)}}book{{else}}books{{/if}} finished</span></li>{{/if}}
+  </ul>
+  {{#if week.streak_label}}<p class="ra-week-streak"><span aria-hidden="true">&#128293;</span> {{week.streak_label}}!</p>{{/if}}
+</section>
+
+
+<section class="ra-card" aria-labelledby="profile-books-title">
+  <h2 id="profile-books-title" class="ra-h2">What {{reader.name}} is reading</h2>
+  {{#if shares}}
+  {{#if reading}}
+  <ul class="ra-shelf">
+    {{#each reading}}
+    <li><span class="ra-shelf-what"><b>{{title}}</b>{{#if author}}<span class="ra-muted">{{author}}</span>{{/if}}</span>{{#if minutes_label}}<span class="ra-shelf-time">{{minutes_label}}</span>{{/if}}</li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <p class="ra-muted">Nothing on {{reader.name}}'s list right now.</p>
+  {{/if}}
+  {{#if finished}}
+  <h3 class="ra-shelf-sub">Finished</h3>
+  <ul class="ra-shelf">
+    {{#each finished}}
+    <li><span class="ra-shelf-what"><b>{{title}}</b>{{#if author}}<span class="ra-muted">{{author}}</span>{{/if}}</span>{{#if minutes_label}}<span class="ra-shelf-time">{{minutes_label}}</span>{{/if}}</li>
+    {{/each}}
+  </ul>
+  {{/if}}
+  {{else}}
+  <p class="ra-muted">{{reader.name}} keeps their books private.</p>
+  {{/if}}
+</section>
+
+<section class="ra-card ra-log-calendar ra-profile-calendar" aria-labelledby="profile-calendar-title">
+  <h2 id="profile-calendar-title" class="ra-h2">{{month}}</h2>
+  {{> readathon-calendar}}
+</section>

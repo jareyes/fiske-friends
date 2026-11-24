@@ -12,6 +12,20 @@
   <p class="ra-give-note">Your gift supports {{purpose}}.</p>
   {{{hero_art}}}
 </header>
+{{#if reader.books.any}}
+<section class="ra-card ra-give-books" aria-labelledby="give-books-title">
+  <h2 id="give-books-title" class="ra-h2">What {{reader.name}} is reading</h2>
+  {{#if reader.books.reading}}
+  <ul class="ra-give-book-list">
+    {{#each reader.books.reading}}<li><b>{{title}}</b>{{#if author}} <span class="ra-muted">by {{author}}</span>{{/if}}</li>{{/each}}
+  </ul>
+  {{/if}}
+  {{#if reader.books.finished}}
+  <p class="ra-give-finished"><span class="ra-give-finished-count">{{reader.books.finished_count}} {{#if (eq reader.books.finished_count 1)}}book{{else}}books{{/if}} finished</span>
+    {{#each reader.books.finished}}<span class="ra-give-finished-title">{{title}}</span>{{#unless @last}}, {{/unless}}{{/each}}</p>
+  {{/if}}
+</section>
+{{/if}}
 {{#if cheers.recent}}
 <ul class="ra-cheer-strip" aria-label="Cheers so far">
   {{#each cheers.recent}}<li><b>{{name}}</b>{{#if message}} &ldquo;{{message}}&rdquo;{{/if}}</li>{{/each}}

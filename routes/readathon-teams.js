@@ -117,14 +117,24 @@ function create(sqlite, {page, household_id}) {
             const flash = req.session.readathon_team_flash ?? null;
             delete req.session.readathon_team_flash;
             const mine_ids = new Set(readers.filter(r => r.on_team).map(r => r.reader_id));
+            const teammate = mine_ids.size > 0;
+            const members = team.members.map(m => ({
+                ...m,
+                is_mine: mine_ids.has(m.reader_id),
+                profile_url: teammate ? `${BASE}/readers/${m.reader_id}` : null,
+                ...(teammate ? Readathon.week_and_streaks(Readathon.list_entries(sqlite, m.reader_id), today) : {}),
+            }));
             page(res, "team", {
                 title: team.name,
                 nav: "teams",
                 team: {
                     ...team,
-                    members: team.members.map(m => ({...m, is_mine: mine_ids.has(m.reader_id)})),
+                    // Teammates (and their own home) can open each other's profiles and see each
+                    // other's week and streaks
+                    members: members,
                 },
                 flash,
+                teammate,
                 signed_in: household_id(req) !== null,
                 readers,
                 on_team: readers.some(r => r.on_team),

@@ -1,0 +1,10 @@
+{{!-- Who sees my books: teammates on or off (the reading log's My books) --}}
+<form class="ra-sharing" action="{{@root.reader_url}}/sharing" method="post">
+  <input type="hidden" name="back" value="log">
+  <input type="hidden" name="team" value="{{#if sharing.team}}0{{else}}1{{/if}}">
+  <p><span aria-hidden="true">{{#if sharing.team}}&#128101;{{else}}&#128274;{{/if}}</span>
+    {{#if sharing.team}}Your teammates can see these books, except private ones.{{else}}Only you can see these books.{{/if}}
+    <button class="ra-text-btn" type="submit">{{#if sharing.team}}Hide them all{{else}}Show them to my teammates{{/if}}</button>
+    {{#if sharing.on_team}}&middot; <a href="{{sharing.profile_url}}">See what they see</a>{{/if}}
+  </p>
+</form>

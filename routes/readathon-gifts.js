@@ -14,6 +14,7 @@ const Gifts = require("../lib/readathon-gifts");
 const OgImages = require("../lib/readathon-og");
 const Art = require("../lib/readathon-art");
 const Readathon = require("../lib/readathon");
+const Shelf = require("../lib/readathon-shelf");
 const {Router} = require("express");
 const Stripe = require("stripe");
 
@@ -42,8 +43,21 @@ function site_origin(req) {
     return `${req.protocol}://${req.get("host")}`;
 }
 
+// The books a reader shows on their cheer page (none unless they've turned it on)
+function cheer_books(sqlite, reader, entries) {
+    const books = Shelf.shared_books(sqlite, reader, entries, "cheer")
+        .map(book => ({title: book.title, author: book.author, finished: book.finished}));
+    return {
+        reading: books.filter(book => !book.finished),
+        finished: books.filter(book => book.finished),
+        finished_count: books.filter(book => book.finished).length,
+        any: books.length > 0,
+    };
+}
+
 function reader_summary(sqlite, reader) {
-    const stats = Readathon.stats(Readathon.list_entries(sqlite, reader.reader_id), Readathon.today());
+    const entries = Readathon.list_entries(sqlite, reader.reader_id);
+    const stats = Readathon.stats(entries, Readathon.today());
     return {
         name: reader.name,
         color: reader.color,
@@ -51,6 +65,7 @@ function reader_summary(sqlite, reader) {
         minutes: stats.total,
         days: stats.days_read,
         note: reader.sponsor_note,
+        books: cheer_books(sqlite, reader, entries),
     };
 }
 
@@ -250,6 +265,12 @@ function create(sqlite, {page, own}) {
             note_max: Gifts.NOTE_MAX,
             note_action: `${BASE}/r/${reader.reader_id}/cheers/note`,
             message: take(req, "readathon_note_message"),
+            // Showing their books here, and what that would show
+            books_shared: Shelf.shares_on_cheer_page(reader),
+            books_preview: Shelf.books(sqlite, reader.reader_id, Readathon.list_entries(sqlite, reader.reader_id)).filter(book => !book.is_private),
+            sharing_action: `${BASE}/r/${reader.reader_id}/sharing`,
+            my_books_url: `${BASE}/r/${reader.reader_id}/reading-log#books`,
+            books_message: req.session.readathon_shelf_message?.where === "cheers" ? take(req, "readathon_shelf_message").text : null,
         });
     }));
     router.post("/r/:reader_id/cheers/note", own, safely((req, res) => {

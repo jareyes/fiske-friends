@@ -2,7 +2,7 @@
 <li class="ra-shelf-book{{#if is_filter}} is-filter{{/if}}">
   <div class="ra-shelf-what">
     <b>{{title}}</b>
-    <span class="ra-muted">{{#if author}}{{author}} &middot; {{/if}}{{#if minutes_label}}<b class="ra-shelf-time">{{minutes_label}}</b> on {{days_count}} {{#if days_plural}}days{{else}}day{{/if}}{{else}}No reading yet{{/if}}{{#if finished}} &middot; finished {{finished_label}}{{/if}}</span>
+    <span class="ra-muted">{{#if author}}{{author}} &middot; {{/if}}{{#if minutes_label}}<b class="ra-shelf-time">{{minutes_label}}</b> on {{days_count}} {{#if days_plural}}days{{else}}day{{/if}}{{else}}No reading yet{{/if}}{{#if finished}} &middot; finished {{finished_label}}{{/if}}{{#if is_private}} &middot; <span class="ra-private-tag"><span aria-hidden="true">&#128274;</span> Private</span>{{/if}}</span>
   </div>
   <form class="ra-shelf-finish" action="{{@root.reader_url}}/books/{{shelf_id}}/finished" method="post">
       <input type="hidden" name="back" value="log">
@@ -18,6 +18,11 @@
     {{#if days_count}}{{#if is_filter}}<a class="ra-small-link" href="{{@root.book_filter.clear_url}}">Show all days</a>{{else}}<a class="ra-small-link" href="{{days_url}}">Show my days</a>{{/if}}{{/if}}
     {{#if finished}}<a class="ra-small-link" href="{{recommend_url}}">Recommend it</a>{{/if}}
     {{#if catalog_url}}<a class="ra-small-link" href="{{catalog_url}}" target="_blank" rel="noopener">Library catalog<span class="ra-visually-hidden"> (opens in a new tab)</span></a>{{/if}}
+    <form class="ra-shelf-private" action="{{@root.reader_url}}/books/{{shelf_id}}/private" method="post">
+      <input type="hidden" name="back" value="log">
+      <input type="hidden" name="private" value="{{#if is_private}}0{{else}}1{{/if}}">
+      <button class="ra-text-btn" type="submit">{{#if is_private}}Let others see it{{else}}Keep private{{/if}}<span class="ra-visually-hidden"> {{title}}</span></button>
+    </form>
     <details class="ra-shelf-edit">
     <summary><span aria-hidden="true">&#9998;</span> Edit<span class="ra-visually-hidden"> {{title}}</span></summary>
     <form action="{{@root.reader_url}}/books/{{shelf_id}}" method="post">

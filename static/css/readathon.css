@@ -2806,7 +2806,7 @@ button.ra-square:hover {
     gap: 0.5rem;
     margin-top: 0.5rem;
 }
-.ra-members li {
+.ra-members > li {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-areas: "avatar name minutes" "avatar bar bar";
@@ -2817,7 +2817,7 @@ button.ra-square:hover {
     background: var(--ra-paper);
     box-shadow: 0 2px 0 var(--ra-line);
 }
-.ra-members li.is-mine {
+.ra-members > li.is-mine {
     box-shadow: inset 0 0 0 3px var(--ra-lamp), 0 2px 0 var(--ra-line);
 }
 .ra-members .ra-avatar {
@@ -3571,4 +3571,157 @@ a.ra-team-card:hover {
 }
 .ra-reading-list li .ra-text-btn {
     white-space: nowrap;
+}
+
+/* ---------- sharing books: profiles, private books, the cheer page ---------- */
+.ra-private-tag {
+    color: var(--ra-muted);
+    font-weight: 700;
+    white-space: nowrap;
+}
+.ra-shelf-private .ra-text-btn {
+    padding: 0;
+    color: var(--ra-night-2);
+    font-size: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+.ra-sharing {
+    margin: 0.25rem 0 0.5rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 14px;
+    background: var(--ra-snow);
+    font-size: 0.92rem;
+}
+.ra-sharing p {
+    margin: 0;
+}
+.ra-sharing .ra-text-btn {
+    padding: 0;
+    color: var(--ra-night-2);
+    font-size: inherit;
+    font-weight: 800;
+    text-decoration: underline;
+}
+.ra-members .ra-member-name a {
+    color: var(--ra-ink);
+}
+.ra-profile-note a {
+    color: inherit;
+}
+.ra-cheer-books form {
+    margin-top: 0.5rem;
+}
+.ra-give-books {
+    margin-top: 1rem;
+}
+.ra-give-book-list {
+    margin: 0.25rem 0 0.5rem;
+    padding: 0;
+    list-style: none;
+}
+.ra-give-book-list li {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--ra-line);
+}
+.ra-give-book-list li:last-child {
+    border-bottom: 0;
+}
+.ra-give-finished {
+    margin: 0.5rem 0 0;
+    color: var(--ra-muted);
+    font-size: 0.95rem;
+}
+.ra-give-finished-count {
+    display: block;
+    color: var(--ra-pine);
+    font-weight: 800;
+}
+.ra-give-finished-title {
+    color: var(--ra-ink);
+    font-style: italic;
+}
+
+/* ---------- streaks and weeks, for teammates ---------- */
+.ra-streak-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    margin-left: 0.45rem;
+    padding: 0.1rem 0.5rem 0.1rem 0.35rem;
+    border-radius: 999px;
+    background: #ffe6d6;
+    color: #a3361f;
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1.3;
+    vertical-align: 0.1em;
+    white-space: nowrap;
+}
+.ra-members.has-weeks > li {
+    grid-template-areas: "avatar name minutes" "avatar bar bar" "avatar week week";
+}
+.ra-member-week {
+    display: flex;
+    grid-area: week;
+    gap: 0.25rem;
+    margin: 0.3rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+.ra-member-week li {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--ra-snow);
+    color: var(--ra-muted);
+    font-size: 0.66rem;
+    font-weight: 800;
+    line-height: 1;
+}
+.ra-member-week li.is-read {
+    background: var(--ra-lamp);
+    color: var(--ra-ink);
+}
+.ra-member-week li.is-today {
+    box-shadow: inset 0 0 0 2px var(--ra-lamp-deep);
+}
+.ra-member-week li.is-future,
+.ra-member-week li.is-outside {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--ra-line);
+    color: #b3b8d6;
+}
+/* A teammate's goal, in the same night card as their own page */
+.ra-profile-goal {
+    margin-bottom: 1rem;
+}
+.ra-profile-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 0.5rem;
+    margin: 0.9rem 0 0;
+    padding: 0.75rem 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    list-style: none;
+    text-align: center;
+}
+.ra-profile-stats b {
+    display: block;
+    color: #fff;
+    font-family: var(--ra-display);
+    font-size: 1.5rem;
+}
+.ra-profile-stats span {
+    color: #c2c9f2;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+/* On a one-column page, the calendar stays the size it is on the reading log */
+.ra-profile-calendar .ra-calendar {
+    max-width: 24rem;
+    margin: 0 auto;
 }

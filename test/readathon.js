@@ -672,3 +672,50 @@ suite("lib/readathon-shelf.js", () => {
         assert.deepStrictEqual(Shelf.parse_book({title: " Holes ", author: "", format: "Scroll"}).book, {title: "Holes", author: null, format: null});
     });
 });
+
+suite("lib/readathon-shelf.js sharing", () => {
+    const sqlite = new DatabaseSync(":memory:");
+    const dirpath = path.join(__dirname, "..", "migrations");
+    for(const file of fs.readdirSync(dirpath).filter(f => f.endsWith(".sql")).sort()) {
+        sqlite.exec(fs.readFileSync(path.join(dirpath, file), "utf8"));
+    }
+    const id = Readathon.create_household(sqlite, {email: "share@example.com", readers: [{name: "Ma", age_group: "adult"}, {name: "Kit", age_group: "kid"}]});
+    const [ma, kit] = Readathon.list_readers(sqlite, id);
+    Shelf.ensure(sqlite, ma.reader_id, {title: "Open Book"});
+    const secret = Shelf.ensure(sqlite, ma.reader_id, {title: "Secret Book"});
+    Shelf.set_private(sqlite, ma.reader_id, secret.shelf_id, true);
+    Shelf.ensure(sqlite, kit.reader_id, {title: "Kid Book"});
+
+    test("teammates see grown-ups' books but not kids' at first, and never private ones", () => {
+        assert.deepStrictEqual(Shelf.shared_books(sqlite, ma, [], "team").map(b => b.title), ["Open Book"]);
+        assert.deepStrictEqual(Shelf.shared_books(sqlite, kit, [], "team"), []);
+        Shelf.set_sharing(sqlite, kit.reader_id, {team: true});
+        assert.deepStrictEqual(Shelf.shared_books(sqlite, Readathon.get_reader(sqlite, kit.reader_id), [], "team").map(b => b.title), ["Kid Book"]);
+    });
+
+    test("the cheer page shows books only once turned on", () => {
+        assert.deepStrictEqual(Shelf.shared_books(sqlite, ma, [], "cheer"), []);
+        Shelf.set_sharing(sqlite, ma.reader_id, {cheer: true});
+        const now = Readathon.get_reader(sqlite, ma.reader_id);
+        assert.deepStrictEqual(Shelf.shared_books(sqlite, now, [], "cheer").map(b => b.title), ["Open Book"]);
+        assert.strictEqual(Shelf.shares_with_team(now), true, "turning on the cheer page leaves teammates as they were");
+    });
+});
+
+suite("lib/readathon.js week_and_streaks", () => {
+    test("counts this week's days so far, and shows a streak from 2 days", () => {
+        const one = Readathon.week_and_streaks(entries([["2027-01-12", 20]]), "2027-01-12", SETTINGS);
+        assert.strictEqual(one.streak_label, null);
+        const run = Readathon.week_and_streaks(entries([["2027-01-12", 20], ["2027-01-11", 10], ["2027-01-10", 5], ["2027-01-05", 30]]), "2027-01-12", SETTINGS);
+        assert.deepStrictEqual([run.week_read, run.week_days, run.streak, run.streak_label], [3, 3, 3, "3 days in a row"]);
+        assert.strictEqual(run.week.length, 7);
+    });
+});
+
+suite("lib/readathon.js event_month", () => {
+    test("names the month from the dates, or the range when it crosses months", () => {
+        assert.strictEqual(Readathon.event_month(SETTINGS), "January");
+        assert.strictEqual(Readathon.event_month({starts: "2026-11-23", ends: "2026-11-29"}), "November");
+        assert.strictEqual(Readathon.event_month({starts: "2026-11-28", ends: "2026-12-04"}), "Nov 28 to Dec 4");
+    });
+});
